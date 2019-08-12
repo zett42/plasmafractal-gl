@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<!--
+PlasmaFractal main script. Copyright (c) 2019 zett42.
+https://github.com/zett42/PlasmaFractal
+
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. 
+-->
+<html>
+<head>
+	<meta charset="UTF-8">
+
+	<title>PlasmaMorph Demo</title>
+
+	<style>
+	* { margin:0; padding:0; } /* to remove the top and left whitespace */
+
+	html, body { 
+		width:100%; 
+		height:100%; 
+		overflow: hidden;
+		background: black;
+	} 
+	canvas {
+		display: block;  /* To remove the scrollbars */
+		background: black;
+	}
+	</style>
+	
+	<script type="text/javascript" src="perlin.js"></script>	
+	<script type="text/javascript" src="z42easing.js"></script>	
+	<script type="text/javascript" src="z42color.js"></script>	
+	<script type="text/javascript" src="z42fractalNoise.js"></script>	
+</head>
+
+<body>
+	<canvas id="canvas">PlasmaMorph</canvas>
+</body>
+
+<script>
+(function () {
+	'use strict';
+
+	//===================================================================================================================
+	// Constants
+	//===================================================================================================================
+	
+	const plasmaParams = {
+		frequency  : 1,    // increase for smaller structures
+		octaves    : 8,    // number of passes (level of detail, typically 1 to 8)
+		gain       : 0.4,  // how much amplification for each pass (typically 0.3 to 0.7, default 0.5)
+		lacunarity : 2,    // frequency multiplicator for each pass (default 2)	
+		amplitude  : 1.2     // output of noise function (default 1)
+	};
+
+	const paletteColorCount = 2;   // simultaneous colors on screen
+
+	// Names of functions from "z42easing.js"
+	const easeFunctions = [
+		[ "linear"       , "linear"         ],   // 0
+		[ "easeInQuad"   , "easeOutQuad"    ],   // 1
+		[ "easeInCubic"  , "easeOutCubic"   ],   // 2
+		[ "easeInQuart"  , "easeOutQuart"   ],   // 3
+		[ "easeInQuint"  , "easeOutQuint"   ],   // 4
+		[ "easeInSine"   , "easeOutSine"    ],   // 5
+		[ "easeInExpo"   , "easeOutExpo"    ],   // 6
+		[ "easeInExpo2"  , "easeOutExpo2"   ],   // 7
+		[ "easeInCirc"   , "easeOutCirc"    ],   // 8
+		[ "easeInElastic", "easeOutElastic" ],   // 9
+		[ "easeInBack"   , "easeOutBack"    ],   // 10
+		[ "easeInBounce" , "easeOutBounce"  ],   // 11
+	];
+	
+	const paletteEaseFunctionIndices = [ 1, 7 ];  // Refers to easeFunctions [ easeIn, easeOut ]
+	
+	const paletteSaturation = 0.5;
+	const paletteValue      = 0.75;
+		
+	const backgroundRGBA = { r: 0, g: 0, b: 0, a: 255 };
+
+	const noiseSeed = Math.random();
+	//const noiseSeed = 0;   // to create same start image
+	
+	const animationSpeed = 0.1;
+	//const animationSpeed = 0;  // still image
+	
+	const paletteConstantSeconds   = 10;  // Time in seconds during which palette won't change.
+	const paletteTransitionSeconds =  5;  // Time in seconds for palette transition.
+
+	// Set true for debugging, to see true output of noise function.
+	const useGrayScale = false;
+	
+	const startTime = performance.now();
+
+	//===================================================================================================================
+	// Global variables
+	//===================================================================================================================
+	
+	let plasmaPixels     = null;
+	let context          = null;
+	let contextImageData = null;
+	let contextPixels    = null;
+	
+	// Palette size must be big enough to allow for multiple smooth gradients. 
+	// 256 entries per color seem to be way too little (gradients won't be smooth)! Minimum entries for complex gradients
+	// seems to be 1024.
+	let startPalette      = new Uint32Array( new ArrayBuffer( paletteColorCount * 2048 * Uint32Array.BYTES_PER_ELEMENT ) );
+	let nextPalette       = new Uint32Array( new ArrayBuffer( startPalette.length * Uint32Array.BYTES_PER_ELEMENT ) );
+	let transitionPalette = new Uint32Array( new ArrayBuffer( startPalette.length * Uint32Array.BYTES_PER_ELEMENT ) );
+	let currentPalette    = new Uint32Array( new ArrayBuffer( startPalette.length * Uint32Array.BYTES_PER_ELEMENT ) );
+	
+	let isPaletteTransition = false;   // Palette currently transitioning to next palette?
+	let paletteStartTime = startTime;  // Start time of current phase (constant or transition).
+	
+	//===================================================================================================================
+	// Functions
+	//===================================================================================================================
+
+	// Draw noise image with animated palette in canvas.
+
+	function drawInCanvas() 
+	{
+		animatePalette();
+	
+		z42color.drawImageUint16WithPalette( contextPixels, plasmaPixels, currentPalette );				
+
+		context.putImageData( contextImageData, 0, 0 );	
+		
+		window.requestAnimationFrame( drawInCanvas );	
+	}	
+	
+	//-------------------------------------------------------------------------------------------------------------------
+
+	function animatePalette()
+	{
+		const curTime         = performance.now();
+		const totalDuration   = curTime - startTime;
+		const paletteDuration = curTime - paletteStartTime;		
+		const paletteOffset   = totalDuration * animationSpeed * startPalette.length / 4096;
+	
+		let paletteToRotate = null;
+	
+		if( isPaletteTransition )
+		{
+			if( paletteDuration <= paletteTransitionSeconds * 1000 )
+			{
+				// Still in transition phase.
+				let alpha = paletteDuration / paletteTransitionSeconds / 1000;
+				z42color.blendPalette( startPalette, nextPalette, transitionPalette, alpha );
+
+				paletteToRotate = transitionPalette;
+			}
+			else
+			{
+				// Transition phase finished. Start the constant phase.
+				isPaletteTransition = false;
+				paletteStartTime = curTime;
+				
+				// swap startPalette, nextPalette
+				[ startPalette, nextPalette ] = [ nextPalette, startPalette ];
+
+				paletteToRotate = startPalette;
+			}			
+		}
+		else
+		{
+			if( paletteDuration > paletteConstantSeconds * 1000 )
+			{
+				// Constant phase finished. Start the transition phase.
+				isPaletteTransition = true;
+				paletteStartTime = curTime;
+
+				generatePalette( nextPalette ); 
+			}
+			// else still in constant phase. Nothing to do.
+
+			paletteToRotate = startPalette;
+		}
+
+		z42color.rotatePalette( paletteToRotate, currentPalette, paletteOffset );
+	}
+	
+	//-------------------------------------------------------------------------------------------------------------------
+	// Generate a beautiful loopable palette with random start color. Subsequent colors will be generated by adding
+	// golden ratio to hue value, which creates nices contrasts.
+
+	function generatePalette( palette )
+	{
+		if( useGrayScale )
+		{
+			z42color.makePaletteGradientRGBA( startPalette, 0, startPalette.length, {r:0,g:0,b:0,a:255}, {r:255,g:255,b:255,a:255}, z42easing.linear );
+			return;
+		}
+		
+		const bgToFgFunction = z42easing[ easeFunctions[ paletteEaseFunctionIndices[ 0 ] ][ 0 ] ];
+		const fgToBgFunction = z42easing[ easeFunctions[ paletteEaseFunctionIndices[ 1 ] ][ 1 ] ];
+	
+		let colorHsv = { 
+			h : Math.random(),   
+			s : paletteSaturation, 
+			v : paletteValue,
+			a : 1  // alpha
+		};
+		
+		let palIndex = 0;
+		const palRange = palette.length / paletteColorCount / 2;
+
+		for( let i = 0; i < paletteColorCount; ++i )
+		{
+			const colorRGBA = z42color.nextGoldenRatioColorRGBA( colorHsv ); 
+		
+			palIndex = z42color.makePaletteGradientRGBA( palette, palIndex, palRange, backgroundRGBA, colorRGBA, bgToFgFunction );
+			palIndex = z42color.makePaletteGradientRGBA( palette, palIndex, palRange, colorRGBA, backgroundRGBA, fgToBgFunction );			
+		}
+	}
+	
+	//-------------------------------------------------------------------------------------------------------------------
+	// Resize the image buffers to the size of the canvas and generate fractal noise image (grayscale).
+
+	function resizeCanvas() 
+	{
+		canvas.width  = window.innerWidth;
+		canvas.height = window.innerHeight;
+
+		plasmaPixels = new Uint16Array( new ArrayBuffer( canvas.width * canvas.height * Uint16Array.BYTES_PER_ELEMENT ) );
+
+		if( canvas.getContext )
+		{
+			context = canvas.getContext('2d');	
+			contextImageData = context.createImageData( canvas.width, canvas.height );
+			contextPixels = new Uint32Array( contextImageData.data.buffer );
+		}	
+
+		generateFractalImage();
+	}
+	
+	//-------------------------------------------------------------------------------------------------------------------
+
+	function generateFractalImage()
+	{
+		const fracStartTime = performance.now();
+
+		z42fractal.generateFractalNoiseImageUint16( plasmaPixels, canvas.width, canvas.height, currentPalette.length, plasmaParams ); 
+
+		console.log( "Fractal generation took %d ms", performance.now() - fracStartTime );
+	}
+
+	//-------------------------------------------------------------------------------------------------------------------
+	
+	function toggleFullscreen()
+	{
+		if( document.documentElement.requestFullscreen )
+		{
+			if( ! document.fullscreenElement )
+				document.documentElement.requestFullscreen();
+			else	
+				document.exitFullscreen();
+		}	
+	}
+
+	//-------------------------------------------------------------------------------------------------------------------
+	
+	function reseedFractal()
+	{
+		noise.seed( Math.random() );
+		generateFractalImage();
+	}
+	
+	//===================================================================================================================
+	// Main 
+	//===================================================================================================================
+
+	// Generate initial palette.
+	generatePalette( startPalette ); 
+	
+	// Generate initial fractal.
+	noise.seed( noiseSeed );
+	resizeCanvas();	
+	
+	// On window resize, resize the canvas to fill browser window dynamically.
+	window.addEventListener( 'resize', resizeCanvas, false );
+
+	// On double-click set fullscreen.
+	window.addEventListener( 'dblclick', toggleFullscreen, false );
+	
+	// On single-click randomize fractal.
+	window.addEventListener( 'click',    reseedFractal, false );
+	
+	// Launch the animation.
+	window.requestAnimationFrame( drawInCanvas );
+	
+	// Create thread
+	
+	var fracWorker = new Worker( 'z42fractalWorker.js' );
+	
+	fracWorker.addEventListener( 'message', function( msg ){
+		console.log( "Message from worker received:", msg );
+	});
+	
+	fracWorker.postMessage( 
+		{ 	
+			params: plasmaParams, 
+			width:  canvas.width,
+			height: canvas.height,
+			buffer: newPlasmaBuffer
+		}, 
+		[ newPlasmaBuffer ]   // transfer ownership of newPlasmaBuffer
+	); 	
+}());
+</script>
+</html>
