@@ -307,23 +307,6 @@ SOFTWARE.
 	// Launch the animation.
 	window.requestAnimationFrame( drawInCanvas );
 	
-	// Create thread
-	
-	var fracWorker = new Worker( 'z42fractalWorker.js' );
-	
-	fracWorker.addEventListener( 'message', function( msg ){
-		console.log( "Message from worker received:", msg );
-	});
-	
-	fracWorker.postMessage( 
-		{ 	
-			params: plasmaParams, 
-			width:  canvas.width,
-			height: canvas.height,
-			buffer: newPlasmaBuffer
-		}, 
-		[ newPlasmaBuffer ]   // transfer ownership of newPlasmaBuffer
-	); 	
 }());
 </script>
 </html>
