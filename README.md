@@ -14,8 +14,8 @@ Basic algorithm:
 - Many parameters are still hardcoded in index.html (search for "plasmaParams").
 - Tested with Chrome 76.0.3809.100 and Firefox 68.0.1 (seems to run smoother in Chrome).
 
-## External libraries used
-Each library comes with its own license terms, which can be found in the source code included in this project.
+## Credits
+This project uses the following open source libraries. Each library comes with its own license terms, which can be found in the source code included in this project.
 
 - [noisejs](https://github.com/josephg/noisejs) - A speed-improved perlin and simplex noise algorithms for 2D. 
   - Based on example code by Stefan Gustavson (stegu@itn.liu.se). 
@@ -25,6 +25,12 @@ Each library comes with its own license terms, which can be found in the source 
 
 - [jQuery and jQuery UI](https://jquery.org/) 
   - Copyright jQuery Foundation and other contributors. 
+  
+- [jQuery UI dialogOptions](https://github.com/jasonday/jQuery-UI-Dialog-extended)
+  - Copyright (c) Jason Day 2014
+  
+- [jQuery UI Touch Punch](http://touchpunch.furf.com/)
+  - Copyright 2011–2014, Dave Furfero
 
 - [jQuery Easing](http://gsgd.co.uk/sandbox/jquery/easing/)
   - Copyright © 2008 George McGinley Smith. All rights reserved.
