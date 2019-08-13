@@ -47,14 +47,14 @@ SOFTWARE.
 		background: black;
 	}
 	#dialog-link {		
-		margin:0; 
-		padding: 0;
+		margin:0; padding: 0 0 5px 1px;
+		
 		position: absolute;
 		left: .75em; 
 		top: .75em;
 		width: 1.5em; 
 		height: 1.5em;
-		text-decoration: none;
+
 		font-size: 20px;
 	}
 	#dialog {
@@ -63,12 +63,15 @@ SOFTWARE.
 	#dialog a {
 		font-size: 12px;
 	}
-	.ui-dialog
-	{
+	.ui-dialog {
 		opacity:   .85 !important; /* Make sure to change both of these, as IE only sees the second one */
 		filter:    Alpha(Opacity=85) !important;
 		font-size: 14px !important;
 	}
+    .ui-dialog-titlebar-close { 
+		width: 30px !important; height: 26px !important; top: 40% !important; 
+	}
+	
 	</style>
 </head>
 <body>
@@ -77,16 +80,23 @@ SOFTWARE.
 
 <div id="dialog" title="Plasma Parameters">
 	<a href="https://github.com/zett42/PlasmaFractal">github.com/zett42/PlasmaFractal</a>
+	
 	<p>Frequency: <input id="frequencyInput" type="number" step="0.1" style="width:5em;" ></p>
 	<div id="frequencySlider"></div>
+	
 	<p>Octaves:</p>
 	<div id="octavesSlider"></div>
+	
 	<p>Gain:</p>
 	<div id="gainSlider"></div>	
+	
 	<p>Lacunarity:</p>
 	<div id="lacunaritySlider"></div>
+	
 	<p>Amplitude:</p>
 	<div id="amplitudeSlider"></div>
+	
+	<p></p>
 </div>	
 
 <canvas id="canvas">PlasmaFractal</canvas>	
