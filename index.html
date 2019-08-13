@@ -23,51 +23,96 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. 
 -->
-<html>
+<html lang="us">
 <head>
-	<meta charset="UTF-8">
+	<meta charset="utf-8">
 
-	<title>PlasmaMorph Demo</title>
+	<title>zett42 PlasmaFractal</title>
+
+	<link href="external/jquery-ui/jquery-ui.css" rel="stylesheet">
 
 	<style>
-	* { margin:0; padding:0; } /* to remove the top and left whitespace */
 
 	html, body { 
+		margin:0; padding:0;
 		width:100%; 
 		height:100%; 
 		overflow: hidden;
 		background: black;
 	} 
 	canvas {
+		margin:0; padding:0;
 		display: block;  /* To remove the scrollbars */
 		background: black;
 	}
+	body {
+		font-family: "Trebuchet MS", sans-serif;
+	}
+	#dialog-link {		
+		margin:0; 
+		padding: 0;
+		position: absolute;
+		left: 1em; 
+		top: 1em;
+		width: 1.5em; 
+		height: 1.5em;
+		text-decoration: none;
+		font-size: 20px;
+	}
+	#dialog {
+		display: none;
+	}
+	#dialog a {
+		font-size: 12px;
+	}
+	.ui-dialog
+	{
+		opacity: .85 !important; /* Make sure to change both of these, as IE only sees the second one */
+		filter: Alpha(Opacity=85) !important;
+	}
 	</style>
-	
-	<script type="text/javascript" src="perlin.js"></script>	
-	<script type="text/javascript" src="z42easing.js"></script>	
-	<script type="text/javascript" src="z42color.js"></script>	
-	<script type="text/javascript" src="z42FractalNoise.js"></script>	
 </head>
-
 <body>
-	<canvas id="canvas">PlasmaMorph</canvas>
-</body>
+
+<button id="dialog-link" title="Plasma parameters" class="ui-button ui-corner-all ui-widget">⚙</button>
+
+<div id="dialog" title="Plasma parameters">
+	<a href="https://github.com/zett42/PlasmaFractal">github.com/zett42/PlasmaFractal</a>
+	<p>Frequency: <input id="frequencyInput" type="number" step="0.1" style="width:5em;" ></p>
+	<div id="frequencySlider"></div>
+	<p>Octaves:</p>
+	<div id="octavesSlider"></div>
+	<p>Gain:</p>
+	<div id="gainSlider"></div>	
+	<p>Lacunarity:</p>
+	<div id="lacunaritySlider"></div>
+	<p>Amplitude:</p>
+	<div id="amplitudeSlider"></div>
+</div>	
+
+<canvas id="canvas">PlasmaFractal</canvas>	
+
+<script src="external/jquery/jquery.js"></script>
+<script src="external/jquery-ui/jquery-ui.js"></script>
+<script src="external/perlin.js"></script>	
+
+<script src="z42easing.js"></script>	
+<script src="z42color.js"></script>	
+<script src="z42FractalNoise.js"></script>
 
 <script>
 (function () {
-	'use strict';
 
 	//===================================================================================================================
 	// Constants
 	//===================================================================================================================
 	
-	const plasmaParams = {
-		frequency  : 1,    // increase for smaller structures
+	let plasmaParams = {
+		frequency  : 2,    // increase for smaller structures
 		octaves    : 8,    // number of passes (level of detail, typically 1 to 8)
 		gain       : 0.4,  // how much amplification for each pass (typically 0.3 to 0.7, default 0.5)
 		lacunarity : 2,    // frequency multiplicator for each pass (default 2)	
-		amplitude  : 1.2     // output of noise function (default 1)
+		amplitude  : 1     // output of noise function (default 1)
 	};
 
 	const paletteColorCount = 2;   // simultaneous colors on screen
@@ -88,7 +133,7 @@ SOFTWARE.
 		[ "easeInBounce" , "easeOutBounce"  ],   // 11
 	];
 	
-	const paletteEaseFunctionIndices = [ 1, 7 ];  // Refers to easeFunctions [ easeIn, easeOut ]
+	const paletteEaseFunctionIndices = [ 2, 7 ];  // Refers to easeFunctions [ easeIn, easeOut ]
 	
 	const paletteSaturation = 0.5;
 	const paletteValue      = 0.75;
@@ -98,7 +143,7 @@ SOFTWARE.
 	const noiseSeed = Math.random();
 	//const noiseSeed = 0;   // to create same start image
 	
-	const animationSpeed = 0.1;
+	const animationSpeed = 0.15;
 	//const animationSpeed = 0;  // still image
 	
 	const paletteConstantSeconds   = 10;  // Time in seconds during which palette won't change.
@@ -282,6 +327,139 @@ SOFTWARE.
 		noise.seed( Math.random() );
 		generateFractalImage();
 	}
+
+	//-------------------------------------------------------------------------------------------------------------------
+	
+	function initGui()
+	{
+		$('input').addClass("ui-widget-content ui-corner-all ui-widget");
+
+		$("#button").button();
+
+		$("#dialog").dialog({
+			autoOpen: false,
+			width: 400,
+			buttons: [
+				{
+					text: "Close",
+					click: function() {
+						$( this ).dialog( "close" );
+					}
+				}
+			],
+			create: onParamsDialogCreate
+		});
+
+		$("#dialog-link").click(function( event ) {
+			$("#dialog").dialog( "open" );
+			event.preventDefault();
+		});
+	}
+
+	//-------------------------------------------------------------------------------------------------------------------
+	
+	function onParamsDialogCreate( event, ui )
+	{
+		function calcSliderValueFromInput( inputValue, minValue, maxValue, minSlider, maxSlider )
+		{
+			let result = 0;
+			if( inputValue < 1 )
+				result = minSlider - minSlider * ( inputValue - minValue ) / ( 1 - minValue );  
+			else
+				result = maxSlider * ( inputValue - 1 ) / ( maxValue - 1 );
+
+			return z42color.clamp( result, minSlider, maxSlider );
+		}		
+		
+		function calcInputValueFromSlider( sliderValue, minValue, maxValue, minSlider, maxSlider )
+		{
+			if( sliderValue < 0 )
+				return minFreq + ( 1 - ( sliderValue / minSlider ) ) * ( 1 - minFreq );
+			else
+				return 1 + ( sliderValue / maxSlider ) * ( maxFreq - 1 );
+		}
+	
+		const minFreq = 0.05;
+		const maxFreq = 15;
+		const maxSlider = 90;                // positive positions set frequency from 1 to maxFreq
+		const minSlider = -maxSlider / 3;    // negative positions set frequency from minFreq to 1
+		
+		$("#frequencyInput")
+			.val( plasmaParams.frequency )
+			.change(function() {
+				plasmaParams.frequency = $(this).val();	
+				const newSliderVal = calcSliderValueFromInput( plasmaParams.frequency, minFreq, maxFreq, minSlider, maxSlider );
+				$("#frequencySlider").slider( "value", newSliderVal );
+				
+				generateFractalImage();
+			});
+				
+		$("#frequencySlider").slider({
+			min  : minSlider,
+			max  : maxSlider,
+			value: calcSliderValueFromInput( plasmaParams.frequency, minFreq, maxFreq, minSlider, maxSlider ),
+
+			slide: function( event, ui ) {
+				plasmaParams.frequency = calcInputValueFromSlider( ui.value, minFreq, maxFreq, minSlider, maxSlider );
+				$("#frequencyInput").val( plasmaParams.frequency );
+			},
+			change: function( event, ui ) {
+				generateFractalImage();
+			}
+		});		
+		
+		$("#octavesSlider").slider({
+			min  : 1,
+			max  : 10,
+			value: plasmaParams.octaves,   
+
+			slide: function( event, ui ) {
+				plasmaParams.octaves = ui.value;
+			},
+			change: function( event, ui ) {
+				generateFractalImage();
+			}
+		});
+
+		$("#gainSlider").slider({
+			min  : 0.2 * 100,
+			max  : 0.8 * 100,
+			value: plasmaParams.gain * 100,   
+
+			slide: function( event, ui ) {
+				plasmaParams.gain = ui.value / 100;
+			},
+			change: function( event, ui ) {
+				generateFractalImage();
+			}
+		});	
+		
+		$("#lacunaritySlider").slider({
+			min  : 2 * 100,
+			max  : 20 * 100,
+			value: plasmaParams.lacunarity * 100,   
+
+			slide: function( event, ui ) {
+				plasmaParams.lacunarity = ui.value / 100;
+			},
+			change: function( event, ui ) {
+				generateFractalImage();
+			}
+		});	
+		
+		$("#amplitudeSlider").slider({
+			min  : 1 * 100,
+			max  : 10 * 100,
+			value: plasmaParams.amplitude * 100,   
+
+			slide: function( event, ui ) {
+				plasmaParams.amplitude = ui.value / 100;
+			},
+			change: function( event, ui ) {
+				generateFractalImage();
+			}
+		});	
+	}
 	
 	//===================================================================================================================
 	// Main 
@@ -298,14 +476,17 @@ SOFTWARE.
 	window.addEventListener( 'resize', resizeCanvas, false );
 
 	// On double-click set fullscreen.
-	window.addEventListener( 'dblclick', toggleFullscreen, false );
+	canvas.addEventListener( 'dblclick', toggleFullscreen, false );
 	
 	// On single-click randomize fractal.
-	window.addEventListener( 'click',    reseedFractal, false );
+	canvas.addEventListener( 'click',    reseedFractal, false );
 	
 	// Launch the animation.
 	window.requestAnimationFrame( drawInCanvas );
-	
+
+	// Initialize GUI for setting parameters.
+	initGui();
 }());
 </script>
+</body>
 </html>
