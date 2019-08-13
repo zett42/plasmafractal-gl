@@ -17,7 +17,7 @@ Basic algorithm:
 ## External libraries used
 Each library comes with its own license terms, which can be found in the source code included in this project.
 
-- [perlin.js](https://github.com/josephg/noisejs) - A speed-improved perlin and simplex noise algorithms for 2D. 
+- [noisejs](https://github.com/josephg/noisejs) - A speed-improved perlin and simplex noise algorithms for 2D. 
   - Based on example code by Stefan Gustavson (stegu@itn.liu.se). 
   - Optimisations by Peter Eastman (peastman@drizzle.stanford.edu). 
   - Better rank ordering method by Stefan Gustavson in 2012. 
