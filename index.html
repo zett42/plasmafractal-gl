@@ -81,7 +81,7 @@ SOFTWARE.
 	#paletteEasingGroup > div {
 		flex-grow: 1;	
 	}
-	.selectOverflow { height: 320px; }	
+	.selectOverflow { height: 350px; }	
 	</style>
 </head>
 <body>
@@ -538,7 +538,7 @@ SOFTWARE.
 		});
 
 		smBgToFg.selectmenu({
-			width: 180,
+			width: 140,
 			position: { my: "left top", at: "left bottom", collision: "flip" },
 			select: function( event, ui ) { 
 				paletteEaseFunctionBgToFg = ui.item.value;
@@ -549,7 +549,7 @@ SOFTWARE.
         .addClass( "selectOverflow" );
 		
 		smFgToBg.selectmenu({
-			width: 180,
+			width: 140,
 			position: { my: "left top", at: "left bottom", collision: "flip" },
 			select: function( event, ui ) { 
 				paletteEaseFunctionFgToBg = ui.item.value;
