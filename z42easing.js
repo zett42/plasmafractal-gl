@@ -52,7 +52,7 @@
 	// Function parameters:
 	// t: current time, b: begInnIng value, c: change In value, d: duration
 		
-	module.linear = function (t, b, c, d) { 
+	module.easeLinear = function (t, b, c, d) { 
 		return c * t / d + b;
 	}		
 	module.easeInQuad = function (t, b, c, d) {

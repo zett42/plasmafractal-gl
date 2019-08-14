@@ -31,6 +31,8 @@ SOFTWARE.
 	<title>zett42 PlasmaFractal</title>
 
 	<link href="external/jquery-ui/jquery-ui.css" rel="stylesheet">
+	<link href="external/spectrum/spectrum.css" rel="stylesheet">
+	<link href="external/spectrum/sp-dark.css" rel="stylesheet">
 
 	<style>
 
@@ -86,47 +88,65 @@ SOFTWARE.
 </head>
 <body>
 
-<button id="dialog-link" title="Plasma Parameters" class="ui-button ui-corner-all ui-widget">⚙</button>
+<button id="dialog-link" title="Plasma Options" class="ui-button ui-corner-all ui-widget">⚙</button>
 
-<div id="dialog" title="Plasma Parameters">
+<div id="dialog" title="Plasma Options">
 	<a href="https://github.com/zett42/PlasmaFractal" target="_blank" rel="noopener">github.com/zett42/PlasmaFractal</a>
+	<p/>
 	
-	<p>
-	<label for="frequencyInput">Frequency: 
-	<input id="frequencyInput" type="number" step="0.1" style="width:6em;">
-	</p>
-	<div id="frequencySlider"></div>
-	
-	<p><label for="octavesSlider">Octaves:</label></p>
-	<div id="octavesSlider"></div>
+	<div id="tabs">
+		<ul>
+			<li><a href="#tabs-params">Noise</a></li>
+			<li><a href="#tabs-palette">Palette</a></li>
+		</ul>
+		
+		<div id="tabs-params">
+			<p>
+			<label for="frequencyInput">Frequency: 
+			<input id="frequencyInput" type="number" step="0.1" style="width:6em;">
+			</p>
+			<div id="frequencySlider"></div>
+			
+			<p><label for="octavesSlider">Octaves:</label></p>
+			<div id="octavesSlider"></div>
 
-	<p><label for="gainSlider">Gain:</label></p>
-	<div id="gainSlider"></div>	
+			<p><label for="gainSlider">Gain:</label></p>
+			<div id="gainSlider"></div>	
 
-	<p><label for="lacunaritySlider">Lacunarity:</label></p>
-	<div id="lacunaritySlider"></div>
-	
-	<p><label for="amplitudeSlider">Amplitude:</label></p>
-	<div id="amplitudeSlider"></div>
-	
-	<div id="paletteEasingGroup">
-		<div>
-			<p><label for="paletteEasingBgToFg">BG to FG easing:</label></p>
-			<select id="paletteEasingBgToFg"></select>	    
+			<p><label for="lacunaritySlider">Lacunarity:</label></p>
+			<div id="lacunaritySlider"></div>
+			
+			<p><label for="amplitudeSlider">Amplitude:</label></p>
+			<div id="amplitudeSlider"></div>
 		</div>
-		<div>	
-			<p><label for="paletteEasingFgToBg">FG to BG easing:</label></p>
-			<select id="paletteEasingFgToBg"></select>	
-		</div>
-	</div>
 
-	<p><label for="paletteSaturationSlider">Foreground saturation:</label></p>
-	<div id="paletteSaturationSlider"></div>
-	
-	<p><label for="paletteValueSlider">Foreground brightness:</label></p>
-	<div id="paletteValueSlider"></div>
-	
-	<p></p>
+		<div id="tabs-palette">
+			<div id="paletteEasingGroup">
+				<div>
+					<p><label for="paletteEasingBgToFg">BG to FG easing:</label></p>
+					<select id="paletteEasingBgToFg"></select>	    
+				</div>
+				<div>	
+					<p><label for="paletteEasingFgToBg">FG to BG easing:</label></p>
+					<select id="paletteEasingFgToBg"></select>	
+				</div>
+			</div>
+
+			<p><label for="paletteSaturationSlider">Foreground saturation:</label></p>
+			<div id="paletteSaturationSlider"></div>
+			
+			<p><label for="paletteValueSlider">Foreground brightness:</label></p>
+			<div id="paletteValueSlider"></div>
+			
+			<p>
+			<label for="bgColorPicker">Background color:</label>
+			<input id="bgColorPicker" />
+			</p>
+			
+			<p><label for="animationSpeedSlider">Palette animation speed:</label></p>
+			<div id="animationSpeedSlider"></div>		
+		</div>
+	</div>	
 </div>	
 
 <canvas id="canvas">PlasmaFractal</canvas>	
@@ -135,6 +155,7 @@ SOFTWARE.
 <script src="external/jquery-ui/jquery-ui.js"></script>
 <script src="external/jquery.dialogOptions.js"></script>
 <script src="external/jquery.ui.touch-punch.js"></script>
+<script src="external/spectrum/spectrum.js"></script>
 <script src="external/perlin.js"></script>	
 
 <script src="z42easing.js"></script>	
@@ -159,50 +180,49 @@ SOFTWARE.
 	const paletteColorCount = 2;   // simultaneous colors on screen
 	
 	const easeFunctions = [
-		"linear",
-		"easeInQuad",
-		"easeOutQuad",
-		"easeInOutQuad",
-		"easeInCubic",
-		"easeOutCubic",
-		"easeInOutCubic",
-		"easeInQuart",
-		"easeOutQuart",
-		"easeInOutQuart",
-		"easeInQuint",
-		"easeOutQuint",
-		"easeInOutQuint",
-		"easeInSine",
-		"easeOutSine",
-		"easeInOutSine",
-		"easeInExpo",
-		"easeOutExpo",
-		"easeInOutExpo",
-		"easeInExpo2",
-		"easeOutExpo2",
-		"easeInOutExpo2",
-		"easeInCirc",
-		"easeOutCirc",
-		"easeInOutCirc",
-		"easeInBounce",
-		"easeOutBounce",
-		"easeInOutBounce"
+		"Linear",
+		"InQuad",
+		"OutQuad",
+		"InOutQuad",
+		"InCubic",
+		"OutCubic",
+		"InOutCubic",
+		"InQuart",
+		"OutQuart",
+		"InOutQuart",
+		"InQuint",
+		"OutQuint",
+		"InOutQuint",
+		"InSine",
+		"OutSine",
+		"InOutSine",
+		"InExpo",
+		"OutExpo",
+		"InOutExpo",
+		"InExpo2",
+		"OutExpo2",
+		"InOutExpo2",
+		"InCirc",
+		"OutCirc",
+		"InOutCirc",
+		"InBounce",
+		"OutBounce",
+		"InOutBounce"
 	];
 
-	let paletteEaseFunctionBgToFg = "easeInCubic";
-	let paletteEaseFunctionFgToBg = "easeOutExpo2";
+	let paletteEaseFunctionBgToFg = "InCubic";
+	let paletteEaseFunctionFgToBg = "OutExpo2";
 		
 	let paletteSaturation = 0.5;
 	let paletteValue      = 0.75;
 		
-	const backgroundRGBA = { r: 0, g: 0, b: 0, a: 255 };
+	let backgroundRGBA = { r: 0, g: 0, b: 0, a: 255 };
+
+	let animationSpeed = 0.15;
 
 	const noiseSeed = Math.random();
 	//const noiseSeed = 0;   // to create same start image
-	
-	const animationSpeed = 0.15;
-	//const animationSpeed = 0;  // still image
-	
+		
 	const paletteConstantSeconds   = 10;  // Time in seconds during which palette won't change.
 	const paletteTransitionSeconds =  5;  // Time in seconds for palette transition.
 
@@ -331,8 +351,8 @@ SOFTWARE.
 			a : 1  // alpha
 		};
 
-		const bgToFgFunction = z42easing[ paletteEaseFunctionBgToFg ];
-		const fgToBgFunction = z42easing[ paletteEaseFunctionFgToBg ];
+		const bgToFgFunction = z42easing[ "ease" + paletteEaseFunctionBgToFg ];
+		const fgToBgFunction = z42easing[ "ease" + paletteEaseFunctionFgToBg ];
 		
 		let palIndex = 0;
 		const palRange = palette.length / paletteColorCount / 2;
@@ -406,22 +426,20 @@ SOFTWARE.
 
 		$("#button").button();
 
-		$("#dialog").dialog({
-			autoOpen: false,
-			position: { my: "left top", at: "left+15 top+50" },			
-			width: 400,
-			// Powered by jquery.dialogOptions.js
-			clickOut: true,      // closes dialog when clicked outside
-			responsive: true,    // fluid width & height based on viewport
-			scaleW: 0.9,         // responsive scale height percentage of viewport (0..1)
-			scaleH: 0.9,         // responsive scale width percentage of viewport (0..1)
-			showTitleBar: true,  // false: hide titlebar
-			create: onParamsDialogCreate
-		});
+		$("#dialog-link").click( function( event ) {
 
-		$("#dialog-link").click(function( event ) {
-			$("#dialog").dialog( "open" );
-			event.preventDefault();
+			$("#dialog").dialog({
+				position: { my: "left top", at: "left+15 top+50" },			
+				width: 400,
+				// powered by jquery.dialogOptions.js
+				clickOut: true,      // closes dialog when clicked outside
+				responsive: true,    // fluid width & height based on viewport
+				scaleW: 0.9,         // responsive scale height percentage of viewport (0..1)
+				scaleH: 0.9,         // responsive scale width percentage of viewport (0..1)
+				showTitleBar: true,  // false: hide titlebar
+
+				create: onParamsDialogCreate
+			});
 		});
 	}
 
@@ -447,7 +465,9 @@ SOFTWARE.
 			else
 				return 1 + ( sliderValue / maxSlider ) * ( maxFreq - 1 );
 		}
-	
+		
+		$("#tabs").tabs();		
+		
 		const minFreq = 0.05;
 		const maxFreq = 15;
 		const maxSlider = 90;                // positive positions set frequency from 1 to maxFreq
@@ -566,8 +586,6 @@ SOFTWARE.
 
 			slide: function( event, ui ) {
 				paletteSaturation = ui.value / 100;
-			},
-			change: function( event, ui ) {
 				updatePalette();
 			}
 		});			
@@ -579,11 +597,47 @@ SOFTWARE.
 
 			slide: function( event, ui ) {
 				paletteValue = ui.value / 100;
-			},
-			change: function( event, ui ) {
 				updatePalette();
 			}
-		});			
+		});
+		
+		let bgColorChanged = false;
+		let oldBackgroundRGBA = backgroundRGBA;
+		
+		$("#bgColorPicker").spectrum({
+			theme: "sp-dark",
+			color: backgroundRGBA,
+			
+			show: function( color ) {
+				bgColorChanged = false;	
+				oldBackgroundRGBA = backgroundRGBA;				
+			},
+			move: function( color ) {
+				backgroundRGBA = color.toRgb();
+				backgroundRGBA.a = 255;
+				updatePalette();
+			},
+		    change: function( color ) {
+				bgColorChanged = true;	
+			},
+			hide: function() {
+				if( ! bgColorChanged )
+				{
+					backgroundRGBA = oldBackgroundRGBA;
+					updatePalette();
+				}
+			}
+		});
+		
+		$("#animationSpeedSlider").slider({
+			min  : 0,
+			max  : 100,
+			value: animationSpeed * 100,   
+
+			change: function( event, ui ) {
+				animationSpeed = ui.value / 100;
+			}
+		});		
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------
