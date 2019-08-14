@@ -46,12 +46,15 @@ SOFTWARE.
 		display: block;  /* To remove the scrollbars */
 		background: black;
 	}
+	input {
+		padding-left: 5px;
+	}
 	#dialog-link {		
 		margin:0; padding: 0 0 5px 1px;
 		
 		position: absolute;
-		left: .75em; 
-		top: .75em;
+		left: 15px; 
+		top: 15px;
 		width: 1.5em; 
 		height: 1.5em;
 
@@ -71,7 +74,14 @@ SOFTWARE.
     .ui-dialog-titlebar-close { 
 		width: 30px !important; height: 26px !important; top: 40% !important; 
 	}
-	
+	#paletteEasingGroup {
+		display: flex;
+		flex-wrap: nowrap;
+	}
+	#paletteEasingGroup > div {
+		flex-grow: 1;	
+	}
+	.selectOverflow { height: 320px; }	
 	</style>
 </head>
 <body>
@@ -79,22 +89,42 @@ SOFTWARE.
 <button id="dialog-link" title="Plasma Parameters" class="ui-button ui-corner-all ui-widget">⚙</button>
 
 <div id="dialog" title="Plasma Parameters">
-	<a href="https://github.com/zett42/PlasmaFractal">github.com/zett42/PlasmaFractal</a>
+	<a href="https://github.com/zett42/PlasmaFractal" target="_blank" rel="noopener">github.com/zett42/PlasmaFractal</a>
 	
-	<p>Frequency: <input id="frequencyInput" type="number" step="0.1" style="width:5em;" ></p>
+	<p>
+	<label for="frequencyInput">Frequency: 
+	<input id="frequencyInput" type="number" step="0.1" style="width:6em;">
+	</p>
 	<div id="frequencySlider"></div>
 	
-	<p>Octaves:</p>
+	<p><label for="octavesSlider">Octaves:</label></p>
 	<div id="octavesSlider"></div>
-	
-	<p>Gain:</p>
+
+	<p><label for="gainSlider">Gain:</label></p>
 	<div id="gainSlider"></div>	
-	
-	<p>Lacunarity:</p>
+
+	<p><label for="lacunaritySlider">Lacunarity:</label></p>
 	<div id="lacunaritySlider"></div>
 	
-	<p>Amplitude:</p>
+	<p><label for="amplitudeSlider">Amplitude:</label></p>
 	<div id="amplitudeSlider"></div>
+	
+	<div id="paletteEasingGroup">
+		<div>
+			<p><label for="paletteEasingBgToFg">BG to FG easing:</label></p>
+			<select id="paletteEasingBgToFg"></select>	    
+		</div>
+		<div>	
+			<p><label for="paletteEasingFgToBg">FG to BG easing:</label></p>
+			<select id="paletteEasingFgToBg"></select>	
+		</div>
+	</div>
+
+	<p><label for="paletteSaturationSlider">Foreground saturation:</label></p>
+	<div id="paletteSaturationSlider"></div>
+	
+	<p><label for="paletteValueSlider">Foreground brightness:</label></p>
+	<div id="paletteValueSlider"></div>
 	
 	<p></p>
 </div>	
@@ -127,27 +157,43 @@ SOFTWARE.
 	};
 
 	const paletteColorCount = 2;   // simultaneous colors on screen
-
-	// Names of functions from "z42easing.js"
+	
 	const easeFunctions = [
-		[ "linear"       , "linear"         ],   // 0
-		[ "easeInQuad"   , "easeOutQuad"    ],   // 1
-		[ "easeInCubic"  , "easeOutCubic"   ],   // 2
-		[ "easeInQuart"  , "easeOutQuart"   ],   // 3
-		[ "easeInQuint"  , "easeOutQuint"   ],   // 4
-		[ "easeInSine"   , "easeOutSine"    ],   // 5
-		[ "easeInExpo"   , "easeOutExpo"    ],   // 6
-		[ "easeInExpo2"  , "easeOutExpo2"   ],   // 7
-		[ "easeInCirc"   , "easeOutCirc"    ],   // 8
-		[ "easeInElastic", "easeOutElastic" ],   // 9
-		[ "easeInBack"   , "easeOutBack"    ],   // 10
-		[ "easeInBounce" , "easeOutBounce"  ],   // 11
+		"linear",
+		"easeInQuad",
+		"easeOutQuad",
+		"easeInOutQuad",
+		"easeInCubic",
+		"easeOutCubic",
+		"easeInOutCubic",
+		"easeInQuart",
+		"easeOutQuart",
+		"easeInOutQuart",
+		"easeInQuint",
+		"easeOutQuint",
+		"easeInOutQuint",
+		"easeInSine",
+		"easeOutSine",
+		"easeInOutSine",
+		"easeInExpo",
+		"easeOutExpo",
+		"easeInOutExpo",
+		"easeInExpo2",
+		"easeOutExpo2",
+		"easeInOutExpo2",
+		"easeInCirc",
+		"easeOutCirc",
+		"easeInOutCirc",
+		"easeInBounce",
+		"easeOutBounce",
+		"easeInOutBounce"
 	];
-	
-	const paletteEaseFunctionIndices = [ 2, 7 ];  // Refers to easeFunctions [ easeIn, easeOut ]
-	
-	const paletteSaturation = 0.5;
-	const paletteValue      = 0.75;
+
+	let paletteEaseFunctionBgToFg = "easeInCubic";
+	let paletteEaseFunctionFgToBg = "easeOutExpo2";
+		
+	let paletteSaturation = 0.5;
+	let paletteValue      = 0.75;
 		
 	const backgroundRGBA = { r: 0, g: 0, b: 0, a: 255 };
 
@@ -181,6 +227,7 @@ SOFTWARE.
 	let nextPalette       = new Uint32Array( new ArrayBuffer( startPalette.length * Uint32Array.BYTES_PER_ELEMENT ) );
 	let transitionPalette = new Uint32Array( new ArrayBuffer( startPalette.length * Uint32Array.BYTES_PER_ELEMENT ) );
 	let currentPalette    = new Uint32Array( new ArrayBuffer( startPalette.length * Uint32Array.BYTES_PER_ELEMENT ) );
+	let paletteFirstHue = 0;
 	
 	let isPaletteTransition = false;   // Palette currently transitioning to next palette?
 	let paletteStartTime = startTime;  // Start time of current phase (constant or transition).
@@ -243,7 +290,7 @@ SOFTWARE.
 				isPaletteTransition = true;
 				paletteStartTime = curTime;
 
-				generatePalette( nextPalette ); 
+				generatePalette( nextPalette, Math.random() ); 
 			}
 			// else still in constant phase. Nothing to do.
 
@@ -254,10 +301,20 @@ SOFTWARE.
 	}
 	
 	//-------------------------------------------------------------------------------------------------------------------
+
+	function updatePalette()
+	{
+		generatePalette( startPalette, paletteFirstHue );
+		
+		isPaletteTransition = false;
+		paletteStartTime = performance.now();		
+	}
+	
+	//-------------------------------------------------------------------------------------------------------------------
 	// Generate a beautiful loopable palette with random start color. Subsequent colors will be generated by adding
 	// golden ratio to hue value, which creates nices contrasts.
 
-	function generatePalette( palette )
+	function generatePalette( palette, firstHue )
 	{
 		if( useGrayScale )
 		{
@@ -265,15 +322,17 @@ SOFTWARE.
 			return;
 		}
 		
-		const bgToFgFunction = z42easing[ easeFunctions[ paletteEaseFunctionIndices[ 0 ] ][ 0 ] ];
-		const fgToBgFunction = z42easing[ easeFunctions[ paletteEaseFunctionIndices[ 1 ] ][ 1 ] ];
+		paletteFirstHue	= firstHue;
 	
 		let colorHsv = { 
-			h : Math.random(),   
+			h : firstHue,   
 			s : paletteSaturation, 
 			v : paletteValue,
 			a : 1  // alpha
 		};
+
+		const bgToFgFunction = z42easing[ paletteEaseFunctionBgToFg ];
+		const fgToBgFunction = z42easing[ paletteEaseFunctionFgToBg ];
 		
 		let palIndex = 0;
 		const palRange = palette.length / paletteColorCount / 2;
@@ -349,6 +408,7 @@ SOFTWARE.
 
 		$("#dialog").dialog({
 			autoOpen: false,
+			position: { my: "left top", at: "left+15 top+50" },			
 			width: 400,
 			// Powered by jquery.dialogOptions.js
 			clickOut: true,      // closes dialog when clicked outside
@@ -468,14 +528,80 @@ SOFTWARE.
 				generateFractalImage();
 			}
 		});	
+		
+		const smBgToFg = $("#paletteEasingBgToFg");
+		const smFgToBg = $("#paletteEasingFgToBg");
+		
+		easeFunctions.forEach( function( name, index ){
+			appendOption( smBgToFg, { text: name, selected: name == paletteEaseFunctionBgToFg } );
+			appendOption( smFgToBg, { text: name, selected: name == paletteEaseFunctionFgToBg } );
+		});
+
+		smBgToFg.selectmenu({
+			width: 180,
+			position: { my: "left top", at: "left bottom", collision: "flip" },
+			select: function( event, ui ) { 
+				paletteEaseFunctionBgToFg = ui.item.value;
+				updatePalette();
+			}
+		})
+		.selectmenu( "menuWidget" )
+        .addClass( "selectOverflow" );
+		
+		smFgToBg.selectmenu({
+			width: 180,
+			position: { my: "left top", at: "left bottom", collision: "flip" },
+			select: function( event, ui ) { 
+				paletteEaseFunctionFgToBg = ui.item.value;
+				updatePalette();
+			}
+		})
+		.selectmenu( "menuWidget" )
+        .addClass( "selectOverflow" );
+		
+		$("#paletteSaturationSlider").slider({
+			min  : 0,
+			max  : 100,
+			value: paletteSaturation * 100,   
+
+			slide: function( event, ui ) {
+				paletteSaturation = ui.value / 100;
+			},
+			change: function( event, ui ) {
+				updatePalette();
+			}
+		});			
+
+		$("#paletteValueSlider").slider({
+			min  : 0,
+			max  : 100,
+			value: paletteValue * 100,   
+
+			slide: function( event, ui ) {
+				paletteValue = ui.value / 100;
+			},
+			change: function( event, ui ) {
+				updatePalette();
+			}
+		});			
 	}
+
+	//-------------------------------------------------------------------------------------------------------------------
+	
+	function appendOption( selectElement, opt ){
+		let optElem = $("<option></option>");
+		optElem.text( opt.text );
+		if( opt.selected )
+			optElem.attr( "selected", true );
+		selectElement.append( optElem );
+	}	
 	
 	//===================================================================================================================
 	// Main 
 	//===================================================================================================================
 
 	// Generate initial palette.
-	generatePalette( startPalette ); 
+	generatePalette( startPalette, Math.random() ); 
 	
 	// Generate initial fractal.
 	noise.seed( noiseSeed );
