@@ -98,6 +98,7 @@ SOFTWARE.
 		<ul>
 			<li><a href="#tabs-params">Noise</a></li>
 			<li><a href="#tabs-palette">Palette</a></li>
+			<li><a href="#tabs-animation">Animation</a></li>
 		</ul>
 		
 		<div id="tabs-params">
@@ -143,8 +144,22 @@ SOFTWARE.
 			<input id="bgColorPicker" />
 			</p>
 			
+			<p>
+			<input type="checkbox" id="grayScaleCheckBox">
+			<label for="grayScaleCheckBox">Show original grayscale image</label>
+			</p>
+			
+		</div>
+			
+		<div id="tabs-animation">
 			<p><label for="animationSpeedSlider">Palette animation speed:</label></p>
 			<div id="animationSpeedSlider"></div>		
+
+			<p><label for="paletteConstantSlider">Palette constant duration:</label></p>
+			<div id="paletteConstantSlider"></div>		
+
+			<p><label for="paletteTransitionSlider">Palette transition duration:</label></p>
+			<div id="paletteTransitionSlider"></div>		
 		</div>
 	</div>	
 </div>	
@@ -220,16 +235,16 @@ SOFTWARE.
 
 	let animationSpeed = 0.15;
 
-	const noiseSeed = Math.random();
-	//const noiseSeed = 0;   // to create same start image
-		
-	const paletteConstantSeconds   = 10;  // Time in seconds during which palette won't change.
-	const paletteTransitionSeconds =  5;  // Time in seconds for palette transition.
+	let paletteConstantMillis   = 10 * 1000;  // Time in ms during which palette won't change.
+	let paletteTransitionMillis =  5 * 1000;  // Time in ms for palette transition.
 
 	// Set true for debugging, to see true output of noise function.
-	const useGrayScale = false;
+	let isGrayScale = false;
 	
 	const startTime = performance.now();
+
+	const noiseSeed = Math.random();
+	//const noiseSeed = 0;   // to create same start image
 
 	//===================================================================================================================
 	// Plasma state variables
@@ -247,6 +262,7 @@ SOFTWARE.
 	let nextPalette       = new Uint32Array( new ArrayBuffer( startPalette.length * Uint32Array.BYTES_PER_ELEMENT ) );
 	let transitionPalette = new Uint32Array( new ArrayBuffer( startPalette.length * Uint32Array.BYTES_PER_ELEMENT ) );
 	let currentPalette    = new Uint32Array( new ArrayBuffer( startPalette.length * Uint32Array.BYTES_PER_ELEMENT ) );
+	let grayScalePalette  = new Uint32Array( new ArrayBuffer( startPalette.length * Uint32Array.BYTES_PER_ELEMENT ) );
 	let paletteFirstHue = 0;
 	
 	let isPaletteTransition = false;   // Palette currently transitioning to next palette?
@@ -260,9 +276,16 @@ SOFTWARE.
 
 	function drawInCanvas() 
 	{
-		animatePalette();
+		if( isGrayScale )
+		{
+			z42color.drawImageUint16WithPalette( contextPixels, plasmaPixels, grayScalePalette );		
+		}
+		else
+		{
+			animatePalette();
 	
-		z42color.drawImageUint16WithPalette( contextPixels, plasmaPixels, currentPalette );				
+			z42color.drawImageUint16WithPalette( contextPixels, plasmaPixels, currentPalette );
+		}
 
 		context.putImageData( contextImageData, 0, 0 );	
 		
@@ -276,16 +299,16 @@ SOFTWARE.
 		const curTime         = performance.now();
 		const totalDuration   = curTime - startTime;
 		const paletteDuration = curTime - paletteStartTime;		
-		const paletteOffset   = totalDuration * animationSpeed * startPalette.length / 4096;
+		let paletteOffset     = totalDuration * animationSpeed * startPalette.length / 4096;
 	
 		let paletteToRotate = null;
 	
 		if( isPaletteTransition )
 		{
-			if( paletteDuration <= paletteTransitionSeconds * 1000 )
+			if( paletteDuration <= paletteTransitionMillis )
 			{
 				// Still in transition phase.
-				let alpha = paletteDuration / paletteTransitionSeconds / 1000;
+				let alpha = paletteDuration / paletteTransitionMillis;
 				z42color.blendPalette( startPalette, nextPalette, transitionPalette, alpha );
 
 				paletteToRotate = transitionPalette;
@@ -304,7 +327,7 @@ SOFTWARE.
 		}
 		else
 		{
-			if( paletteDuration > paletteConstantSeconds * 1000 )
+			if( paletteDuration > paletteConstantMillis )
 			{
 				// Constant phase finished. Start the transition phase.
 				isPaletteTransition = true;
@@ -336,12 +359,6 @@ SOFTWARE.
 
 	function generatePalette( palette, firstHue )
 	{
-		if( useGrayScale )
-		{
-			z42color.makePaletteGradientRGBA( startPalette, 0, startPalette.length, {r:0,g:0,b:0,a:255}, {r:255,g:255,b:255,a:255}, z42easing.linear );
-			return;
-		}
-		
 		paletteFirstHue	= firstHue;
 	
 		let colorHsv = { 
@@ -468,6 +485,8 @@ SOFTWARE.
 		
 		$("#tabs").tabs();		
 		
+		//----- Params Tab -----
+				
 		const minFreq = 0.05;
 		const maxFreq = 15;
 		const maxSlider = 90;                // positive positions set frequency from 1 to maxFreq
@@ -548,6 +567,8 @@ SOFTWARE.
 				generateFractalImage();
 			}
 		});	
+
+		//----- Palette Tab -----
 		
 		const smBgToFg = $("#paletteEasingBgToFg");
 		const smFgToBg = $("#paletteEasingFgToBg");
@@ -578,6 +599,7 @@ SOFTWARE.
 		})
 		.selectmenu( "menuWidget" )
         .addClass( "selectOverflow" );
+	
 		
 		$("#paletteSaturationSlider").slider({
 			min  : 0,
@@ -629,6 +651,14 @@ SOFTWARE.
 			}
 		});
 		
+		$("#grayScaleCheckBox").checkboxradio()
+			.prop("checked", isGrayScale )
+			.on("change", function(event){
+				isGrayScale = $(this).prop("checked");
+			});
+			
+		//----- Animation Tab -----
+		
 		$("#animationSpeedSlider").slider({
 			min  : 0,
 			max  : 100,
@@ -638,6 +668,30 @@ SOFTWARE.
 				animationSpeed = ui.value / 100;
 			}
 		});		
+
+		$("#paletteConstantSlider").slider({
+			min  :  0 * 1000,
+			max  : 30 * 1000,
+			value: paletteConstantMillis,   
+
+			change: function( event, ui ) {
+				paletteConstantMillis = ui.value;
+				isPaletteTransition = false;
+				paletteStartTime = performance.now();
+			}
+		});		
+		
+		$("#paletteTransitionSlider").slider({
+			min  :  1 * 1000,
+			max  : 30 * 1000,
+			value: paletteTransitionMillis,   
+
+			change: function( event, ui ) {
+				paletteTransitionMillis = ui.value;
+				isPaletteTransition = false;
+				paletteStartTime = performance.now();
+			}
+		});
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------
@@ -656,6 +710,7 @@ SOFTWARE.
 
 	// Generate initial palette.
 	generatePalette( startPalette, Math.random() ); 
+	z42color.makePaletteGradientRGBA( grayScalePalette, 0, grayScalePalette.length, {r:0,g:0,b:0,a:255}, {r:255,g:255,b:255,a:255}, z42easing.easeLinear );
 	
 	// Generate initial fractal.
 	noise.seed( noiseSeed );
