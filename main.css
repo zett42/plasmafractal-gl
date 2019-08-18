@@ -1,0 +1,48 @@
+html, body { 
+	margin:0; padding:0;
+	width:100%; 
+	height:100%; 
+	overflow: hidden;
+	background: black;
+} 
+canvas {
+	margin:0; padding:0;
+	display: block;  /* To remove the scrollbars */
+	background: black;
+}
+input {
+	padding-left: 5px;
+}
+#optionsDialogButton {		
+	margin:0; padding: 0 0 5px 1px;
+	
+	position: absolute;
+	left: 15px; 
+	top: 15px;
+	width: 1.5em; 
+	height: 1.5em;
+
+	font-size: 20px;
+}
+#dialog {
+	display: none;
+}
+#dialog a {
+	font-size: 12px;
+}
+.ui-dialog {
+	opacity:   .85 !important; /* Make sure to change both of these, as IE only sees the second one */
+	filter:    Alpha(Opacity=85) !important;
+	font-size: 14px !important;
+}
+.ui-dialog-titlebar-close { 
+	width: 30px !important; height: 26px !important; top: 40% !important; 
+}
+#paletteEasingGroup {
+	display: flex;
+	flex-wrap: nowrap;
+}
+#paletteEasingGroup > div {
+	flex-grow: 1;	
+}
+.selectOverflow { height: 350px; }

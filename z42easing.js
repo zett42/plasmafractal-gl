@@ -4,6 +4,7 @@
  * - removed unused 'x' parameters
  * - added 'linear' function
  * - added 'easeInExpo2', 'easeOutExpo2', 'easeInOutExpo2' functions
+ * - added 'easeInOutSine2*' functions
  *
  * Original license below this line:
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -103,6 +104,18 @@
 	}
 	module.easeInOutSine = function (t, b, c, d) {
 		return -c/2 * (Math.cos(Math.PI*t/d) - 1) + b;
+	}
+	module.easeInOutSine2_3 = function (t, b, c, d) {
+		return -c/2 * (Math.cos(Math.PI*t/d) * 0.6 + Math.cos(Math.PI*t/d*3) * 0.4 - 1) + b;
+	}
+	module.easeInOutSine2_5 = function (t, b, c, d) {
+		return -c/2 * (Math.cos(Math.PI*t/d) * 0.875 + Math.cos(Math.PI*t/d*5) * 0.125 - 1) + b;
+	}
+	module.easeInOutSine2_9 = function (t, b, c, d) {
+		return -c/2 * (Math.cos(Math.PI*t/d) * 0.875 + Math.cos(Math.PI*t/d*9) * 0.125 - 1) + b;
+	}
+	module.easeInOutSine2_13 = function (t, b, c, d) {
+		return -c/2 * (Math.cos(Math.PI*t/d) * 0.9 + Math.cos(Math.PI*t/d*13) * 0.1 - 1) + b;
 	}
 	module.easeInExpo = function (t, b, c, d) {
 		return (t==0) ? b : c * Math.pow(2, 10 * (t/d - 1)) + b;
