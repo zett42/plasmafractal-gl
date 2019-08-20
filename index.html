@@ -54,216 +54,30 @@ SOFTWARE.
 <script src="z42easing.js"></script>	
 <script src="z42color.js"></script>	
 <script src="z42FractalNoise.js"></script>
+<script src="z42plasma.js"></script>
 
 <script>
 (function () {
 
-	//===================================================================================================================
-	// Plasma parameters
-	//===================================================================================================================
-	
-	let plasmaParams = {
-		frequency  : 2,    // increase for smaller structures
-		octaves    : 8,    // number of passes (level of detail, typically 1 to 8)
-		gain       : 0.4,  // how much amplification for each pass (typically 0.3 to 0.7, default 0.5)
-		lacunarity : 2,    // frequency multiplicator for each pass (default 2)	
-		amplitude  : 1     // output of noise function (default 1)
-	};
-
-	const paletteColorCount = 2;   // simultaneous colors on screen
-	
-	const easeFunctions = [
-		"Linear",
-		"InQuad",
-		"OutQuad",
-		"InOutQuad",
-		"InCubic",
-		"OutCubic",
-		"InOutCubic",
-		"InQuart",
-		"OutQuart",
-		"InOutQuart",
-		"InQuint",
-		"OutQuint",
-		"InOutQuint",
-		"InSine",
-		"OutSine",
-		"InOutSine",
-		"InOutSine2_3",
-		"InOutSine2_5",
-		"InOutSine2_9",
-		"InOutSine2_13",
-		"InExpo",
-		"OutExpo",
-		"InOutExpo",
-		"InExpo2",
-		"OutExpo2",
-		"InOutExpo2",
-		"InCirc",
-		"OutCirc",
-		"InOutCirc",
-		"InBounce",
-		"OutBounce",
-		"InOutBounce"
-	];
-
-	let paletteEaseFunctionBgToFg = "InCubic";
-	let paletteEaseFunctionFgToBg = "OutExpo2";
-		
-	let paletteSaturation = 0.5;
-	let paletteValue      = 0.75;
-		
-	let backgroundRGBA = { r: 0, g: 0, b: 0, a: 255 };
-
-	let animationSpeed = 0.15;
-
-	let paletteConstantMillis   = 10 * 1000;  // Time in ms during which palette won't change.
-	let paletteTransitionMillis =  5 * 1000;  // Time in ms for palette transition.
-
-	// Set true for debugging, to see true output of noise function.
-	let isGrayScale = false;
-	
-	const startTime = performance.now();
-
-	const noiseSeed = Math.random();
-	//const noiseSeed = 0;   // to create same start image
-
-	//===================================================================================================================
-	// Plasma state variables
-	//===================================================================================================================
-	
-	let plasmaPixels     = null;
+	let plasma           = null; 	
 	let context          = null;
 	let contextImageData = null;
-	let contextPixels    = null;
-	
-	// Palette size must be big enough to allow for multiple smooth gradients. 
-	// 256 entries per color seem to be way too little (gradients won't be smooth)! Minimum entries for complex gradients
-	// seems to be 1024.
-	let startPalette      = new Uint32Array( new ArrayBuffer( paletteColorCount * 2048 * Uint32Array.BYTES_PER_ELEMENT ) );
-	let nextPalette       = new Uint32Array( new ArrayBuffer( startPalette.length * Uint32Array.BYTES_PER_ELEMENT ) );
-	let transitionPalette = new Uint32Array( new ArrayBuffer( startPalette.length * Uint32Array.BYTES_PER_ELEMENT ) );
-	let currentPalette    = new Uint32Array( new ArrayBuffer( startPalette.length * Uint32Array.BYTES_PER_ELEMENT ) );
-	let grayScalePalette  = new Uint32Array( new ArrayBuffer( startPalette.length * Uint32Array.BYTES_PER_ELEMENT ) );
-	let paletteFirstHue = 0;
-	
-	let isPaletteTransition = false;   // Palette currently transitioning to next palette?
-	let paletteStartTime = startTime;  // Start time of current phase (constant or transition).
-	
+	let contextPixels    = null;	
+
 	//===================================================================================================================
 	// Functions
 	//===================================================================================================================
 
 	// Draw noise image with animated palette in canvas.
 
-	function drawInCanvas() 
+	function drawAnimationFrame() 
 	{
-		if( isGrayScale )
-		{
-			z42color.drawImageUint16WithPalette( contextPixels, plasmaPixels, grayScalePalette );		
-		}
-		else
-		{
-			animatePalette();
+		plasma.drawAnimationFrame( contextPixels );
 	
-			z42color.drawImageUint16WithPalette( contextPixels, plasmaPixels, currentPalette );
-		}
-
 		context.putImageData( contextImageData, 0, 0 );	
 		
-		window.requestAnimationFrame( drawInCanvas );	
+		window.requestAnimationFrame( drawAnimationFrame );	
 	}	
-	
-	//-------------------------------------------------------------------------------------------------------------------
-
-	function animatePalette()
-	{
-		const curTime         = performance.now();
-		const totalDuration   = curTime - startTime;
-		const paletteDuration = curTime - paletteStartTime;		
-		let paletteOffset     = totalDuration * animationSpeed * startPalette.length / 4096;
-	
-		let paletteToRotate = null;
-	
-		if( isPaletteTransition )
-		{
-			if( paletteDuration <= paletteTransitionMillis )
-			{
-				// Still in transition phase.
-				let alpha = paletteDuration / paletteTransitionMillis;
-				z42color.blendPalette( startPalette, nextPalette, transitionPalette, alpha );
-
-				paletteToRotate = transitionPalette;
-			}
-			else
-			{
-				// Transition phase finished. Start the constant phase.
-				isPaletteTransition = false;
-				paletteStartTime = curTime;
-				
-				// swap startPalette, nextPalette
-				[ startPalette, nextPalette ] = [ nextPalette, startPalette ];
-
-				paletteToRotate = startPalette;
-			}			
-		}
-		else
-		{
-			if( paletteDuration > paletteConstantMillis )
-			{
-				// Constant phase finished. Start the transition phase.
-				isPaletteTransition = true;
-				paletteStartTime = curTime;
-
-				generatePalette( nextPalette, Math.random() ); 
-			}
-			// else still in constant phase. Nothing to do.
-
-			paletteToRotate = startPalette;
-		}
-
-		z42color.rotatePalette( paletteToRotate, currentPalette, paletteOffset );
-	}
-	
-	//-------------------------------------------------------------------------------------------------------------------
-
-	function updatePalette()
-	{
-		generatePalette( startPalette, paletteFirstHue );
-		
-		isPaletteTransition = false;
-		paletteStartTime = performance.now();		
-	}
-	
-	//-------------------------------------------------------------------------------------------------------------------
-	// Generate a beautiful loopable palette with random start color. Subsequent colors will be generated by adding
-	// golden ratio to hue value, which creates nices contrasts.
-
-	function generatePalette( palette, firstHue )
-	{
-		paletteFirstHue	= firstHue;
-	
-		let colorHsv = { 
-			h : firstHue,   
-			s : paletteSaturation, 
-			v : paletteValue,
-			a : 1  // alpha
-		};
-
-		const bgToFgFunction = z42easing[ "ease" + paletteEaseFunctionBgToFg ];
-		const fgToBgFunction = z42easing[ "ease" + paletteEaseFunctionFgToBg ];
-		
-		let palIndex = 0;
-		const palRange = palette.length / paletteColorCount / 2;
-
-		for( let i = 0; i < paletteColorCount; ++i )
-		{
-			const colorRGBA = z42color.nextGoldenRatioColorRGBA( colorHsv ); 
-		
-			palIndex = z42color.makePaletteGradientRGBA( palette, palIndex, palRange, backgroundRGBA, colorRGBA, bgToFgFunction );
-			palIndex = z42color.makePaletteGradientRGBA( palette, palIndex, palRange, colorRGBA, backgroundRGBA, fgToBgFunction );			
-		}
-	}
 	
 	//-------------------------------------------------------------------------------------------------------------------
 	// Resize the image buffers to the size of the canvas and generate fractal noise image (grayscale).
@@ -272,9 +86,7 @@ SOFTWARE.
 	{
 		canvas.width  = window.innerWidth;
 		canvas.height = window.innerHeight;
-
-		plasmaPixels = new Uint16Array( new ArrayBuffer( canvas.width * canvas.height * Uint16Array.BYTES_PER_ELEMENT ) );
-
+		
 		if( canvas.getContext )
 		{
 			context = canvas.getContext('2d');	
@@ -282,20 +94,9 @@ SOFTWARE.
 			contextPixels = new Uint32Array( contextImageData.data.buffer );
 		}	
 
-		generateFractalImage();
+		plasma.resize( canvas.width, canvas.height );	
 	}
 	
-	//-------------------------------------------------------------------------------------------------------------------
-
-	function generateFractalImage()
-	{
-		const fracStartTime = performance.now();
-
-		z42fractal.generateFractalNoiseImageUint16( plasmaPixels, canvas.width, canvas.height, currentPalette.length, plasmaParams ); 
-
-		console.log( "Fractal generation took %d ms", performance.now() - fracStartTime );
-	}
-
 	//-------------------------------------------------------------------------------------------------------------------
 	
 	function toggleFullscreen()
@@ -314,7 +115,7 @@ SOFTWARE.
 	function reseedFractal()
 	{
 		noise.seed( Math.random() );
-		generateFractalImage();
+		plasma.generateNoiseImage();
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------
@@ -381,98 +182,103 @@ SOFTWARE.
 		const maxSlider = 90;                // positive positions set frequency from 1 to maxFreq
 		const minSlider = -maxSlider / 3;    // negative positions set frequency from minFreq to 1
 		
+		let noiseOptions = plasma.getNoiseOptions();
+		
 		$("#frequencyInput")
-			.val( plasmaParams.frequency )
+			.val( noiseOptions.frequency )
 			.change(function() {
-				plasmaParams.frequency = $(this).val();	
-				const newSliderVal = calcSliderValueFromInput( plasmaParams.frequency, minFreq, maxFreq, minSlider, maxSlider );
+				noiseOptions.frequency = $(this).val();	
+				const newSliderVal = calcSliderValueFromInput( noiseOptions.frequency, minFreq, maxFreq, minSlider, maxSlider );
 				$("#frequencySlider").slider( "value", newSliderVal );
-				
-				generateFractalImage();
+			
+				plasma.setNoiseOptions( noiseOptions );
 			});
 				
 		$("#frequencySlider").slider({
 			min  : minSlider,
 			max  : maxSlider,
-			value: calcSliderValueFromInput( plasmaParams.frequency, minFreq, maxFreq, minSlider, maxSlider ),
+			value: calcSliderValueFromInput( noiseOptions.frequency, minFreq, maxFreq, minSlider, maxSlider ),
 
 			slide: function( event, ui ) {
-				plasmaParams.frequency = calcInputValueFromSlider( ui.value, minFreq, maxFreq, minSlider, maxSlider );
-				$("#frequencyInput").val( plasmaParams.frequency );
+				noiseOptions.frequency = calcInputValueFromSlider( ui.value, minFreq, maxFreq, minSlider, maxSlider );
+				$("#frequencyInput").val( noiseOptions.frequency );
 			},
 			change: function( event, ui ) {
-				generateFractalImage();
+				plasma.setNoiseOptions( noiseOptions );
 			}
 		});		
 		
 		$("#octavesSlider").slider({
 			min  : 1,
 			max  : 10,
-			value: plasmaParams.octaves,   
+			value: noiseOptions.octaves,   
 
 			slide: function( event, ui ) {
-				plasmaParams.octaves = ui.value;
+				noiseOptions.octaves = ui.value;
 			},
 			change: function( event, ui ) {
-				generateFractalImage();
+				plasma.setNoiseOptions( noiseOptions );
 			}
 		});
 
 		$("#gainSlider").slider({
 			min  : 0.2 * 100,
 			max  : 0.8 * 100,
-			value: plasmaParams.gain * 100,   
+			value: noiseOptions.gain * 100,   
 
 			slide: function( event, ui ) {
-				plasmaParams.gain = ui.value / 100;
+				noiseOptions.gain = ui.value / 100;
 			},
 			change: function( event, ui ) {
-				generateFractalImage();
+				plasma.setNoiseOptions( noiseOptions );
 			}
 		});	
 		
 		$("#lacunaritySlider").slider({
 			min  : 2 * 100,
 			max  : 20 * 100,
-			value: plasmaParams.lacunarity * 100,   
+			value: noiseOptions.lacunarity * 100,   
 
 			slide: function( event, ui ) {
-				plasmaParams.lacunarity = ui.value / 100;
+				noiseOptions.lacunarity = ui.value / 100;
 			},
 			change: function( event, ui ) {
-				generateFractalImage();
+				plasma.setNoiseOptions( noiseOptions );
 			}
 		});	
 		
 		$("#amplitudeSlider").slider({
 			min  : 1 * 100,
 			max  : 10 * 100,
-			value: plasmaParams.amplitude * 100,   
+			value: noiseOptions.amplitude * 100,   
 
 			slide: function( event, ui ) {
-				plasmaParams.amplitude = ui.value / 100;
+				noiseOptions.amplitude = ui.value / 100;
 			},
 			change: function( event, ui ) {
-				generateFractalImage();
+				plasma.setNoiseOptions( noiseOptions );
 			}
 		});	
 
 		//----- Palette Tab -----
-		
+
+		let paletteOptions  = plasma.getPaletteOptions();
+		const easeFunctions = plasma.getAllPaletteEaseFunctions();
+
 		const smBgToFg = $("#paletteEasingBgToFg");
 		const smFgToBg = $("#paletteEasingFgToBg");
 		
 		easeFunctions.forEach( function( name, index ){
-			appendOption( smBgToFg, { text: name, selected: name == paletteEaseFunctionBgToFg } );
-			appendOption( smFgToBg, { text: name, selected: name == paletteEaseFunctionFgToBg } );
+			appendOption( smBgToFg, { text: name, selected: name == paletteOptions.easeFunctionBgToFg } );
+			appendOption( smFgToBg, { text: name, selected: name == paletteOptions.easeFunctionFgToBg } );
 		});
 
 		smBgToFg.selectmenu({
 			width: 140,
 			position: { my: "left top", at: "left bottom", collision: "flip" },
 			select: function( event, ui ) { 
-				paletteEaseFunctionBgToFg = ui.item.value;
-				updatePalette();
+				paletteOptions.easeFunctionBgToFg = ui.item.value;
+				plasma.setPaletteOptions( paletteOptions );
 			}
 		})
 		.selectmenu( "menuWidget" )
@@ -482,8 +288,8 @@ SOFTWARE.
 			width: 140,
 			position: { my: "left top", at: "left bottom", collision: "flip" },
 			select: function( event, ui ) { 
-				paletteEaseFunctionFgToBg = ui.item.value;
-				updatePalette();
+				paletteOptions.easeFunctionFgToBg = ui.item.value;
+				plasma.setPaletteOptions( paletteOptions );
 			}
 		})
 		.selectmenu( "menuWidget" )
@@ -493,40 +299,40 @@ SOFTWARE.
 		$("#paletteSaturationSlider").slider({
 			min  : 0,
 			max  : 100,
-			value: paletteSaturation * 100,   
+			value: paletteOptions.saturation * 100,   
 
 			slide: function( event, ui ) {
-				paletteSaturation = ui.value / 100;
-				updatePalette();
+				paletteOptions.saturation = ui.value / 100;
+				plasma.setPaletteOptions( paletteOptions );
 			}
 		});			
 
 		$("#paletteValueSlider").slider({
 			min  : 0,
 			max  : 100,
-			value: paletteValue * 100,   
+			value: paletteOptions.brightness * 100,   
 
 			slide: function( event, ui ) {
-				paletteValue = ui.value / 100;
-				updatePalette();
+				paletteOptions.brightness = ui.value / 100;
+				plasma.setPaletteOptions( paletteOptions );
 			}
 		});
 		
 		let bgColorChanged = false;
-		let oldBackgroundRGBA = backgroundRGBA;
+		let oldBackgroundRGBA = paletteOptions.backgroundRGBA;
 		
 		$("#bgColorPicker").spectrum({
 			theme: "sp-dark",
-			color: backgroundRGBA,
+			color: paletteOptions.backgroundRGBA,
 			
 			show: function( color ) {
 				bgColorChanged = false;	
-				oldBackgroundRGBA = backgroundRGBA;				
+				oldBackgroundRGBA = paletteOptions.backgroundRGBA;				
 			},
 			move: function( color ) {
-				backgroundRGBA = color.toRgb();
-				backgroundRGBA.a = 255;
-				updatePalette();
+				paletteOptions.backgroundRGBA = color.toRgb();
+				paletteOptions.backgroundRGBA.a = 255;
+				plasma.setPaletteOptions( paletteOptions );
 			},
 		    change: function( color ) {
 				bgColorChanged = true;	
@@ -534,51 +340,53 @@ SOFTWARE.
 			hide: function() {
 				if( ! bgColorChanged )
 				{
-					backgroundRGBA = oldBackgroundRGBA;
-					updatePalette();
+					paletteOptions.backgroundRGBA = oldBackgroundRGBA;
+					plasma.setPaletteOptions( paletteOptions );
 				}
 			}
 		});
 		
 		$("#grayScaleCheckBox").checkboxradio()
-			.prop("checked", isGrayScale )
+			.prop("checked", paletteOptions.isGrayScale )
 			.on("change", function(event){
-				isGrayScale = $(this).prop("checked");
+				paletteOptions.isGrayScale = $(this).prop("checked");
+				plasma.setPaletteOptions( paletteOptions );
 			});
-			
+					
 		//----- Animation Tab -----
+		
+		animationOptions = plasma.getAnimationOptions();
 		
 		$("#animationSpeedSlider").slider({
 			min  : 0,
 			max  : 100,
-			value: animationSpeed * 100,   
+			value: animationOptions.paletteRotationSpeed * 100,   
 
 			change: function( event, ui ) {
-				animationSpeed = ui.value / 100;
+				animationOptions.paletteRotationSpeed = ui.value / 100;
+				plasma.setAnimationOptions( animationOptions );
 			}
 		});		
 
 		$("#paletteConstantSlider").slider({
 			min  :  0 * 1000,
 			max  : 30 * 1000,
-			value: paletteConstantMillis,   
+			value: animationOptions.paletteConstantMillis,   
 
 			change: function( event, ui ) {
-				paletteConstantMillis = ui.value;
-				isPaletteTransition = false;
-				paletteStartTime = performance.now();
+				animationOptions.paletteConstantMillis = ui.value;
+				plasma.setAnimationOptions( animationOptions );
 			}
 		});		
 		
 		$("#paletteTransitionSlider").slider({
 			min  :  1 * 1000,
 			max  : 30 * 1000,
-			value: paletteTransitionMillis,   
+			value: animationOptions.paletteTransitionMillis,   
 
 			change: function( event, ui ) {
-				paletteTransitionMillis = ui.value;
-				isPaletteTransition = false;
-				paletteStartTime = performance.now();
+				animationOptions.paletteTransitionMillis = ui.value;
+				plasma.setAnimationOptions( animationOptions );
 			}
 		});
 	}
@@ -597,12 +405,12 @@ SOFTWARE.
 	// Main 
 	//===================================================================================================================
 
-	// Generate initial palette.
-	generatePalette( startPalette, Math.random() ); 
-	z42color.makePaletteGradientRGBA( grayScalePalette, 0, grayScalePalette.length, {r:0,g:0,b:0,a:255}, {r:255,g:255,b:255,a:255}, z42easing.easeLinear );
-	
 	// Generate initial fractal.
-	noise.seed( noiseSeed );
+
+	noise.seed( Math.random() );
+
+	plasma = new z42Plasma();
+
 	resizeCanvas();	
 	
 	// On window resize, resize the canvas to fill browser window dynamically.
@@ -615,7 +423,7 @@ SOFTWARE.
 	canvas.addEventListener( 'click',    reseedFractal, false );
 	
 	// Launch the animation.
-	window.requestAnimationFrame( drawInCanvas );
+	window.requestAnimationFrame( drawAnimationFrame );
 
 	// Initialize GUI for setting parameters.
 	initGui();
