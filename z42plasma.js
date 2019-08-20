@@ -88,8 +88,6 @@ function z42Plasma(){
 
 	let m_paletteOpt = {
 
-		colorCount         : 2,   // simultaneous colors on screen (currently bugged for uneven numbers)
-
 		easeFunctionBgToFg : "InCubic",
 		easeFunctionFgToBg : "OutExpo2",
 		
@@ -100,6 +98,9 @@ function z42Plasma(){
 		
 		isGrayScale        : false  // Set true for debugging, to see true output of noise function before palette gets applied.
 	};
+
+	// Not an option yet, as it is currently bugged for uneven numbers
+	const m_paletteColorCount = 2;
 	
 	let m_animationOpt = {
 		
@@ -120,7 +121,7 @@ function z42Plasma(){
 	// Palette size must be big enough to allow for multiple smooth gradients. 
 	// 256 entries per color are way too little, because ease function "compress" gradients. In the result, gradients 
 	// wouldn't be smooth! For good results the minimum is 1024 entries.
-	let m_startPalette      = new Uint32Array( new ArrayBuffer( m_paletteOpt.colorCount * 2048 * Uint32Array.BYTES_PER_ELEMENT ) );
+	let m_startPalette      = new Uint32Array( new ArrayBuffer( m_paletteColorCount * 2048 * Uint32Array.BYTES_PER_ELEMENT ) );
 	let m_nextPalette       = new Uint32Array( new ArrayBuffer( m_startPalette.length * Uint32Array.BYTES_PER_ELEMENT ) );
 	let m_transitionPalette = new Uint32Array( new ArrayBuffer( m_startPalette.length * Uint32Array.BYTES_PER_ELEMENT ) );
 	let m_currentPalette    = new Uint32Array( new ArrayBuffer( m_startPalette.length * Uint32Array.BYTES_PER_ELEMENT ) );
@@ -218,9 +219,9 @@ function z42Plasma(){
 		const fgToBgFunction = z42easing[ "ease" + m_paletteOpt.easeFunctionFgToBg ];
 		
 		let palIndex = 0;
-		const palRange = palette.length / m_paletteOpt.colorCount / 2;
+		const palRange = palette.length / m_paletteColorCount / 2;
 
-		for( let i = 0; i < m_paletteOpt.colorCount; ++i )
+		for( let i = 0; i < m_paletteColorCount; ++i )
 		{
 			const colorRGBA = z42color.nextGoldenRatioColorRGBA( colorHsv ); 
 		
