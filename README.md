@@ -36,3 +36,7 @@ This project uses the following open source libraries. Each library comes with i
 
 - [Spectrum Colorpicker](http://briangrinstead.com)
   - Copyright (c) 2014, Brian Grinstead 
+
+- [mersennetwister](https://github.com/pigulla/mersennetwister)
+  - Copyright (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura, All rights reserved.
+  - This implementation by Raphael Pigulla is based on Sean McCullough's port of the original C code written by Makato Matsumoto and Takuji Nishimura.
