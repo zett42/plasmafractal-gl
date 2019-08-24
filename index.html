@@ -60,14 +60,20 @@ SOFTWARE.
 	
 	let m_canvasFG = canvas1;
 	let m_canvasBG = canvas2;
+
+	let m_startTime = performance.now();
+	let m_reseedStartTime = m_startTime;       // Time when canvases where fully cross-faded and no-transition phase started.
+	let m_isCanvasTransition = false;          // true while canvases are being cross-faded
 	
 	const m_colorSeed = Math.random();
 
+	const m_canvasTransitionDelay = 15 * 1000;  // Time in ms between cross-fades of canvases.
+	
 	//===================================================================================================================
 	// Functions
 	//===================================================================================================================
 
-	function createPlasmaThreadForCanvas( canvas )
+	function createPlasmaThreadForCanvas( canvas, isPaused )
 	{
 		let thread = new Worker( './z42plasmaThread.js' );
 
@@ -82,11 +88,12 @@ SOFTWARE.
 		thread.postMessage( 
 			{ 	
 				action    : "init",
+				isPaused  : isPaused,
 				canvas    : offscreenCanvas,
 				width     : window.innerWidth,
 				height    : window.innerHeight,
 				noiseSeed : Math.random(),
-				colorSeed : m_colorSeed 
+				colorSeed : m_colorSeed
 			}, 
 			[ offscreenCanvas ]   // transfer ownership of offscreenCanvas to thread
 		); 	
@@ -105,7 +112,8 @@ SOFTWARE.
 			case "onreseedfinished":
 			{
 				// Transition to newly created fractal.
-				startCssTransition( m_canvasFG, m_canvasBG );
+				
+				setTimeout( startCssTransition, m_canvasTransitionDelay );
 			}
 			break;
 		}
@@ -113,8 +121,8 @@ SOFTWARE.
 	
 	//-------------------------------------------------------------------------------------------------------------------
 
-	function startCrossFadeAnimation()
-	{	
+	function initCanvasAnimation()
+	{
 		// Set callback to be notified when CSS transition has ended.
 		m_canvasFG.addEventListener('transitionend', () => {
 			console.log('m_canvasFG transitionend');
@@ -122,22 +130,28 @@ SOFTWARE.
 			// Swap foreground and background things.
 			[ m_canvasFG,       m_canvasBG ]       = [ m_canvasBG,       m_canvasFG ];
 			[ m_plasmaThreadFG, m_plasmaThreadBG ] = [ m_plasmaThreadBG, m_plasmaThreadFG ];
+
+			// Pause the animation of the new background thread as its canvas is invisible anyway.
+			m_plasmaThreadBG.postMessage({ action: "pause" });
 	
 			// Start to calculate new fractal image in background thread.
 			// We will get notified by onPlasmaThreadMessage() when this is done.
 			m_plasmaThreadBG.postMessage({ action: "reseed", noiseSeed: Math.random() });
 		});	
-		
-		startCssTransition( m_canvasFG, m_canvasBG ); 
+
+		startCssTransition(); 		
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------
 	// Start CSS transition animation (configured through CSS 'transition' attribute).
 
-	function startCssTransition( fromElement, toElement )
+	function startCssTransition()
 	{
-		$(fromElement).css({ opacity: 0.0 });
-		$(toElement).css({ opacity: 1.0 });		
+		// Wake the background thread up because its canvas will be visible soon.
+		m_plasmaThreadBG.postMessage({ action: "start" });
+	
+		$(m_canvasFG).css({ opacity: 0.0 });
+		$(m_canvasBG).css({ opacity: 1.0 });		
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------
@@ -176,10 +190,10 @@ SOFTWARE.
 	m_canvasFG.addEventListener( 'dblclick', toggleFullscreen, false );
 	
 	// Create threads for rendering plasma.
-	m_plasmaThreadFG = createPlasmaThreadForCanvas( m_canvasFG );
-	m_plasmaThreadBG = createPlasmaThreadForCanvas( m_canvasBG );
+	m_plasmaThreadFG = createPlasmaThreadForCanvas( m_canvasFG, false );
+	m_plasmaThreadBG = createPlasmaThreadForCanvas( m_canvasBG, true );
 	
-	startCrossFadeAnimation();	
+	setTimeout( initCanvasAnimation, m_canvasTransitionDelay );
 
 	// Initialize GUI for setting parameters.
 	//z42plasmaGui.init( plasma );

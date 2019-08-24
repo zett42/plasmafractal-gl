@@ -10,10 +10,10 @@ canvas {
 	display: block;  /* To remove the scrollbars */
 	background: black;	
 	position: absolute;
+	
 	mix-blend-mode: screen;
 
-	transition: opacity 40s cubic-bezier(.9, 0, .1, 1);	
-	/*transition: opacity 20s ease-in-out;*/	
+	transition: opacity 5s ease-in-out;
 }
 #canvas2 {
 	opacity: 0;

@@ -1,5 +1,5 @@
 /*
-Thread for generating and rendering m_plasma fractal. Copyright (c) 2019 zett42.
+Thread for generating and rendering plasma fractal. Copyright (c) 2019 zett42.
 https://github.com/zett42/PlasmaFractal
 
 MIT License
@@ -39,6 +39,8 @@ let m_context = null;
 let m_contextImageData = null;
 let m_contextPixels = null;
 
+let m_isPaused = false;
+
 //-------------------------------------------------------------------------------------------------------------------
 
 self.onmessage = function( ev ) 
@@ -49,7 +51,13 @@ self.onmessage = function( ev )
 	{
 		case "init":   init( ev.data );
 		break;
+
+		case "start":  m_isPaused = false; animate();
+		break;
 		
+		case "pause":  m_isPaused = true;
+		break;
+
 		case "resize": resize( ev.data.width, ev.data.height );
 		break;
 		
@@ -70,8 +78,12 @@ function init( params )
 	m_context = m_canvas.getContext('2d');
 
 	resize( params.width, params.height );
-
-	animate();	
+	
+	m_isPaused = params.isPaused;
+	if( ! m_isPaused )
+	{
+		animate();
+	}
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -98,6 +110,7 @@ function reseed( noiseSeed )
 	
 	m_plasma.generateNoiseImage();
 	
+	// Notify main thread that we are done.
 	self.postMessage({ action: "onreseedfinished" }); 
 }
 
@@ -105,6 +118,9 @@ function reseed( noiseSeed )
 
 function animate() 
 {
+	if( m_isPaused )
+		return;
+	
 	m_plasma.drawAnimationFrame( m_contextPixels );
 
 	m_context.putImageData( m_contextImageData, 0, 0 );	
