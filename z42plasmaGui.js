@@ -346,6 +346,30 @@ SOFTWARE.
 				m_optionsApi.setPaletteAnimOptions( paletteAnimOpt );
 			}
 		});
+		
+		let noiseAnimOpt = m_defaultOptions.noiseAnimOpt;
+		
+		$("#noiseConstantSlider").slider({
+			min  :  0 * 1000,
+			max  : 60 * 1000,
+			value: noiseAnimOpt.constDuration,   
+
+			change: function( event, ui ) {
+				noiseAnimOpt.constDuration = ui.value;
+				m_optionsApi.setNoiseAnimOptions( noiseAnimOpt );
+			}
+		});		
+		
+		$("#noiseTransitionSlider").slider({
+			min  :  1 * 1000,
+			max  : 30 * 1000,
+			value: noiseAnimOpt.transitionDuration,   
+
+			change: function( event, ui ) {
+				noiseAnimOpt.transitionDuration = ui.value;
+				m_optionsApi.setNoiseAnimOptions( noiseAnimOpt );
+			}
+		});			
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------

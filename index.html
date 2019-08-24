@@ -41,8 +41,8 @@ SOFTWARE.
 
 <div id="optionsDialog" title="Plasma Options"></div>
 
-<canvas id="canvas2">PlasmaFractal</canvas>
-<canvas id="canvas1">PlasmaFractal</canvas>	
+<canvas id="canvas2" class="plasmaCanvas">PlasmaFractal</canvas>
+<canvas id="canvas1" class="plasmaCanvas">PlasmaFractal</canvas>	
 
 <script src="external/jquery/jquery.js"></script>
 <script src="external/jquery-ui/jquery-ui.js"></script>
@@ -62,14 +62,12 @@ SOFTWARE.
 	
 	let m_canvasFG = canvas1;
 	let m_canvasBG = canvas2;
-
-	let m_startTime = performance.now();
-	let m_reseedStartTime = m_startTime;       // Time when canvases where fully cross-faded and no-transition phase started.
-	let m_isCanvasTransition = false;          // true while canvases are being cross-faded
 	
 	const m_colorSeed = Math.random();
 
-	const m_canvasTransitionDelay = 15 * 1000;  // Time in ms between cross-fades of canvases.
+	const m_defaultOpt = getDefaultPlasmaOptions();
+
+	let m_canvasTransitionDelay = m_defaultOpt.noiseAnimOpt.constDuration;  
 	
 	//===================================================================================================================
 	// Functions
@@ -116,7 +114,7 @@ SOFTWARE.
 			{
 				// Transition to newly created fractal.
 				
-				setTimeout( startCssTransition, m_canvasTransitionDelay );
+				setTimeout( startCanvasTransition, m_canvasTransitionDelay );
 			}
 			break;
 		}
@@ -125,7 +123,9 @@ SOFTWARE.
 	//-------------------------------------------------------------------------------------------------------------------
 
 	function initCanvasAnimation()
-	{
+	{	
+		setCanvasTransitionDuration( m_defaultOpt.noiseAnimOpt.transitionDuration );
+	
 		// Set callback to be notified when CSS transition has ended.
 		m_canvasFG.addEventListener('transitionend', () => {
 			console.log('m_canvasFG transitionend');
@@ -142,13 +142,20 @@ SOFTWARE.
 			m_plasmaThreadBG.postMessage({ action: "reseed", noiseSeed: Math.random() });
 		});	
 
-		startCssTransition(); 		
+		startCanvasTransition();
+	}
+
+	//-------------------------------------------------------------------------------------------------------------------
+	
+	function setCanvasTransitionDuration( durationMillis )
+	{
+		$(".plasmaCanvas").css( "transition-duration", durationMillis.toString() + "ms" );
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------
 	// Start CSS transition animation (configured through CSS 'transition' attribute).
 
-	function startCssTransition()
+	function startCanvasTransition()
 	{
 		// Wake the background thread up because its canvas will be visible soon.
 		m_plasmaThreadBG.postMessage({ action: "start" });
@@ -183,6 +190,14 @@ SOFTWARE.
 			options      : options
 		});
 	}
+	
+	//-------------------------------------------------------------------------------------------------------------------
+	
+	function setNoiseAnimOptions( options )
+	{
+		setCanvasTransitionDuration( options.transitionDuration );
+		m_canvasTransitionDelay = options.constDuration;  
+	}	
 
 	//-------------------------------------------------------------------------------------------------------------------
 	
@@ -213,6 +228,7 @@ SOFTWARE.
 	m_plasmaThreadFG = createPlasmaThreadForCanvas( m_canvasFG, false );
 	m_plasmaThreadBG = createPlasmaThreadForCanvas( m_canvasBG, true );
 	
+	// Set timeout for first canvas fade animation.
 	setTimeout( initCanvasAnimation, m_canvasTransitionDelay );
 
 	// Initialize GUI for setting parameters.
@@ -222,6 +238,7 @@ SOFTWARE.
 			setNoiseOptions       : ( opt ) => { setPlasmaOptions( 'setNoiseOptions', opt ) },
 			setPaletteOptions     : ( opt ) => { setPlasmaOptions( 'setPaletteOptions', opt ) },
 			setPaletteAnimOptions : ( opt ) => { setPlasmaOptions( 'setPaletteAnimOptions', opt ) },
+			setNoiseAnimOptions   : ( opt ) => { setNoiseAnimOptions( opt ) }
 		},
 		getDefaultPlasmaOptions()		
 	);

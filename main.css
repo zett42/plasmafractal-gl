@@ -5,7 +5,7 @@ html, body {
 	overflow: hidden;
 	background: black;
 } 
-canvas {
+.plasmaCanvas {
 	margin:0; padding:0;
 	display: block;  /* To remove the scrollbars */
 	background: black;	
@@ -13,7 +13,9 @@ canvas {
 	
 	mix-blend-mode: screen;
 
-	transition: opacity 5s ease-in-out;
+	transition-property: opacity;
+	transition-timing-function:	ease-in-out;
+	/* NOTE: transition-duration is set by JS */
 }
 #canvas2 {
 	opacity: 0;

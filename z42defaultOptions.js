@@ -24,7 +24,7 @@ function getDefaultPlasmaOptions()
 			constDuration      : 10 * 1000,  // Time in ms during which palette colors won't change.
 			transitionDuration :  5 * 1000,  // Time in ms for palette color transition.
 		},
-		canvasAnimOpt: {
+		noiseAnimOpt: {
 			constDuration      : 15 * 1000,  // Time in ms during which canvas is not cross-faded.
 			transitionDuration :  5 * 1000   // Time in ms for canvas cross-fading.
 		}
