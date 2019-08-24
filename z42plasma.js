@@ -25,6 +25,7 @@ SOFTWARE.
 //-----------------------------------------------------------------------------------------------------------------------
 // Dependencies:
 //   external/perlin.js
+//   external/mersennetwister/MersenneTwister.js
 //   z42easing.js	
 //   z42color.js
 //   z42FractalNoise.js
@@ -36,7 +37,7 @@ SOFTWARE.
 // The pattern used for encapsulation is described by Douglas Crockford:
 // http://crockford.com/javascript/private.html ("Private Members in JavaScript")
 
-function z42Plasma(){
+function z42Plasma( params ){
 	'use strict';
 	
 	//===================================================================================================================
@@ -92,7 +93,7 @@ function z42Plasma(){
 		easeFunctionFgToBg : "OutExpo2",
 		
 		saturation         : 0.5,
-		brightness         : 0.75,
+		brightness         : 1.0,
 		
 		backgroundRGBA     : { r: 0, g: 0, b: 0, a: 255 },
 		
@@ -133,6 +134,11 @@ function z42Plasma(){
 	const m_startTime = performance.now();
 	let m_paletteStartTime = m_startTime;  // Start time of current phase (constant or transition).
 
+	let m_colorRnd = new MersenneTwister( Math.trunc( params.colorSeed * 0xFFFFFFFF ) );
+
+	// Generate initial palette.
+	generatePalette( m_startPalette, m_colorRnd.random() ); 
+	z42color.makePaletteGradientRGBA( m_grayScalePalette, 0, m_grayScalePalette.length, {r:0,g:0,b:0,a:255}, {r:255,g:255,b:255,a:255}, z42easing.easeLinear );
 
 	//===================================================================================================================
 	// Private Functions
@@ -179,7 +185,7 @@ function z42Plasma(){
 				m_isPaletteTransition = true;
 				m_paletteStartTime = curTime;
 
-				generatePalette( m_nextPalette, Math.random() ); 
+				generatePalette( m_nextPalette, m_colorRnd.random() ); 
 			}
 			// else still in constant phase. Nothing to do.
 
@@ -330,12 +336,4 @@ function z42Plasma(){
 		m_animationOpt = opt;
 		// Values will be used when drawing next animation frame.
 	}
-
-	//===================================================================================================================
-	// Constructor 
-	//===================================================================================================================
-
-	// Generate initial palette.
-	generatePalette( m_startPalette, Math.random() ); 
-	z42color.makePaletteGradientRGBA( m_grayScalePalette, 0, m_grayScalePalette.length, {r:0,g:0,b:0,a:255}, {r:255,g:255,b:255,a:255}, z42easing.easeLinear );
 };

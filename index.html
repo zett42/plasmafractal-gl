@@ -41,6 +41,7 @@ SOFTWARE.
 
 <div id="optionsDialog" title="Plasma Options"></div>
 
+<canvas id="canvas2">PlasmaFractal</canvas>
 <canvas id="canvas1">PlasmaFractal</canvas>	
 
 <script src="external/jquery/jquery.js"></script>
@@ -54,36 +55,42 @@ SOFTWARE.
 <script>
 (function () {
 
-	let plasmaThread = null;
-	let canvas = document.getElementById( "canvas1" );
+	let m_plasmaThread1 = null;
+	let m_plasmaThread2 = null;
+	
+	const m_colorSeed = Math.random();
 
 	//===================================================================================================================
 	// Functions
 	//===================================================================================================================
 
-	function createPlasmaThread()
+	function createPlasmaThreadForCanvas( canvas )
 	{
-		plasmaThread = new Worker( './z42plasmaThread.js' );
+		let thread = new Worker( './z42plasmaThread.js' );
 
 		// Handle messages from worker thread.
-		plasmaThread.addEventListener( 'message', function( msg ){
-			console.log( "Message from worker received:", msg );
+		thread.addEventListener( 'message', function( msg ){
+			console.log( "Message from thread received:", msg );
 		});
 		
 		// Create an offscreen canvas, as regular canvas is bound to DOM and cannot be passed to web worker.
 		const offscreenCanvas = canvas.transferControlToOffscreen();
 		
-		// Launch animation in worker thread.
-		plasmaThread.postMessage( 
+		// Launch animation in worker thread. Threads will generate different noise images, but same sequence of
+		// random palette colors.
+		thread.postMessage( 
 			{ 	
-				action : "init",
-				canvas : offscreenCanvas,
-				width  : window.innerWidth,
-				height : window.innerHeight,
-				seed   : Math.random()
+				action    : "init",
+				canvas    : offscreenCanvas,
+				width     : window.innerWidth,
+				height    : window.innerHeight,
+				noiseSeed : Math.random(),
+				colorSeed : m_colorSeed 
 			}, 
 			[ offscreenCanvas ]   // transfer ownership of offscreenCanvas to thread
 		); 	
+		
+		return thread;
 	}	
 
 	//-------------------------------------------------------------------------------------------------------------------
@@ -92,25 +99,16 @@ SOFTWARE.
 	{
 		// TODO: Use timer so thread isn't blocked by handling too many resize requests.
 	
-		plasmaThread.postMessage( 
-			{ 	
-				action : "resize",
-				width  : window.innerWidth,
-				height : window.innerHeight
-			}
-		);
+		m_plasmaThread1.postMessage({ action: "resize", width: window.innerWidth, height: window.innerHeight });
+		m_plasmaThread2.postMessage({ action: "resize", width: window.innerWidth, height: window.innerHeight });
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------
 	
 	function reseedPlasma()
 	{
-		plasmaThread.postMessage( 
-			{ 	
-				action : "reseed",
-				seed   : Math.random()
-			}
-		);	
+		m_plasmaThread1.postMessage({ action: "reseed", noiseSeed: Math.random() });	
+		m_plasmaThread2.postMessage({ action: "reseed", noiseSeed: Math.random() });	
 	}	
 	
 	//-------------------------------------------------------------------------------------------------------------------
@@ -134,13 +132,14 @@ SOFTWARE.
 	window.addEventListener( 'resize', resizePlasmaToWindowSize, false );
 
 	// On single-click randomize fractal.
-	canvas.addEventListener( 'click', reseedPlasma, false );
+	canvas1.addEventListener( 'click', reseedPlasma, false );
 
 	// On double-click set fullscreen.
-	canvas.addEventListener( 'dblclick', toggleFullscreen, false );
+	canvas1.addEventListener( 'dblclick', toggleFullscreen, false );
 	
-	// Create thread for rendering plasma.
-	createPlasmaThread();
+	// Create threads for rendering plasma.
+	m_plasmaThread1 = createPlasmaThreadForCanvas( canvas1 );
+	m_plasmaThread2 = createPlasmaThreadForCanvas( canvas2 );
 
 	// Initialize GUI for setting parameters.
 	//z42plasmaGui.init( plasma );

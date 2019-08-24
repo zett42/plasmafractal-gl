@@ -1,5 +1,5 @@
 /*
-Thread for generating and rendering plasma fractal. Copyright (c) 2019 zett42.
+Thread for generating and rendering m_plasma fractal. Copyright (c) 2019 zett42.
 https://github.com/zett42/PlasmaFractal
 
 MIT License
@@ -24,79 +24,90 @@ SOFTWARE.
 */
 
 self.importScripts( 
+	'external/perlin.js',
+	'external/mersennetwister/MersenneTwister.js',
 	'z42color.js', 
 	'z42easing.js', 
-	'external/perlin.js', 
 	'z42FractalNoise.js', 
 	'z42plasma.js' 
 );
 
-let plasma = new z42Plasma();
+let m_plasma = null;
 
-let canvas = null;
-let context = null;
-let contextImageData = null;
-let contextPixels = null;
-
-noise.seed( Math.random() );
+let m_canvas = null;
+let m_context = null;
+let m_contextImageData = null;
+let m_contextPixels = null;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-self.onmessage = function( ev ) {
-
+self.onmessage = function( ev ) 
+{
 	console.log( "z42plasmaThread: Message received: ", ev );
 
 	switch( ev.data.action )
 	{
 		case "init":
 		{
-			canvas = ev.data.canvas;
-			context = canvas.getContext('2d');
-
-			noise.seed( ev.data.seed );
-
-			resize( ev.data.width, ev.data.height );
-
-			animate();
+			init( ev.data );
 		}
+		break;
 		
 		case "resize":
 		{
 			resize( ev.data.width, ev.data.height );
 		}		
+		break;
 		
 		case "reseed":
 		{
-			noise.seed( ev.data.seed );
+			noise.seed( ev.data.noiseSeed );
 			
-			plasma.generateNoiseImage();
+			m_plasma.generateNoiseImage();
 		}
+		break;
 	}
 };
 
 //-------------------------------------------------------------------------------------------------------------------
 
+function init( params )
+{
+	noise.seed( params.noiseSeed );
+
+	m_plasma = new z42Plasma({ colorSeed: params.colorSeed });
+	
+	m_canvas = params.canvas;
+	m_context = m_canvas.getContext('2d');
+
+	resize( params.width, params.height );
+
+	animate();	
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
 function resize( width, height ) 
 {
-	if( width == canvas.width && height == canvas.height )
+	if( width == m_canvas.width && height == m_canvas.height )
 		return;
 	
-	canvas.width  = width;
-	canvas.height = height;			
+	m_canvas.width  = width;
+	m_canvas.height = height;			
 
-	contextImageData = context.createImageData( width, height );
-	contextPixels = new Uint32Array( contextImageData.data.buffer );
+	m_contextImageData = m_context.createImageData( width, height );
+	m_contextPixels = new Uint32Array( m_contextImageData.data.buffer );
 	
-	plasma.resize( width, height );
+	m_plasma.resize( width, height );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
 function animate() 
 {
-	plasma.drawAnimationFrame( contextPixels );
+	m_plasma.drawAnimationFrame( m_contextPixels );
 
-	context.putImageData( contextImageData, 0, 0 );	
+	m_context.putImageData( m_contextImageData, 0, 0 );	
 	
 	self.requestAnimationFrame( animate );
 }
