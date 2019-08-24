@@ -67,7 +67,7 @@ SOFTWARE.
 
 	const m_defaultOpt = getDefaultPlasmaOptions();
 
-	let m_canvasTransitionDelay = m_defaultOpt.noiseAnimOpt.constDuration;  
+	let m_canvasTransitionDelay = m_defaultOpt.noiseAnimOpt.transitionDelay;  
 	
 	//===================================================================================================================
 	// Functions
@@ -196,7 +196,7 @@ SOFTWARE.
 	function setNoiseAnimOptions( options )
 	{
 		setCanvasTransitionDuration( options.transitionDuration );
-		m_canvasTransitionDelay = options.constDuration;  
+		m_canvasTransitionDelay = options.transitionDelay;  
 	}	
 
 	//-------------------------------------------------------------------------------------------------------------------

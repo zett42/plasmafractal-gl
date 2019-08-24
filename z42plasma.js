@@ -120,7 +120,7 @@ function z42Plasma( params ){
 		}
 		else
 		{
-			if( paletteDuration > m_paletteAnimOpt.constDuration )
+			if( paletteDuration > m_paletteAnimOpt.transitionDelay )
 			{
 				// Constant phase finished. Start the transition phase.
 				m_isPaletteTransition = true;
@@ -260,7 +260,7 @@ function z42Plasma( params ){
 
 	this.setPaletteAnimOptions = function( opt )
 	{
-		if( opt.constDuration != m_paletteAnimOpt.constDuration ||
+		if( opt.transitionDelay != m_paletteAnimOpt.transitionDelay ||
 		    opt.transitionDuration != m_paletteAnimOpt.transitionDuration )
 		{
 			// reset plaette transition animation to avoid some issues

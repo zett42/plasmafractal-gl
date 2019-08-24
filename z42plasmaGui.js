@@ -325,18 +325,18 @@ SOFTWARE.
 			}
 		});		
 
-		$("#paletteConstantSlider").slider({
+		$("#paletteTransitionDelaySlider").slider({
 			min  :  0 * 1000,
 			max  : 30 * 1000,
-			value: paletteAnimOpt.constDuration,   
+			value: paletteAnimOpt.transitionDelay,   
 
 			change: function( event, ui ) {
-				paletteAnimOpt.constDuration = ui.value;
+				paletteAnimOpt.transitionDelay = ui.value;
 				m_optionsApi.setPaletteAnimOptions( paletteAnimOpt );
 			}
 		});		
 		
-		$("#paletteTransitionSlider").slider({
+		$("#paletteTransitionDurationSlider").slider({
 			min  :  1 * 1000,
 			max  : 30 * 1000,
 			value: paletteAnimOpt.transitionDuration,   
@@ -349,18 +349,18 @@ SOFTWARE.
 		
 		let noiseAnimOpt = m_defaultOptions.noiseAnimOpt;
 		
-		$("#noiseConstantSlider").slider({
+		$("#noiseTransitionDelaySlider").slider({
 			min  :  0 * 1000,
 			max  : 60 * 1000,
-			value: noiseAnimOpt.constDuration,   
+			value: noiseAnimOpt.transitionDelay,   
 
 			change: function( event, ui ) {
-				noiseAnimOpt.constDuration = ui.value;
+				noiseAnimOpt.transitionDelay = ui.value;
 				m_optionsApi.setNoiseAnimOptions( noiseAnimOpt );
 			}
 		});		
 		
-		$("#noiseTransitionSlider").slider({
+		$("#noiseTransitionDurationSlider").slider({
 			min  :  1 * 1000,
 			max  : 30 * 1000,
 			value: noiseAnimOpt.transitionDuration,   
