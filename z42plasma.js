@@ -44,70 +44,12 @@ function z42Plasma( params ){
 	// Private options
 	//===================================================================================================================
 	
-	let m_noiseOpt = {
-		frequency  : 2,    // increase for smaller structures
-		octaves    : 8,    // number of passes (level of detail, typically 1 to 8)
-		gain       : 0.4,  // how much amplification for each pass (typically 0.3 to 0.7, default 0.5)
-		lacunarity : 2,    // frequency multiplicator for each pass (default 2)	
-		amplitude  : 1     // output of noise function (default 1)
-	};
-	
-	const m_easeFunctions = [
-		"Linear",
-		"InQuad",
-		"OutQuad",
-		"InOutQuad",
-		"InCubic",
-		"OutCubic",
-		"InOutCubic",
-		"InQuart",
-		"OutQuart",
-		"InOutQuart",
-		"InQuint",
-		"OutQuint",
-		"InOutQuint",
-		"InSine",
-		"OutSine",
-		"InOutSine",
-		"InOutSine2_3",
-		"InOutSine2_5",
-		"InOutSine2_9",
-		"InOutSine2_13",
-		"InExpo",
-		"OutExpo",
-		"InOutExpo",
-		"InExpo2",
-		"OutExpo2",
-		"InOutExpo2",
-		"InCirc",
-		"OutCirc",
-		"InOutCirc",
-		"InBounce",
-		"OutBounce",
-		"InOutBounce"
-	];
-
-	let m_paletteOpt = {
-
-		easeFunctionBgToFg : "InCubic",
-		easeFunctionFgToBg : "OutExpo2",
-		
-		saturation         : 0.5,
-		brightness         : 0.75,
-		
-		backgroundRGBA     : { r: 0, g: 0, b: 0, a: 255 },
-		
-		isGrayScale        : false  // Set true for debugging, to see true output of noise function before palette gets applied.
-	};
+	let m_noiseOpt       = params.options.noiseOpt;
+	let m_paletteOpt     = params.options.paletteOpt;
+	let m_paletteAnimOpt = params.options.paletteAnimOpt;		
 
 	// Not an option yet, as it is currently bugged for uneven numbers
 	const m_paletteColorCount = 2;
-	
-	let m_animationOpt = {		
-		paletteRotaDuration  : 20 * 1000,  // Time in ms for a full palette rotation.
-		paletteConstDuration : 10 * 1000,  // Time in ms during which palette colors won't change.
-		paletteTransDuration :  5 * 1000   // Time in ms for palette color transition.
-	};
 	
 	//===================================================================================================================
 	// Private state variables
@@ -149,17 +91,17 @@ function z42Plasma( params ){
 		const curTime         = performance.now();
 		const totalDuration   = curTime - m_startTime;
 		const paletteDuration = curTime - m_paletteStartTime;		
-		const paletteOffset   = totalDuration / m_animationOpt.paletteRotaDuration * m_startPalette.length;
+		const paletteOffset   = totalDuration / m_paletteAnimOpt.rotaDuration * m_startPalette.length;
 							  //+ m_startPalette.length / m_paletteColorCount / 2;
 	
 		let paletteToRotate = null;
 	
 		if( m_isPaletteTransition )
 		{
-			if( paletteDuration <= m_animationOpt.paletteTransDuration )
+			if( paletteDuration <= m_paletteAnimOpt.transitionDuration )
 			{
 				// Still in transition phase.
-				const alpha = paletteDuration / m_animationOpt.paletteTransDuration;
+				const alpha = paletteDuration / m_paletteAnimOpt.transitionDuration;
 				z42color.blendPalette( m_startPalette, m_nextPalette, m_transitionPalette, alpha );
 
 				paletteToRotate = m_transitionPalette;
@@ -178,7 +120,7 @@ function z42Plasma( params ){
 		}
 		else
 		{
-			if( paletteDuration > m_animationOpt.paletteConstDuration )
+			if( paletteDuration > m_paletteAnimOpt.constDuration )
 			{
 				// Constant phase finished. Start the transition phase.
 				m_isPaletteTransition = true;
@@ -307,32 +249,26 @@ function z42Plasma( params ){
 		m_paletteOpt = opt;
 		updatePalette();
 	}
-	
-	// get available ease function names
-	this.getAllPaletteEaseFunctions = function()
-	{
-		return m_easeFunctions;
-	}
 
 	//-------------------------------------------------------------------------------------------------------------------
 	// Get / set animation options.
 
-	this.getAnimationOptions = function()
+	this.getPaletteAnimOptions = function()
 	{
-		return m_animationOpt;
+		return m_paletteAnimOpt;
 	}
 
-	this.setAnimationOptions = function( opt )
+	this.setPaletteAnimOptions = function( opt )
 	{
-		if( opt.paletteConstDuration != m_animationOpt.paletteConstDuration ||
-		    opt.paletteTransDuration != m_animationOpt.paletteTransDuration )
+		if( opt.constDuration != m_paletteAnimOpt.constDuration ||
+		    opt.transitionDuration != m_paletteAnimOpt.transitionDuration )
 		{
 			// reset plaette transition animation to avoid some issues
 			m_isPaletteTransition = false;  
 			m_paletteStartTime = performance.now();
 		}
 		
-		m_animationOpt = opt;
+		m_paletteAnimOpt = opt;
 		// Values will be used when drawing next animation frame.
 	}
 };

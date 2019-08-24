@@ -1,5 +1,5 @@
 /*
-Dialog for m_plasma options. Copyright (c) 2019 zett42.
+Dialog for m_optionsApi options. Copyright (c) 2019 zett42.
 https://github.com/zett42/PlasmaFractal
 
 MIT License
@@ -27,14 +27,54 @@ SOFTWARE.
 	'use strict';
 	
 	let module = global.z42plasmaGui = {};
-	let m_plasma = null;
+	
+	let m_optionsApi = null;
+	let m_defaultOptions = null;
+	
+	// Ease functions from 'z42ease.js' to use (excluded some which doesn't look good).
+	const m_easeFunctions = [
+		"Linear",
+		"InQuad",
+		"OutQuad",
+		"InOutQuad",
+		"InCubic",
+		"OutCubic",
+		"InOutCubic",
+		"InQuart",
+		"OutQuart",
+		"InOutQuart",
+		"InQuint",
+		"OutQuint",
+		"InOutQuint",
+		"InSine",
+		"OutSine",
+		"InOutSine",
+		"InOutSine2_3",
+		"InOutSine2_5",
+		"InOutSine2_9",
+		"InOutSine2_13",
+		"InExpo",
+		"OutExpo",
+		"InOutExpo",
+		"InExpo2",
+		"OutExpo2",
+		"InOutExpo2",
+		"InCirc",
+		"OutCirc",
+		"InOutCirc",
+		"InBounce",
+		"OutBounce",
+		"InOutBounce"
+	];	
 
 	//-------------------------------------------------------------------------------------------------------------------
 	// Init module.
+	// Parameter optionsApi provides setter functions for options.
 	
-	module.init = function( plasma )
+	module.init = function( optionsApi, defaultOptions )
 	{
-		m_plasma = plasma;
+		m_optionsApi = optionsApi;
+		m_defaultOptions = defaultOptions;
 		
 		$(optionsDialogButton).button().click( function( event ) {	
 			if( $(optionsDialog).is(':parent') )
@@ -96,7 +136,7 @@ SOFTWARE.
 		const maxSlider = 90;                // positive positions set frequency from 1 to maxFreq
 		const minSlider = -maxSlider / 3;    // negative positions set frequency from minFreq to 1
 		
-		let noiseOptions = m_plasma.getNoiseOptions();
+		let noiseOptions = m_defaultOptions.noiseOpt;
 		
 		$("#frequencyInput")
 			.val( noiseOptions.frequency )
@@ -105,7 +145,7 @@ SOFTWARE.
 				const newSliderVal = calcSliderValueFromInput( noiseOptions.frequency, minFreq, maxFreq, minSlider, maxSlider );
 				$("#frequencySlider").slider( "value", newSliderVal );
 			
-				m_plasma.setNoiseOptions( noiseOptions );
+				m_optionsApi.setNoiseOptions( noiseOptions );
 			});
 				
 		$("#frequencySlider").slider({
@@ -118,7 +158,7 @@ SOFTWARE.
 				$("#frequencyInput").val( noiseOptions.frequency );
 			},
 			change: function( event, ui ) {
-				m_plasma.setNoiseOptions( noiseOptions );
+				m_optionsApi.setNoiseOptions( noiseOptions );
 			}
 		});		
 		
@@ -131,7 +171,7 @@ SOFTWARE.
 				noiseOptions.octaves = ui.value;
 			},
 			change: function( event, ui ) {
-				m_plasma.setNoiseOptions( noiseOptions );
+				m_optionsApi.setNoiseOptions( noiseOptions );
 			}
 		});
 
@@ -144,7 +184,7 @@ SOFTWARE.
 				noiseOptions.gain = ui.value / 100;
 			},
 			change: function( event, ui ) {
-				m_plasma.setNoiseOptions( noiseOptions );
+				m_optionsApi.setNoiseOptions( noiseOptions );
 			}
 		});	
 		
@@ -157,7 +197,7 @@ SOFTWARE.
 				noiseOptions.lacunarity = ui.value / 100;
 			},
 			change: function( event, ui ) {
-				m_plasma.setNoiseOptions( noiseOptions );
+				m_optionsApi.setNoiseOptions( noiseOptions );
 			}
 		});	
 		
@@ -170,19 +210,18 @@ SOFTWARE.
 				noiseOptions.amplitude = ui.value / 100;
 			},
 			change: function( event, ui ) {
-				m_plasma.setNoiseOptions( noiseOptions );
+				m_optionsApi.setNoiseOptions( noiseOptions );
 			}
 		});	
 
 		//----- Palette Tab -----
 
-		let paletteOptions  = m_plasma.getPaletteOptions();
-		const easeFunctions = m_plasma.getAllPaletteEaseFunctions();
+		let paletteOptions  = m_defaultOptions.paletteOpt;
 
 		const smBgToFg = $("#paletteEasingBgToFg");
 		const smFgToBg = $("#paletteEasingFgToBg");
 		
-		easeFunctions.forEach( function( name, index ){
+		m_easeFunctions.forEach( function( name, index ){
 			appendOption( smBgToFg, { text: name, selected: name == paletteOptions.easeFunctionBgToFg } );
 			appendOption( smFgToBg, { text: name, selected: name == paletteOptions.easeFunctionFgToBg } );
 		});
@@ -192,7 +231,7 @@ SOFTWARE.
 			position: { my: "left top", at: "left bottom", collision: "flip" },
 			select: function( event, ui ) { 
 				paletteOptions.easeFunctionBgToFg = ui.item.value;
-				m_plasma.setPaletteOptions( paletteOptions );
+				m_optionsApi.setPaletteOptions( paletteOptions );
 			}
 		})
 		.selectmenu( "menuWidget" )
@@ -203,7 +242,7 @@ SOFTWARE.
 			position: { my: "left top", at: "left bottom", collision: "flip" },
 			select: function( event, ui ) { 
 				paletteOptions.easeFunctionFgToBg = ui.item.value;
-				m_plasma.setPaletteOptions( paletteOptions );
+				m_optionsApi.setPaletteOptions( paletteOptions );
 			}
 		})
 		.selectmenu( "menuWidget" )
@@ -217,7 +256,7 @@ SOFTWARE.
 
 			slide: function( event, ui ) {
 				paletteOptions.saturation = ui.value / 100;
-				m_plasma.setPaletteOptions( paletteOptions );
+				m_optionsApi.setPaletteOptions( paletteOptions );
 			}
 		});			
 
@@ -228,7 +267,7 @@ SOFTWARE.
 
 			slide: function( event, ui ) {
 				paletteOptions.brightness = ui.value / 100;
-				m_plasma.setPaletteOptions( paletteOptions );
+				m_optionsApi.setPaletteOptions( paletteOptions );
 			}
 		});
 		
@@ -246,7 +285,7 @@ SOFTWARE.
 			move: function( color ) {
 				paletteOptions.backgroundRGBA = color.toRgb();
 				paletteOptions.backgroundRGBA.a = 255;
-				m_plasma.setPaletteOptions( paletteOptions );
+				m_optionsApi.setPaletteOptions( paletteOptions );
 			},
 		    change: function( color ) {
 				bgColorChanged = true;	
@@ -255,7 +294,7 @@ SOFTWARE.
 				if( ! bgColorChanged )
 				{
 					paletteOptions.backgroundRGBA = oldBackgroundRGBA;
-					m_plasma.setPaletteOptions( paletteOptions );
+					m_optionsApi.setPaletteOptions( paletteOptions );
 				}
 			}
 		});
@@ -264,43 +303,47 @@ SOFTWARE.
 			.prop("checked", paletteOptions.isGrayScale )
 			.on("change", function(event){
 				paletteOptions.isGrayScale = $(this).prop("checked");
-				m_plasma.setPaletteOptions( paletteOptions );
+				m_optionsApi.setPaletteOptions( paletteOptions );
 			});
 					
 		//----- Animation Tab -----
 		
-		let animationOptions = m_plasma.getAnimationOptions();
+		let paletteAnimOpt = m_defaultOptions.paletteAnimOpt;
+		
+		const rotaDurationMin =  5 * 1000;
+		const rotaDurationMax = 60 * 1000;
+		const rotaDurationRange = rotaDurationMax - rotaDurationMin;
 		
 		$("#animationSpeedSlider").slider({
 			min  : 0,
-			max  : 100,
-			value: animationOptions.paletteRotationSpeed * 100,   
+			max  : rotaDurationRange,
+			value: rotaDurationMin + rotaDurationRange - paletteAnimOpt.rotaDuration,   
 
 			change: function( event, ui ) {
-				animationOptions.paletteRotationSpeed = ui.value / 100;
-				m_plasma.setAnimationOptions( animationOptions );
+				paletteAnimOpt.rotaDuration = rotaDurationMin + rotaDurationRange - ui.value;
+				m_optionsApi.setPaletteAnimOptions( paletteAnimOpt );
 			}
 		});		
 
 		$("#paletteConstantSlider").slider({
 			min  :  0 * 1000,
 			max  : 30 * 1000,
-			value: animationOptions.paletteConstantMillis,   
+			value: paletteAnimOpt.constDuration,   
 
 			change: function( event, ui ) {
-				animationOptions.paletteConstantMillis = ui.value;
-				m_plasma.setAnimationOptions( animationOptions );
+				paletteAnimOpt.constDuration = ui.value;
+				m_optionsApi.setPaletteAnimOptions( paletteAnimOpt );
 			}
 		});		
 		
 		$("#paletteTransitionSlider").slider({
 			min  :  1 * 1000,
 			max  : 30 * 1000,
-			value: animationOptions.paletteTransitionMillis,   
+			value: paletteAnimOpt.transitionDuration,   
 
 			change: function( event, ui ) {
-				animationOptions.paletteTransitionMillis = ui.value;
-				m_plasma.setAnimationOptions( animationOptions );
+				paletteAnimOpt.transitionDuration = ui.value;
+				m_optionsApi.setPaletteAnimOptions( paletteAnimOpt );
 			}
 		});
 	}

@@ -50,6 +50,8 @@ SOFTWARE.
 <script src="external/jquery.ui.touch-punch.js"></script>
 <script src="external/spectrum/spectrum.js"></script>
 
+<script src="z42defaultOptions.js"></script>
+<script src="z42color.js"></script>
 <script src="z42plasmaGui.js"></script>
 
 <script>
@@ -93,7 +95,8 @@ SOFTWARE.
 				width     : window.innerWidth,
 				height    : window.innerHeight,
 				noiseSeed : Math.random(),
-				colorSeed : m_colorSeed
+				colorSeed : m_colorSeed,
+				options   : getDefaultPlasmaOptions()
 			}, 
 			[ offscreenCanvas ]   // transfer ownership of offscreenCanvas to thread
 		); 	
@@ -163,6 +166,23 @@ SOFTWARE.
 		m_plasmaThreadFG.postMessage({ action: "resize", width: window.innerWidth, height: window.innerHeight });
 		m_plasmaThreadBG.postMessage({ action: "resize", width: window.innerWidth, height: window.innerHeight });
 	}
+	
+	//-------------------------------------------------------------------------------------------------------------------
+	
+	function setPlasmaOptions( functionName, options )
+	{
+		m_plasmaThreadFG.postMessage({ 
+			action       : "setOptions",  
+			functionName : functionName,
+			options      : options
+		});
+		
+		m_plasmaThreadBG.postMessage({ 
+			action       : "setOptions",  
+			functionName : functionName,
+			options      : options
+		});
+	}
 
 	//-------------------------------------------------------------------------------------------------------------------
 	
@@ -196,7 +216,15 @@ SOFTWARE.
 	setTimeout( initCanvasAnimation, m_canvasTransitionDelay );
 
 	// Initialize GUI for setting parameters.
-	//z42plasmaGui.init( plasma );
+	// Using callbacks here to decouple GUI from the thread API.
+	z42plasmaGui.init( 
+		{
+			setNoiseOptions       : ( opt ) => { setPlasmaOptions( 'setNoiseOptions', opt ) },
+			setPaletteOptions     : ( opt ) => { setPlasmaOptions( 'setPaletteOptions', opt ) },
+			setPaletteAnimOptions : ( opt ) => { setPlasmaOptions( 'setPaletteAnimOptions', opt ) },
+		},
+		getDefaultPlasmaOptions()		
+	);
 }());
 </script>
 </body>

@@ -63,6 +63,9 @@ self.onmessage = function( ev )
 		
 		case "reseed": reseed( ev.data.noiseSeed );
 		break;
+		
+		case "setOptions": setOptions( ev.data.functionName, ev.data.options );
+		break;
 	}
 };
 
@@ -72,7 +75,10 @@ function init( params )
 {
 	noise.seed( params.noiseSeed );
 
-	m_plasma = new z42Plasma({ colorSeed: params.colorSeed });
+	m_plasma = new z42Plasma({ 
+		colorSeed: params.colorSeed,
+		options  : params.options
+	});
 	
 	m_canvas = params.canvas;
 	m_context = m_canvas.getContext('2d');
@@ -104,6 +110,20 @@ function resize( width, height )
 
 //-------------------------------------------------------------------------------------------------------------------
 
+function animate() 
+{
+	if( m_isPaused )
+		return;
+	
+	m_plasma.drawAnimationFrame( m_contextPixels );
+
+	m_context.putImageData( m_contextImageData, 0, 0 );	
+	
+	self.requestAnimationFrame( animate );
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
 function reseed( noiseSeed )
 {
 	noise.seed( noiseSeed );
@@ -116,14 +136,7 @@ function reseed( noiseSeed )
 
 //-------------------------------------------------------------------------------------------------------------------
 
-function animate() 
+function setOptions( functionName, options )
 {
-	if( m_isPaused )
-		return;
-	
-	m_plasma.drawAnimationFrame( m_contextPixels );
-
-	m_context.putImageData( m_contextImageData, 0, 0 );	
-	
-	self.requestAnimationFrame( animate );
+	m_plasma[ functionName ]( options );
 }
