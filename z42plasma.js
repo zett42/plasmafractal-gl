@@ -93,7 +93,7 @@ function z42Plasma( params ){
 		easeFunctionFgToBg : "OutExpo2",
 		
 		saturation         : 0.5,
-		brightness         : 1.0,
+		brightness         : 0.75,
 		
 		backgroundRGBA     : { r: 0, g: 0, b: 0, a: 255 },
 		
@@ -103,12 +103,10 @@ function z42Plasma( params ){
 	// Not an option yet, as it is currently bugged for uneven numbers
 	const m_paletteColorCount = 2;
 	
-	let m_animationOpt = {
-		
-		paletteRotationSpeed    : 0.15,          // Palette rotation speed.
-		
-		paletteConstantMillis   : 10 * 1000,  // Time in ms during which palette won't change.
-		paletteTransitionMillis :  5 * 1000   // Time in ms for palette transition.
+	let m_animationOpt = {		
+		paletteRotaDuration  : 20 * 1000,  // Time in ms for a full palette rotation.
+		paletteConstDuration : 10 * 1000,  // Time in ms during which palette colors won't change.
+		paletteTransDuration :  5 * 1000   // Time in ms for palette color transition.
 	};
 	
 	//===================================================================================================================
@@ -151,16 +149,17 @@ function z42Plasma( params ){
 		const curTime         = performance.now();
 		const totalDuration   = curTime - m_startTime;
 		const paletteDuration = curTime - m_paletteStartTime;		
-		let paletteOffset     = totalDuration * m_animationOpt.paletteRotationSpeed * m_startPalette.length / 4096;
+		const paletteOffset   = totalDuration / m_animationOpt.paletteRotaDuration * m_startPalette.length;
+							  //+ m_startPalette.length / m_paletteColorCount / 2;
 	
 		let paletteToRotate = null;
 	
 		if( m_isPaletteTransition )
 		{
-			if( paletteDuration <= m_animationOpt.paletteTransitionMillis )
+			if( paletteDuration <= m_animationOpt.paletteTransDuration )
 			{
 				// Still in transition phase.
-				let alpha = paletteDuration / m_animationOpt.paletteTransitionMillis;
+				const alpha = paletteDuration / m_animationOpt.paletteTransDuration;
 				z42color.blendPalette( m_startPalette, m_nextPalette, m_transitionPalette, alpha );
 
 				paletteToRotate = m_transitionPalette;
@@ -179,7 +178,7 @@ function z42Plasma( params ){
 		}
 		else
 		{
-			if( paletteDuration > m_animationOpt.paletteConstantMillis )
+			if( paletteDuration > m_animationOpt.paletteConstDuration )
 			{
 				// Constant phase finished. Start the transition phase.
 				m_isPaletteTransition = true;
@@ -325,8 +324,8 @@ function z42Plasma( params ){
 
 	this.setAnimationOptions = function( opt )
 	{
-		if( opt.paletteConstantMillis   != m_animationOpt.paletteConstantMillis ||
-		    opt.paletteTransitionMillis != m_animationOpt.paletteTransitionMillis )
+		if( opt.paletteConstDuration != m_animationOpt.paletteConstDuration ||
+		    opt.paletteTransDuration != m_animationOpt.paletteTransDuration )
 		{
 			// reset plaette transition animation to avoid some issues
 			m_isPaletteTransition = false;  

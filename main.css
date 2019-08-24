@@ -12,7 +12,8 @@ canvas {
 	position: absolute;
 	mix-blend-mode: screen;
 
-	transition: opacity 10s ease-in-out;	
+	transition: opacity 40s cubic-bezier(.9, 0, .1, 1);	
+	/*transition: opacity 20s ease-in-out;*/	
 }
 #canvas2 {
 	opacity: 0;
