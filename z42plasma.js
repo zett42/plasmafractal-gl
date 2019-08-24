@@ -212,7 +212,7 @@ function z42Plasma( params ){
 
 	function generatePalette( palette, firstHue )
 	{
-		m_paletteCurrentFirstHue	= firstHue;
+		m_paletteCurrentFirstHue = firstHue;
 	
 		let colorHsv = { 
 			h : firstHue,   

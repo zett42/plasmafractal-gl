@@ -11,6 +11,11 @@ canvas {
 	background: black;	
 	position: absolute;
 	mix-blend-mode: screen;
+
+	transition: opacity 10s ease-in-out;	
+}
+#canvas2 {
+	opacity: 0;
 }
 input {
 	padding-left: 5px;

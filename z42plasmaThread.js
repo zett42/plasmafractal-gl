@@ -47,24 +47,13 @@ self.onmessage = function( ev )
 
 	switch( ev.data.action )
 	{
-		case "init":
-		{
-			init( ev.data );
-		}
+		case "init":   init( ev.data );
 		break;
 		
-		case "resize":
-		{
-			resize( ev.data.width, ev.data.height );
-		}		
+		case "resize": resize( ev.data.width, ev.data.height );
 		break;
 		
-		case "reseed":
-		{
-			noise.seed( ev.data.noiseSeed );
-			
-			m_plasma.generateNoiseImage();
-		}
+		case "reseed": reseed( ev.data.noiseSeed );
 		break;
 	}
 };
@@ -99,6 +88,17 @@ function resize( width, height )
 	m_contextPixels = new Uint32Array( m_contextImageData.data.buffer );
 	
 	m_plasma.resize( width, height );
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+function reseed( noiseSeed )
+{
+	noise.seed( noiseSeed );
+	
+	m_plasma.generateNoiseImage();
+	
+	self.postMessage({ action: "onreseedfinished" }); 
 }
 
 //-------------------------------------------------------------------------------------------------------------------

@@ -55,8 +55,11 @@ SOFTWARE.
 <script>
 (function () {
 
-	let m_plasmaThread1 = null;
-	let m_plasmaThread2 = null;
+	let m_plasmaThreadFG = null;
+	let m_plasmaThreadBH = null;
+	
+	let m_canvasFG = canvas1;
+	let m_canvasBG = canvas2;
 	
 	const m_colorSeed = Math.random();
 
@@ -68,10 +71,8 @@ SOFTWARE.
 	{
 		let thread = new Worker( './z42plasmaThread.js' );
 
-		// Handle messages from worker thread.
-		thread.addEventListener( 'message', function( msg ){
-			console.log( "Message from thread received:", msg );
-		});
+		// Set callback to handle messages from worker thread.
+		thread.addEventListener( 'message', onPlasmaThreadMessage );
 		
 		// Create an offscreen canvas, as regular canvas is bound to DOM and cannot be passed to web worker.
 		const offscreenCanvas = canvas.transferControlToOffscreen();
@@ -92,6 +93,52 @@ SOFTWARE.
 		
 		return thread;
 	}	
+	
+	//-------------------------------------------------------------------------------------------------------------------
+	
+	function onPlasmaThreadMessage( ev )
+	{
+		console.log( "Message from plasmaThread:", ev );
+
+		switch( ev.data.action )
+		{
+			case "onreseedfinished":
+			{
+				// Transition to newly created fractal.
+				startCssTransition( m_canvasFG, m_canvasBG );
+			}
+			break;
+		}
+	}
+	
+	//-------------------------------------------------------------------------------------------------------------------
+
+	function startCrossFadeAnimation()
+	{	
+		// Set callback to be notified when CSS transition has ended.
+		m_canvasFG.addEventListener('transitionend', () => {
+			console.log('m_canvasFG transitionend');
+	
+			// Swap foreground and background things.
+			[ m_canvasFG,       m_canvasBG ]       = [ m_canvasBG,       m_canvasFG ];
+			[ m_plasmaThreadFG, m_plasmaThreadBG ] = [ m_plasmaThreadBG, m_plasmaThreadFG ];
+	
+			// Start to calculate new fractal image in background thread.
+			// We will get notified by onPlasmaThreadMessage() when this is done.
+			m_plasmaThreadBG.postMessage({ action: "reseed", noiseSeed: Math.random() });
+		});	
+		
+		startCssTransition( m_canvasFG, m_canvasBG ); 
+	}
+
+	//-------------------------------------------------------------------------------------------------------------------
+	// Start CSS transition animation (configured through CSS 'transition' attribute).
+
+	function startCssTransition( fromElement, toElement )
+	{
+		$(fromElement).css({ opacity: 0.0 });
+		$(toElement).css({ opacity: 1.0 });		
+	}
 
 	//-------------------------------------------------------------------------------------------------------------------
 
@@ -99,18 +146,10 @@ SOFTWARE.
 	{
 		// TODO: Use timer so thread isn't blocked by handling too many resize requests.
 	
-		m_plasmaThread1.postMessage({ action: "resize", width: window.innerWidth, height: window.innerHeight });
-		m_plasmaThread2.postMessage({ action: "resize", width: window.innerWidth, height: window.innerHeight });
+		m_plasmaThreadFG.postMessage({ action: "resize", width: window.innerWidth, height: window.innerHeight });
+		m_plasmaThreadBG.postMessage({ action: "resize", width: window.innerWidth, height: window.innerHeight });
 	}
 
-	//-------------------------------------------------------------------------------------------------------------------
-	
-	function reseedPlasma()
-	{
-		m_plasmaThread1.postMessage({ action: "reseed", noiseSeed: Math.random() });	
-		m_plasmaThread2.postMessage({ action: "reseed", noiseSeed: Math.random() });	
-	}	
-	
 	//-------------------------------------------------------------------------------------------------------------------
 	
 	function toggleFullscreen()
@@ -131,15 +170,16 @@ SOFTWARE.
 	// On window resize, resize the canvas to fill browser window dynamically.
 	window.addEventListener( 'resize', resizePlasmaToWindowSize, false );
 
-	// On single-click randomize fractal.
-	canvas1.addEventListener( 'click', reseedPlasma, false );
+	//m_canvasFG.addEventListener( 'click', onClick, false );
 
 	// On double-click set fullscreen.
-	canvas1.addEventListener( 'dblclick', toggleFullscreen, false );
+	m_canvasFG.addEventListener( 'dblclick', toggleFullscreen, false );
 	
 	// Create threads for rendering plasma.
-	m_plasmaThread1 = createPlasmaThreadForCanvas( canvas1 );
-	m_plasmaThread2 = createPlasmaThreadForCanvas( canvas2 );
+	m_plasmaThreadFG = createPlasmaThreadForCanvas( m_canvasFG );
+	m_plasmaThreadBG = createPlasmaThreadForCanvas( m_canvasBG );
+	
+	startCrossFadeAnimation();	
 
 	// Initialize GUI for setting parameters.
 	//z42plasmaGui.init( plasma );
