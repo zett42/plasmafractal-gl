@@ -41,61 +41,77 @@ SOFTWARE.
 
 <div id="optionsDialog" title="Plasma Options"></div>
 
-<canvas id="canvas">PlasmaFractal</canvas>	
+<canvas id="canvas1">PlasmaFractal</canvas>	
 
 <script src="external/jquery/jquery.js"></script>
 <script src="external/jquery-ui/jquery-ui.js"></script>
 <script src="external/jquery.dialogOptions.js"></script>
 <script src="external/jquery.ui.touch-punch.js"></script>
 <script src="external/spectrum/spectrum.js"></script>
-<script src="external/perlin.js"></script>	
 
-<script src="z42easing.js"></script>	
-<script src="z42color.js"></script>	
-<script src="z42FractalNoise.js"></script>
-<script src="z42plasma.js"></script>
 <script src="z42plasmaGui.js"></script>
 
 <script>
 (function () {
 
-	let plasma           = null; 	
-	let context          = null;
-	let contextImageData = null;
-	let contextPixels    = null;	
+	let plasmaThread = null;
+	let canvas = document.getElementById( "canvas1" );
 
 	//===================================================================================================================
 	// Functions
 	//===================================================================================================================
 
-	// Draw noise image with animated palette in canvas.
-
-	function drawAnimationFrame() 
+	function createPlasmaThread()
 	{
-		plasma.drawAnimationFrame( contextPixels );
-	
-		context.putImageData( contextImageData, 0, 0 );	
+		plasmaThread = new Worker( './z42plasmaThread.js' );
+
+		// Handle messages from worker thread.
+		plasmaThread.addEventListener( 'message', function( msg ){
+			console.log( "Message from worker received:", msg );
+		});
 		
-		window.requestAnimationFrame( drawAnimationFrame );	
+		// Create an offscreen canvas, as regular canvas is bound to DOM and cannot be passed to web worker.
+		const offscreenCanvas = canvas.transferControlToOffscreen();
+		
+		// Launch animation in worker thread.
+		plasmaThread.postMessage( 
+			{ 	
+				action : "init",
+				canvas : offscreenCanvas,
+				width  : window.innerWidth,
+				height : window.innerHeight,
+				seed   : Math.random()
+			}, 
+			[ offscreenCanvas ]   // transfer ownership of offscreenCanvas to thread
+		); 	
 	}	
-	
+
 	//-------------------------------------------------------------------------------------------------------------------
-	// Resize the image buffers to the size of the canvas and generate fractal noise image (grayscale).
 
-	function resizeCanvas() 
+	function resizePlasmaToWindowSize() 
 	{
-		canvas.width  = window.innerWidth;
-		canvas.height = window.innerHeight;
-		
-		if( canvas.getContext )
-		{
-			context = canvas.getContext('2d');	
-			contextImageData = context.createImageData( canvas.width, canvas.height );
-			contextPixels = new Uint32Array( contextImageData.data.buffer );
-		}	
-
-		plasma.resize( canvas.width, canvas.height );	
+		// TODO: Use timer so thread isn't blocked by handling too many resize requests.
+	
+		plasmaThread.postMessage( 
+			{ 	
+				action : "resize",
+				width  : window.innerWidth,
+				height : window.innerHeight
+			}
+		);
 	}
+
+	//-------------------------------------------------------------------------------------------------------------------
+	
+	function reseedPlasma()
+	{
+		plasmaThread.postMessage( 
+			{ 	
+				action : "reseed",
+				seed   : Math.random()
+			}
+		);	
+	}	
 	
 	//-------------------------------------------------------------------------------------------------------------------
 	
@@ -109,42 +125,25 @@ SOFTWARE.
 				document.exitFullscreen();
 		}	
 	}
-
-	//-------------------------------------------------------------------------------------------------------------------
-	
-	function reseedFractal()
-	{
-		noise.seed( Math.random() );
-		plasma.generateNoiseImage();
-	}
-	
 	
 	//===================================================================================================================
 	// Main 
 	//===================================================================================================================
 
-	// Generate initial fractal.
-
-	noise.seed( Math.random() );
-
-	plasma = new z42Plasma();
-
-	resizeCanvas();
-	
 	// On window resize, resize the canvas to fill browser window dynamically.
-	window.addEventListener( 'resize', resizeCanvas, false );
+	window.addEventListener( 'resize', resizePlasmaToWindowSize, false );
+
+	// On single-click randomize fractal.
+	canvas.addEventListener( 'click', reseedPlasma, false );
 
 	// On double-click set fullscreen.
 	canvas.addEventListener( 'dblclick', toggleFullscreen, false );
 	
-	// On single-click randomize fractal.
-	canvas.addEventListener( 'click',    reseedFractal, false );
-	
-	// Launch the animation.
-	window.requestAnimationFrame( drawAnimationFrame );
+	// Create thread for rendering plasma.
+	createPlasmaThread();
 
 	// Initialize GUI for setting parameters.
-	z42plasmaGui.init( plasma );
+	//z42plasmaGui.init( plasma );
 }());
 </script>
 </body>
