@@ -11,7 +11,13 @@ Basic algorithm:
 - Single-click to randomize fractal.
 - Double-click to toggle fullscreen.
 - Press the "gear" button in the top-left corner to adjust plasma parameters and palette.
-- Tested with Chrome 76.0.3809.100 and Firefox 68.0.1 (seems to run smoother in Chrome).
+- Tested with Chrome 76.0.3809.100 and Firefox 68.0.2 (seems to run smoother in Chrome).
+
+### Experimental Versions
+- [**NoiseTransitions Demo**](https://zett42.github.io/PlasmaFractal/experimental/NoiseTransition/index.html)
+  - Renders two differently seeded plasma fractals in separate threads and cross-fades between them to generate ever-changing structures (see Options > Animation > Noise Transition).
+  - Requires [Offscreen Canvas](https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas) (experimental API) support by browser.
+  - Tested successfully with Chrome 76.0.3809.100, but fails with Firefox 68.0.2 (it is [missing 2D-OffscreenCanvas support](https://bugzilla.mozilla.org/show_bug.cgi?id=801176)). 
 
 ## Credits
 This project uses the following open source libraries. Each library comes with its own license terms, which can be found in the source code included in this project.
