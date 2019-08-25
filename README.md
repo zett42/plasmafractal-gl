@@ -15,7 +15,7 @@ Basic algorithm:
 
 ### Experimental Versions
 - [**NoiseTransitions Demo**](https://zett42.github.io/PlasmaFractal/experimental/NoiseTransition/index.html)
-  - Renders two differently seeded plasma fractals in separate threads and cross-fades between them to generate ever-changing structures (see Options > Animation > Noise Transition).
+  - Renders two differently seeded plasma fractals in separate threads ([Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers)) and cross-fades between them to generate ever-changing structures (see Options > Animation > Noise Transition).
   - Requires [Offscreen Canvas](https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas) (experimental API) support by browser.
   - Tested successfully with Chrome 76.0.3809.100, but fails with Firefox 68.0.2 (it is [missing 2D-OffscreenCanvas support](https://bugzilla.mozilla.org/show_bug.cgi?id=801176)). 
 
