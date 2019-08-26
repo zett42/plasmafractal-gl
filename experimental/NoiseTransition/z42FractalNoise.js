@@ -39,7 +39,8 @@ SOFTWARE.
 			return;
 		}
 		
-		const scale = 0.001 * params.frequency;
+		const period = 1.0 / ( width > height ? width : height );
+		const scale = period * params.frequency;
 		const amp   = params.amplitude * outputRange;
 	
 		let i = 0;
