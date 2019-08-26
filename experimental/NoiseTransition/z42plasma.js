@@ -41,19 +41,13 @@ function z42Plasma( params ){
 	'use strict';
 	
 	//===================================================================================================================
-	// Private options
+	// Private variables
 	//===================================================================================================================
 	
-	let m_noiseOpt       = params.options.noiseOpt;
-	let m_paletteOpt     = params.options.paletteOpt;
-	let m_paletteAnimOpt = params.options.paletteAnimOpt;		
+	let m_opt = params.options;
 
 	// Not an option yet, as it is currently bugged for uneven numbers
 	const m_paletteColorCount = 2;
-	
-	//===================================================================================================================
-	// Private state variables
-	//===================================================================================================================
 	
 	let m_width  = null;
 	let m_height = null;
@@ -91,17 +85,17 @@ function z42Plasma( params ){
 		const curTime         = performance.now();
 		const totalDuration   = curTime - m_startTime;
 		const paletteDuration = curTime - m_paletteStartTime;		
-		const paletteOffset   = totalDuration / m_paletteAnimOpt.rotaDuration * m_startPalette.length;
+		const paletteOffset   = totalDuration / m_opt.paletteAnim.rotaDuration * m_startPalette.length;
 							  //+ m_startPalette.length / m_paletteColorCount / 2;
 	
 		let paletteToRotate = null;
 	
 		if( m_isPaletteTransition )
 		{
-			if( paletteDuration <= m_paletteAnimOpt.transitionDuration )
+			if( paletteDuration <= m_opt.paletteAnim.transitionDuration )
 			{
 				// Still in transition phase.
-				const alpha = paletteDuration / m_paletteAnimOpt.transitionDuration;
+				const alpha = paletteDuration / m_opt.paletteAnim.transitionDuration;
 				z42color.blendPalette( m_startPalette, m_nextPalette, m_transitionPalette, alpha );
 
 				paletteToRotate = m_transitionPalette;
@@ -120,7 +114,7 @@ function z42Plasma( params ){
 		}
 		else
 		{
-			if( paletteDuration > m_paletteAnimOpt.transitionDelay )
+			if( paletteDuration > m_opt.paletteAnim.transitionDelay )
 			{
 				// Constant phase finished. Start the transition phase.
 				m_isPaletteTransition = true;
@@ -157,13 +151,13 @@ function z42Plasma( params ){
 	
 		let colorHsv = { 
 			h : firstHue,   
-			s : m_paletteOpt.saturation, 
-			v : m_paletteOpt.brightness,
+			s : m_opt.palette.saturation, 
+			v : m_opt.palette.brightness,
 			a : 1  // alpha
 		};
 
-		const bgToFgFunction = z42easing[ "ease" + m_paletteOpt.easeFunctionBgToFg ];
-		const fgToBgFunction = z42easing[ "ease" + m_paletteOpt.easeFunctionFgToBg ];
+		const bgToFgFunction = z42easing[ "ease" + m_opt.palette.easeFunctionBgToFg ];
+		const fgToBgFunction = z42easing[ "ease" + m_opt.palette.easeFunctionFgToBg ];
 		
 		let palIndex = 0;
 		const palRange = palette.length / m_paletteColorCount / 2;
@@ -172,8 +166,8 @@ function z42Plasma( params ){
 		{
 			const colorRGBA = z42color.nextGoldenRatioColorRGBA( colorHsv ); 
 		
-			palIndex = z42color.makePaletteGradientRGBA( palette, palIndex, palRange, m_paletteOpt.backgroundRGBA, colorRGBA, bgToFgFunction );
-			palIndex = z42color.makePaletteGradientRGBA( palette, palIndex, palRange, colorRGBA, m_paletteOpt.backgroundRGBA, fgToBgFunction );			
+			palIndex = z42color.makePaletteGradientRGBA( palette, palIndex, palRange, m_opt.palette.backgroundRGBA, colorRGBA, bgToFgFunction );
+			palIndex = z42color.makePaletteGradientRGBA( palette, palIndex, palRange, colorRGBA, m_opt.palette.backgroundRGBA, fgToBgFunction );			
 		}
 	}
 	
@@ -198,7 +192,7 @@ function z42Plasma( params ){
 
 	this.drawAnimationFrame = function( targetPixels ) 
 	{
-		if( m_paletteOpt.isGrayScale )
+		if( m_opt.palette.isGrayScale )
 		{
 			z42color.drawImageUint16WithPalette( targetPixels, m_plasmaPixels, m_grayScalePalette );		
 		}
@@ -217,7 +211,7 @@ function z42Plasma( params ){
 	{
 		const fracStartTime = performance.now();
 
-		z42fractal.generateFractalNoiseImageUint16( m_plasmaPixels, m_width, m_height, m_currentPalette.length, m_noiseOpt ); 
+		z42fractal.generateFractalNoiseImageUint16( m_plasmaPixels, m_width, m_height, m_currentPalette.length, m_opt.noise ); 
 
 		console.log( "Fractal generation took %d ms", performance.now() - fracStartTime );
 	}
@@ -227,12 +221,12 @@ function z42Plasma( params ){
 
 	this.getNoiseOptions = function()
 	{
-		return m_noiseOpt;
+		return m_opt.noise;
 	}
 
 	this.setNoiseOptions = function( opt )
 	{
-		m_noiseOpt = opt;
+		m_opt.noise = opt;
 		this.generateNoiseImage();
 	}
 
@@ -241,12 +235,12 @@ function z42Plasma( params ){
 
 	this.getPaletteOptions = function()
 	{
-		return m_paletteOpt;
+		return m_opt.palette;
 	}
 
 	this.setPaletteOptions = function( opt )
 	{
-		m_paletteOpt = opt;
+		m_opt.palette = opt;
 		updatePalette();
 	}
 
@@ -255,20 +249,20 @@ function z42Plasma( params ){
 
 	this.getPaletteAnimOptions = function()
 	{
-		return m_paletteAnimOpt;
+		return m_opt.paletteAnim;
 	}
 
 	this.setPaletteAnimOptions = function( opt )
 	{
-		if( opt.transitionDelay != m_paletteAnimOpt.transitionDelay ||
-		    opt.transitionDuration != m_paletteAnimOpt.transitionDuration )
+		if( opt.transitionDelay != m_opt.paletteAnim.transitionDelay ||
+		    opt.transitionDuration != m_opt.paletteAnim.transitionDuration )
 		{
 			// reset plaette transition animation to avoid some issues
 			m_isPaletteTransition = false;  
 			m_paletteStartTime = performance.now();
 		}
 		
-		m_paletteAnimOpt = opt;
+		m_opt.paletteAnim = opt;
 		// Values will be used when drawing next animation frame.
 	}
 };

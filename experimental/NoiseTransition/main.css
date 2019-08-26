@@ -41,6 +41,10 @@ input {
 #dialog a {
 	font-size: 12px;
 }
+#permaLink {
+	float: right;
+}
+
 .ui-dialog {
 	opacity:   .85 !important; /* Make sure to change both of these, as IE only sees the second one */
 	filter:    Alpha(Opacity=85) !important;

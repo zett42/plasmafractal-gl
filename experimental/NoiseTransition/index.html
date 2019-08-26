@@ -48,9 +48,11 @@ SOFTWARE.
 <script src="../../external/jquery-ui/jquery-ui.js"></script>
 <script src="../../external/jquery.dialogOptions.js"></script>
 <script src="../../external/jquery.ui.touch-punch.js"></script>
+<script src="../../external/jquery-bbq/jquery.ba-bbq.js"></script>
 <script src="../../external/spectrum/spectrum.js"></script>
 
-<script src="z42defaultOptions.js"></script>
+<script src="z42optionUtils.js"></script>
+<script src="z42plasmaOptions.js"></script>
 <script src="z42color.js"></script>
 <script src="z42plasmaGui.js"></script>
 
@@ -65,10 +67,8 @@ SOFTWARE.
 	
 	const m_colorSeed = Math.random();
 
-	const m_defaultOpt = getDefaultPlasmaOptions();
+	const m_options = z42plasmaOptions.getDefaultOptions();
 
-	let m_canvasTransitionDelay = m_defaultOpt.noiseAnimOpt.transitionDelay;  
-	
 	//===================================================================================================================
 	// Functions
 	//===================================================================================================================
@@ -94,7 +94,7 @@ SOFTWARE.
 				height    : window.innerHeight,
 				noiseSeed : Math.random(),
 				colorSeed : m_colorSeed,
-				options   : getDefaultPlasmaOptions()
+				options   : m_options
 			}, 
 			[ offscreenCanvas ]   // transfer ownership of offscreenCanvas to thread
 		); 	
@@ -114,17 +114,16 @@ SOFTWARE.
 			{
 				// Transition to newly created fractal.
 				
-				setTimeout( startCanvasTransition, m_canvasTransitionDelay );
+				setTimeout( startCanvasTransition, m_options.noiseAnim.transitionDelay );
 			}
 			break;
 		}
 	}
-	
 	//-------------------------------------------------------------------------------------------------------------------
 
 	function initCanvasAnimation()
 	{	
-		setCanvasTransitionDuration( m_defaultOpt.noiseAnimOpt.transitionDuration );
+		setCanvasTransitionDuration( m_options.noiseAnim.transitionDuration );
 	
 		// Set callback to be notified when CSS transition has ended.
 		m_canvasFG.addEventListener('transitionend', () => {
@@ -196,9 +195,7 @@ SOFTWARE.
 	function setNoiseAnimOptions( options )
 	{
 		setCanvasTransitionDuration( options.transitionDuration );
-		m_canvasTransitionDelay = options.transitionDelay;  
 	}	
-
 	//-------------------------------------------------------------------------------------------------------------------
 	
 	function toggleFullscreen()
@@ -229,18 +226,18 @@ SOFTWARE.
 	m_plasmaThreadBG = createPlasmaThreadForCanvas( m_canvasBG, true );
 	
 	// Set timeout for first canvas fade animation.
-	setTimeout( initCanvasAnimation, m_canvasTransitionDelay );
+	setTimeout( initCanvasAnimation, m_options.noiseAnim.transitionDelay );
 
 	// Initialize GUI for setting parameters.
 	// Using callbacks here to decouple GUI from the thread API.
 	z42plasmaGui.init( 
 		{
-			setNoiseOptions       : ( opt ) => { setPlasmaOptions( 'setNoiseOptions', opt ) },
-			setPaletteOptions     : ( opt ) => { setPlasmaOptions( 'setPaletteOptions', opt ) },
-			setPaletteAnimOptions : ( opt ) => { setPlasmaOptions( 'setPaletteAnimOptions', opt ) },
-			setNoiseAnimOptions   : ( opt ) => { setNoiseAnimOptions( opt ) }
+			onChangedNoiseOptions       : ( opt ) => { setPlasmaOptions( 'setNoiseOptions', opt ) },
+			onChangedPaletteOptions     : ( opt ) => { setPlasmaOptions( 'setPaletteOptions', opt ) },
+			onChangedPaletteAnimOptions : ( opt ) => { setPlasmaOptions( 'setPaletteAnimOptions', opt ) },
+			onChangedNoiseAnimOptions   : ( opt ) => { setNoiseAnimOptions( opt ) }
 		},
-		getDefaultPlasmaOptions()		
+		m_options		
 	);
 }());
 </script>

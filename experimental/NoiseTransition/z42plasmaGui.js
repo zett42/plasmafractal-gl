@@ -1,5 +1,5 @@
 /*
-Dialog for m_optionsApi options. Copyright (c) 2019 zett42.
+Dialog for PlasmaFractal options. Copyright (c) 2019 zett42.
 https://github.com/zett42/PlasmaFractal
 
 MIT License
@@ -28,67 +28,30 @@ SOFTWARE.
 	
 	let module = global.z42plasmaGui = {};
 	
-	let m_optionsApi = null;
-	let m_defaultOptions = null;
-	
-	// Ease functions from 'z42ease.js' to use (excluded some which doesn't look good).
-	const m_easeFunctions = [
-		"Linear",
-		"InQuad",
-		"OutQuad",
-		"InOutQuad",
-		"InCubic",
-		"OutCubic",
-		"InOutCubic",
-		"InQuart",
-		"OutQuart",
-		"InOutQuart",
-		"InQuint",
-		"OutQuint",
-		"InOutQuint",
-		"InSine",
-		"OutSine",
-		"InOutSine",
-		"InOutSine2_3",
-		"InOutSine2_5",
-		"InOutSine2_9",
-		"InOutSine2_13",
-		"InExpo",
-		"OutExpo",
-		"InOutExpo",
-		"InExpo2",
-		"OutExpo2",
-		"InOutExpo2",
-		"InCirc",
-		"OutCirc",
-		"InOutCirc",
-		"InBounce",
-		"OutBounce",
-		"InOutBounce"
-	];	
+	let m_callbacks = null;
+	let m_opt = null;
 
 	//-------------------------------------------------------------------------------------------------------------------
 	// Init module.
-	// Parameter optionsApi provides setter functions for options.
+	// Parameter callbacks provides setter functions for options.
 	
-	module.init = function( optionsApi, defaultOptions )
+	module.init = function( callbacks, options )
 	{
-		m_optionsApi = optionsApi;
-		m_defaultOptions = defaultOptions;
+		m_callbacks = callbacks;
+		m_opt = options;
 		
 		$(optionsDialogButton).button().click( function( event ) {	
-			if( $(optionsDialog).is(':parent') )
+			if( $("#optionsDialog").is(':parent') )
 				showOptionsDialog();
 			else
-				$(optionsDialog).load( "optionsDialog.html", showOptionsDialog );
+				$("#optionsDialog").load( "optionsDialog.html", showOptionsDialog );
 		});
 	}
-
 	//-------------------------------------------------------------------------------------------------------------------
 	
 	function showOptionsDialog()
 	{
-		$(optionsDialog).dialog({
+		$("#optionsDialog").dialog({
 			position: { my: "left top", at: "left+15 top+50" },			
 			width: 400,
 			// powered by jquery.dialogOptions.js
@@ -125,6 +88,8 @@ SOFTWARE.
 				return 1 + ( sliderValue / maxSlider ) * ( maxFreq - 1 );
 		}
 		
+		updatePermalink();
+		
 		$("#tabs").tabs();		
 
 		$('input').addClass("ui-widget-content ui-corner-all ui-widget");
@@ -136,102 +101,99 @@ SOFTWARE.
 		const maxSlider = 90;                // positive positions set frequency from 1 to maxFreq
 		const minSlider = -maxSlider / 3;    // negative positions set frequency from minFreq to 1
 		
-		let noiseOptions = m_defaultOptions.noiseOpt;
-		
 		$("#frequencyInput")
-			.val( noiseOptions.frequency )
+			.val( m_opt.noise.frequency )
 			.change(function() {
-				noiseOptions.frequency = $(this).val();	
-				const newSliderVal = calcSliderValueFromInput( noiseOptions.frequency, minFreq, maxFreq, minSlider, maxSlider );
+				m_opt.noise.frequency = $(this).val();	
+				const newSliderVal = calcSliderValueFromInput( m_opt.noise.frequency, minFreq, maxFreq, minSlider, maxSlider );
 				$("#frequencySlider").slider( "value", newSliderVal );
 			
-				m_optionsApi.setNoiseOptions( noiseOptions );
+				setNoiseOptions();
 			});
 				
 		$("#frequencySlider").slider({
 			min  : minSlider,
 			max  : maxSlider,
-			value: calcSliderValueFromInput( noiseOptions.frequency, minFreq, maxFreq, minSlider, maxSlider ),
+			value: calcSliderValueFromInput( m_opt.noise.frequency, minFreq, maxFreq, minSlider, maxSlider ),
 
 			slide: function( event, ui ) {
-				noiseOptions.frequency = calcInputValueFromSlider( ui.value, minFreq, maxFreq, minSlider, maxSlider );
-				$("#frequencyInput").val( noiseOptions.frequency );
+				m_opt.noise.frequency = calcInputValueFromSlider( ui.value, minFreq, maxFreq, minSlider, maxSlider );
+				$("#frequencyInput").val( m_opt.noise.frequency );
 			},
 			change: function( event, ui ) {
-				m_optionsApi.setNoiseOptions( noiseOptions );
+				setNoiseOptions();
 			}
 		});		
 		
 		$("#octavesSlider").slider({
 			min  : 1,
 			max  : 10,
-			value: noiseOptions.octaves,   
+			value: m_opt.noise.octaves,   
 
 			slide: function( event, ui ) {
-				noiseOptions.octaves = ui.value;
+				m_opt.noise.octaves = ui.value;
 			},
 			change: function( event, ui ) {
-				m_optionsApi.setNoiseOptions( noiseOptions );
+				setNoiseOptions();
 			}
 		});
 
 		$("#gainSlider").slider({
 			min  : 0.2 * 100,
 			max  : 0.8 * 100,
-			value: noiseOptions.gain * 100,   
+			value: m_opt.noise.gain * 100,   
 
 			slide: function( event, ui ) {
-				noiseOptions.gain = ui.value / 100;
+				m_opt.noise.gain = ui.value / 100;
 			},
 			change: function( event, ui ) {
-				m_optionsApi.setNoiseOptions( noiseOptions );
+				setNoiseOptions();
 			}
 		});	
 		
 		$("#lacunaritySlider").slider({
 			min  : 2 * 100,
 			max  : 20 * 100,
-			value: noiseOptions.lacunarity * 100,   
+			value: m_opt.noise.lacunarity * 100,   
 
 			slide: function( event, ui ) {
-				noiseOptions.lacunarity = ui.value / 100;
+				m_opt.noise.lacunarity = ui.value / 100;
 			},
 			change: function( event, ui ) {
-				m_optionsApi.setNoiseOptions( noiseOptions );
+				setNoiseOptions();
 			}
 		});	
 		
 		$("#amplitudeSlider").slider({
 			min  : 1 * 100,
-			max  : 10 * 100,
-			value: noiseOptions.amplitude * 100,   
+			max  : 50 * 100,
+			value: m_opt.noise.amplitude * 100,   
 
 			slide: function( event, ui ) {
-				noiseOptions.amplitude = ui.value / 100;
+				m_opt.noise.amplitude = ui.value / 100;
 			},
 			change: function( event, ui ) {
-				m_optionsApi.setNoiseOptions( noiseOptions );
+				setNoiseOptions();
 			}
 		});	
 
 		//----- Palette Tab -----
 
-		let paletteOptions  = m_defaultOptions.paletteOpt;
-
 		const smBgToFg = $("#paletteEasingBgToFg");
 		const smFgToBg = $("#paletteEasingFgToBg");
 		
-		m_easeFunctions.forEach( function( name, index ){
-			appendOption( smBgToFg, { text: name, selected: name == paletteOptions.easeFunctionBgToFg } );
-			appendOption( smFgToBg, { text: name, selected: name == paletteOptions.easeFunctionFgToBg } );
+		const easeFunctions = z42plasmaOptions.getAvailablePaletteEaseFunctions();
+		easeFunctions.forEach( function( name, index ){
+			appendOption( smBgToFg, { text: name, selected: name == m_opt.palette.easeFunctionBgToFg } );
+			appendOption( smFgToBg, { text: name, selected: name == m_opt.palette.easeFunctionFgToBg } );
 		});
 
 		smBgToFg.selectmenu({
 			width: 140,
 			position: { my: "left top", at: "left bottom", collision: "flip" },
 			select: function( event, ui ) { 
-				paletteOptions.easeFunctionBgToFg = ui.item.value;
-				m_optionsApi.setPaletteOptions( paletteOptions );
+				m_opt.palette.easeFunctionBgToFg = ui.item.value;
+				setPaletteOptions();
 			}
 		})
 		.selectmenu( "menuWidget" )
@@ -241,8 +203,8 @@ SOFTWARE.
 			width: 140,
 			position: { my: "left top", at: "left bottom", collision: "flip" },
 			select: function( event, ui ) { 
-				paletteOptions.easeFunctionFgToBg = ui.item.value;
-				m_optionsApi.setPaletteOptions( paletteOptions );
+				m_opt.palette.easeFunctionFgToBg = ui.item.value;
+				setPaletteOptions();
 			}
 		})
 		.selectmenu( "menuWidget" )
@@ -252,40 +214,40 @@ SOFTWARE.
 		$("#paletteSaturationSlider").slider({
 			min  : 0,
 			max  : 100,
-			value: paletteOptions.saturation * 100,   
+			value: m_opt.palette.saturation * 100,   
 
 			slide: function( event, ui ) {
-				paletteOptions.saturation = ui.value / 100;
-				m_optionsApi.setPaletteOptions( paletteOptions );
+				m_opt.palette.saturation = ui.value / 100;
+				setPaletteOptions();
 			}
 		});			
 
 		$("#paletteValueSlider").slider({
 			min  : 0,
 			max  : 100,
-			value: paletteOptions.brightness * 100,   
+			value: m_opt.palette.brightness * 100,   
 
 			slide: function( event, ui ) {
-				paletteOptions.brightness = ui.value / 100;
-				m_optionsApi.setPaletteOptions( paletteOptions );
+				m_opt.palette.brightness = ui.value / 100;
+				setPaletteOptions();
 			}
 		});
 		
 		let bgColorChanged = false;
-		let oldBackgroundRGBA = paletteOptions.backgroundRGBA;
+		let oldBackgroundRGBA = m_opt.palette.backgroundRGBA;
 		
 		$("#bgColorPicker").spectrum({
 			theme: "sp-dark",
-			color: paletteOptions.backgroundRGBA,
+			color: m_opt.palette.backgroundRGBA,
 			
 			show: function( color ) {
 				bgColorChanged = false;	
-				oldBackgroundRGBA = paletteOptions.backgroundRGBA;				
+				oldBackgroundRGBA = m_opt.palette.backgroundRGBA;				
 			},
 			move: function( color ) {
-				paletteOptions.backgroundRGBA = color.toRgb();
-				paletteOptions.backgroundRGBA.a = 255;
-				m_optionsApi.setPaletteOptions( paletteOptions );
+				m_opt.palette.backgroundRGBA = color.toRgb();
+				m_opt.palette.backgroundRGBA.a = 255;
+				setPaletteOptions();
 			},
 		    change: function( color ) {
 				bgColorChanged = true;	
@@ -293,23 +255,21 @@ SOFTWARE.
 			hide: function() {
 				if( ! bgColorChanged )
 				{
-					paletteOptions.backgroundRGBA = oldBackgroundRGBA;
-					m_optionsApi.setPaletteOptions( paletteOptions );
+					m_opt.palette.backgroundRGBA = oldBackgroundRGBA;
+					setPaletteOptions();
 				}
 			}
 		});
 		
 		$("#grayScaleCheckBox").checkboxradio()
-			.prop("checked", paletteOptions.isGrayScale )
+			.prop("checked", m_opt.palette.isGrayScale )
 			.on("change", function(event){
-				paletteOptions.isGrayScale = $(this).prop("checked");
-				m_optionsApi.setPaletteOptions( paletteOptions );
+				m_opt.palette.isGrayScale = $(this).prop("checked");
+				setPaletteOptions();
 			});
 					
 		//----- Animation Tab -----
-		
-		let paletteAnimOpt = m_defaultOptions.paletteAnimOpt;
-		
+				
 		const rotaDurationMin =  5 * 1000;
 		const rotaDurationMax = 60 * 1000;
 		const rotaDurationRange = rotaDurationMax - rotaDurationMin;
@@ -317,61 +277,58 @@ SOFTWARE.
 		$("#animationSpeedSlider").slider({
 			min  : 0,
 			max  : rotaDurationRange,
-			value: rotaDurationMin + rotaDurationRange - paletteAnimOpt.rotaDuration,   
+			value: rotaDurationMin + rotaDurationRange - m_opt.paletteAnim.rotaDuration,   
 
 			change: function( event, ui ) {
-				paletteAnimOpt.rotaDuration = rotaDurationMin + rotaDurationRange - ui.value;
-				m_optionsApi.setPaletteAnimOptions( paletteAnimOpt );
+				m_opt.paletteAnim.rotaDuration = rotaDurationMin + rotaDurationRange - ui.value;
+				setPaletteAnimOptions();
 			}
 		});		
 
 		$("#paletteTransitionDelaySlider").slider({
 			min  :  0 * 1000,
 			max  : 30 * 1000,
-			value: paletteAnimOpt.transitionDelay,   
+			value: m_opt.paletteAnim.transitionDelay,   
 
 			change: function( event, ui ) {
-				paletteAnimOpt.transitionDelay = ui.value;
-				m_optionsApi.setPaletteAnimOptions( paletteAnimOpt );
+				m_opt.paletteAnim.transitionDelay = ui.value;
+				setPaletteAnimOptions();
 			}
 		});		
 		
 		$("#paletteTransitionDurationSlider").slider({
 			min  :  1 * 1000,
 			max  : 30 * 1000,
-			value: paletteAnimOpt.transitionDuration,   
+			value: m_opt.paletteAnim.transitionDuration,   
 
 			change: function( event, ui ) {
-				paletteAnimOpt.transitionDuration = ui.value;
-				m_optionsApi.setPaletteAnimOptions( paletteAnimOpt );
+				m_opt.paletteAnim.transitionDuration = ui.value;
+				setPaletteAnimOptions();
 			}
 		});
-		
-		let noiseAnimOpt = m_defaultOptions.noiseAnimOpt;
-		
+				
 		$("#noiseTransitionDelaySlider").slider({
 			min  :  0 * 1000,
 			max  : 60 * 1000,
-			value: noiseAnimOpt.transitionDelay,   
+			value: m_opt.noiseAnim.transitionDelay,   
 
 			change: function( event, ui ) {
-				noiseAnimOpt.transitionDelay = ui.value;
-				m_optionsApi.setNoiseAnimOptions( noiseAnimOpt );
+				m_opt.noiseAnim.transitionDelay = ui.value;
+				setNoiseAnimOptions();
 			}
 		});		
 		
 		$("#noiseTransitionDurationSlider").slider({
 			min  :  1 * 1000,
 			max  : 30 * 1000,
-			value: noiseAnimOpt.transitionDuration,   
+			value: m_opt.noiseAnim.transitionDuration,   
 
 			change: function( event, ui ) {
-				noiseAnimOpt.transitionDuration = ui.value;
-				m_optionsApi.setNoiseAnimOptions( noiseAnimOpt );
+				m_opt.noiseAnim.transitionDuration = ui.value;
+				setNoiseAnimOptions();
 			}
 		});			
 	}
-
 	//-------------------------------------------------------------------------------------------------------------------
 	
 	function appendOption( selectElement, opt ){
@@ -380,6 +337,53 @@ SOFTWARE.
 		if( opt.selected )
 			optElem.attr( "selected", true );
 		selectElement.append( optElem );
+	}
+	//-------------------------------------------------------------------------------------------------------------------
+	
+	function setNoiseOptions()
+	{
+		m_callbacks.onChangedNoiseOptions( m_opt.noise );
+		updatePermalink();
+	}
+	
+	function setPaletteOptions()
+	{
+		m_callbacks.onChangedPaletteOptions( m_opt.palette );
+		updatePermalink();
+	}
+	
+	function setPaletteAnimOptions()
+	{
+		m_callbacks.onChangedPaletteAnimOptions( m_opt.paletteAnim );
+		updatePermalink();
+	}
+	
+	function setNoiseAnimOptions()
+	{
+		m_callbacks.onChangedNoiseAnimOptions( m_opt.noiseAnim );
+		updatePermalink();
+	}
+	//-------------------------------------------------------------------------------------------------------------------
+	
+	function updatePermalink()
+	{
+		// Serialize all options to URL parameters.
+		const urlParams = $.param( m_opt );
+
+		let href = window.location.href;
+		
+		const iq = href.indexOf("?");
+		if( iq >= 0 )
+		{
+			href = href.substring( 0, iq );
+		}
+		
+		href += "?" + urlParams;
+		
+		console.log( "permaLink:", href );
+		
+		$("#permaLink").attr( "href", href );
 	}	
+	
 	
 })(this);
