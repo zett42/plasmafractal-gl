@@ -39,9 +39,6 @@ This project uses the following open source libraries. Each library comes with i
 
 - [jQuery Easing](http://gsgd.co.uk/sandbox/jquery/easing/)
   - Copyright © 2008 George McGinley Smith. All rights reserved.
-  
-- [jQuery BBQ](http://benalman.com/projects/jquery-bbq-plugin/)
-  - Copyright (c) 2010 "Cowboy" Ben Alman
 
 - [Spectrum Colorpicker](http://briangrinstead.com)
   - Copyright (c) 2014, Brian Grinstead 

@@ -27,7 +27,7 @@ SOFTWARE.
 	
 	var module = global.z42opt = {};
 	
-	//--------------------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------
 	// Get object member value by path.
 
 	module.resolve = function( obj, path, separator = '.' ) 
@@ -36,7 +36,7 @@ SOFTWARE.
 		return properties.reduce( ( prev, curr ) => prev && prev[ curr ], obj );
 	}
 	
-	//--------------------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------
 	// Set object member value by path.
 
 	module.setPath = function( obj, path, value, separator = '.' )
@@ -47,7 +47,7 @@ SOFTWARE.
 			obj );
 	}	
 
-	//--------------------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------
 	// Copy member by path from input to output if it exists and is a number within the range defined by min and max.
 
 	module.mergeNumOption = function( output, input, path, min = null, max = null )
@@ -72,7 +72,7 @@ SOFTWARE.
 		module.setPath( output, path, value );
 	}
 
-	//--------------------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------
 	// Copy member by path from input to output if it exists and its value can be found in the enumValues array
 	// Comparison with enumValues is case insensitive. Output will be the matching enumValues value.
 
@@ -94,7 +94,7 @@ SOFTWARE.
 		console.warn( "Enum option out of range: " + path );
 	}
 
-	//--------------------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------
 	// Copy member by path from input to output if it exists, converting to boolean.
 
 	module.mergeBoolOption = function( output, input, path )
@@ -103,7 +103,9 @@ SOFTWARE.
 		if( typeof inputValue === "undefined" )
 			return;
 
-		const outValue = String( inputValue ).toLowerCase() === "true";
+		const inputValueLCase = String( inputValue ).toLowerCase();
+
+		const outValue = ( inputValueLCase === "true" || inputValueLCase === "1" );
 		
 		module.setPath( output, path, outValue );
 	}

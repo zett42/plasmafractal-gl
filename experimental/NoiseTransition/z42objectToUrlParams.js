@@ -22,7 +22,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. 
 */
-//-----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------
 // Class for mapping data object (like options) to short URL params and vice versa.
 // The mapping is defined by constructor parameter 'paramsMap'.
 //
@@ -33,9 +33,9 @@ function z42ObjectToUrlParams( paramsMap )
 {
 	'use strict';
 	
-	//===================================================================================================================
+	//================================================================================================
 	// Private
-	//===================================================================================================================
+	//================================================================================================
 	
 	// Create reverse lookup map (short URL key -> object path).
 	let m_revParamsMap = {};
@@ -43,13 +43,11 @@ function z42ObjectToUrlParams( paramsMap )
 	{
 		m_revParamsMap[ urlKey ] = objKey;
 	}	
+
+	//------------------------------------------------------------------------------------------------
 	
-	//-------------------------------------------------------------------------------------------------------------------
-	
-	function createUrlParamsInternal( obj, parentPath = null )
+	function createUrlParamsInternal( urlParams, obj, parentPath = null )
 	{
-		let result = "";
-		
 		for( let [ key, value ] of Object.entries( obj ) ) 
 		{
 			const path = parentPath ? parentPath + "." + key : key;
@@ -57,7 +55,7 @@ function z42ObjectToUrlParams( paramsMap )
 			if( typeof value === 'object' && value !== null )
 			{
 				// Recurse into nested objects
-				result += createUrlParamsInternal( value, path );
+				createUrlParamsInternal( urlParams, value, path );
 			}
 			else
 			{
@@ -73,52 +71,43 @@ function z42ObjectToUrlParams( paramsMap )
 					value = value ? 1 : 0;
 				}
 				
-				result += "&" + urlKey + "=" + encodeURIComponent( value );
+				urlParams.append( urlKey, value );
 			}
 		}
-		
-		return result;		
 	}	
 	
-	//===================================================================================================================
+	//==================================================================================================
 	// Public
-	//===================================================================================================================
+	//==================================================================================================
 
 	// Create short URL params from data object (no arrays). Object may have nested objects.
 
 	this.createUrlParams = function( obj )
 	{
-		let result = createUrlParamsInternal( obj );
-		if( result.length > 0 )
-		{
-			// Trim first "&"
-			return result.substring( 1, result.length );
-		}		
+		let urlParams = new URLSearchParams();
 		
-		return result;
+		createUrlParamsInternal( urlParams, obj );
+		
+		return urlParams.toString();
 	}
 	
-	//--------------------------------------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------------------------------
 
 	// Create object from short URL params.
 
-	this.parseUrlParams = function()
+	this.parseUrlParams = function( paramStr )
 	{
-		let result = null;
+		let result = {};
 		
-		const par = $.deparam.querystring( true );
-		if( par )
-		{
-			result = {};
+		var par = new URLSearchParams( paramStr );
 			
-			for( const [ key, value ] of Object.entries( par ) ) 
-			{		
-				const path = m_revParamsMap[ key ];
-				
-				z42opt.setPath( result, path, value );
-			}
-		}	
+		for( const [ key, value ] of par ) 
+		{		
+			const path = m_revParamsMap[ key ];
+			
+			z42opt.setPath( result, path, value );
+		}
 		
 		return result;
 	}	
-};
+}

@@ -33,8 +33,8 @@ Dependencies:
 	
 	var module = global.z42plasmaOptions = {};
 
-	//--------------------------------------------------------------------------------------------------------------
-
+	//------------------------------------------------------------------------------------------------
+	
 	module.getDefaultOptions = function()
 	{
 		let res = {
@@ -68,7 +68,7 @@ Dependencies:
 		};
 
 		// Function from jquery-bbq to deserialize URL parameters.
-		const par = z42plasmaOptions.urlParamsMapper.parseUrlParams();
+		const par = module.urlParamsMapper.parseUrlParams( window.location.search );
 		if( par )
 		{
 			console.log( "URL params:", par );
@@ -80,7 +80,7 @@ Dependencies:
 		return res;
 	}
 	
-	//--------------------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------
 
 	function mergeOptions( opt, par )
 	{
@@ -119,7 +119,7 @@ Dependencies:
 		}
 	}
 
-	//--------------------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------
 	
 	module.getAvailablePaletteEaseFunctions = function()
 	{
@@ -160,7 +160,7 @@ Dependencies:
 		];		
 	}		
 	
-	//--------------------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------
 
 	module.urlParamsMapper = new z42ObjectToUrlParams({
 		"noise.frequency"                : "f",
