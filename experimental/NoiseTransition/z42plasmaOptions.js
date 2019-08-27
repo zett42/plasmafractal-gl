@@ -67,17 +67,17 @@ Dependencies:
 			}
 		};
 		
-		console.log( "Default options:", res );
+		console.log( "Default options:", JSON.parse( JSON.stringify( res ) ) );
 
 		// Deserialize and validate URL parameters.
 		const par = module.urlParamsMapper.parseUrlParams( window.location.search );
 		if( par )
 		{
-			console.log( "URL params:", par );
+			console.log( "URL params:", JSON.parse( JSON.stringify( par ) ) );
 
 			z42opt.mergeObjectData( res, par );
 
-			console.log( "Merged options:", res );
+			console.log( "Merged options:", JSON.parse( JSON.stringify( res ) ) );
 		}
 
 		return res;
