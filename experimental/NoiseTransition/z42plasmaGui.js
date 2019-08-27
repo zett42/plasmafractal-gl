@@ -182,8 +182,7 @@ SOFTWARE.
 		const smBgToFg = $("#paletteEasingBgToFg");
 		const smFgToBg = $("#paletteEasingFgToBg");
 		
-		const easeFunctions = z42plasmaOptions.getAvailablePaletteEaseFunctions();
-		easeFunctions.forEach( function( name, index ){
+		z42plasmaOptions.availablePaletteEaseFunctions.forEach( function( name, index ){
 			appendOption( smBgToFg, { text: name, selected: name == m_opt.palette.easeFunctionBgToFg } );
 			appendOption( smFgToBg, { text: name, selected: name == m_opt.palette.easeFunctionFgToBg } );
 		});

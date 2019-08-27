@@ -24,57 +24,14 @@ SOFTWARE.
 */
 //------------------------------------------------------------------------------------------------
 // Class for mapping data object (like options) to short URL params and vice versa.
-// The mapping is defined by constructor parameter 'paramsMap'.
+// The mapping is defined by constructor parameter 'paramsDefinition'.
 //
 // The pattern used for encapsulation is described by Douglas Crockford:
 // http://crockford.com/javascript/private.html ("Private Members in JavaScript")
 
-function z42ObjectToUrlParams( paramsMap )
+function z42ObjectToUrlParams( paramsDefinition )
 {
-	'use strict';
-	
-	//================================================================================================
-	// Private
-	//================================================================================================
-	
-	// Create reverse lookup map (short URL key -> object path).
-	let m_revParamsMap = {};
-	for( const [ objKey, urlKey ] of Object.entries( paramsMap ) ) 
-	{
-		m_revParamsMap[ urlKey ] = objKey;
-	}	
-
-	//------------------------------------------------------------------------------------------------
-	
-	function createUrlParamsInternal( urlParams, obj, parentPath = null )
-	{
-		for( let [ key, value ] of Object.entries( obj ) ) 
-		{
-			const path = parentPath ? parentPath + "." + key : key;
-			
-			if( typeof value === 'object' && value !== null )
-			{
-				// Recurse into nested objects
-				createUrlParamsInternal( urlParams, value, path );
-			}
-			else
-			{
-				const urlKey = paramsMap[ path ];
-				if( typeof urlKey === "undefined" )
-				{
-					console.warn( "No URL key defined for object member:", path );
-					continue;
-				}
-				
-				if( typeof value === "boolean" && value !== null )
-				{
-					value = value ? 1 : 0;
-				}
-				
-				urlParams.append( urlKey, value );
-			}
-		}
-	}	
+	'use strict';	
 	
 	//==================================================================================================
 	// Public
@@ -103,11 +60,195 @@ function z42ObjectToUrlParams( paramsMap )
 			
 		for( const [ key, value ] of par ) 
 		{		
-			const path = m_revParamsMap[ key ];
-			
-			z42opt.setPath( result, path, value );
+			const path = m_urlKeyToObjPath[ key ];
+			if( typeof path === "undefined" )
+			{
+				console.warn( "Invalid URL param key: ", key );
+				continue;
+			}
+
+			const paramDef = paramsDefinition[ path ];
+
+			const parsedValue = parseOneUrlParam( value, paramDef );
+			if( parsedValue !== null )
+			{
+				z42opt.setPath( result, path, parsedValue );
+			}			
 		}
 		
 		return result;
+	}		
+	
+	//================================================================================================
+	// Private
+	//================================================================================================
+	
+	// Reverse lookup map (URL key -> object path).
+	let m_urlKeyToObjPath = {};
+	
+	for( const [ objPath, value ] of Object.entries( paramsDefinition ) ) 
+	{
+		m_urlKeyToObjPath[ value.urlKey ] = objPath;
+	}	
+
+	//------------------------------------------------------------------------------------------------
+	
+	function createUrlParamsInternal( urlParams, obj, parentPath = null )
+	{
+		for( const [ key, value ] of Object.entries( obj ) ) 
+		{
+			const path = parentPath ? parentPath + "." + key : key;
+			
+			if( typeof value === "object" )
+			{
+				if( value !== null )
+				{
+					// Recurse into nested objects
+					createUrlParamsInternal( urlParams, value, path );
+				}
+			}
+			else
+			{
+				// Single value
+				
+				const paramDef = paramsDefinition[ path ];		
+				if( typeof paramDef === "undefined" )
+				{
+					console.warn( "No URL key defined for object member:", path );
+					continue;
+				}
+		
+				const urlValue = createOneUrlParam( value, paramDef );
+				
+				urlParams.append( paramDef.urlKey, urlValue );
+			}
+		}
+	}	
+
+	//------------------------------------------------------------------------------------------------
+
+	function createOneUrlParam( value, paramDef )
+	{
+		switch( paramDef.type )
+		{
+			case "boolean":
+			{
+				return value ? 1 : 0;
+			}
+			break;			
+
+			case "int":
+			{
+				return value;
+			}
+			break;
+
+			case "float":
+			{
+				if( typeof paramDef.maxFractionDigits !== "undefined" )
+				{
+					return Number( value.toFixed( paramDef.maxFractionDigits ) );
+				}
+				return value;
+			}	
+			break;
+
+			case "enum":
+			{
+				return value;
+			}		
+			break;			
+			
+			case "rgbColor":
+			{
+				return value.toString( 16 );
+			}			
+			break;
+			
+			default:
+				console.warn( "Unknown URL param type:", paramDef.type );
+				return null;
+		}
+	}
+	
+	//------------------------------------------------------------------------------------------------
+
+	function parseOneUrlParam( value, paramDef )
+	{
+		switch( paramDef.type )
+		{
+			case "boolean":
+			{
+				const valueLCase = value.toString().toLowerCase();
+				return ( valueLCase === "true" || valueLCase === "1" );
+			}
+			break;			
+
+			case "int":
+			{
+				value = parseInt( value, 10 );
+				if( isNaN( value ) )
+				{
+					console.warn( "Invalid URL param (type int): ", paramDef.urlKey );
+					return null;
+				}
+				return clamp( Math.ceil( value ), paramDef.min, paramDef.max ); 
+			}
+			break;
+
+			case "float":
+			{
+				value = parseFloat( value );
+				if( isNaN( value ) )
+				{
+					console.warn( "Invalid URL param (type float): ", paramDef.urlKey );
+					return null;
+				}
+				return clamp( value, paramDef.min, paramDef.max ); 				
+			}	
+			break;
+
+			case "enum":
+			{
+				for( const ev of paramDef.enumValues ) 
+				{
+					if( ev.toLowerCase() === String( value ).toLowerCase() )
+					{
+						return ev;
+					}
+				}
+				console.warn( "Invalid URL param (type enum): ", paramDef.urlKey );
+				return null;
+			}		
+			break;			
+			
+			case "rgbColor":
+			{
+				value = parseInt( value, 16 );
+				if( isNaN( value ) )
+				{
+					console.warn( "Invalid URL param (type rgbColor): ", paramDef.urlKey );
+					return null;					
+				}
+				
+				return value;
+			}			
+			break;
+			
+			default:
+				console.warn( "Unknown URL param type:", paramDef.type );
+				return null;
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------
+	
+	/// Clamp x to min and max.
+
+	function clamp( x, min, max )
+	{
+		if( typeof min !== "undefined" && x < min ) return min;
+		if( typeof max !== "undefined" && x > max ) return max;
+		return x;
 	}	
 }

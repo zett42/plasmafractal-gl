@@ -46,68 +46,31 @@ SOFTWARE.
 			o[ p ] = ( path.split('.').length === ++i ? value : o[ p ] || {} ), 
 			obj );
 	}	
-
+	
 	//------------------------------------------------------------------------------------------------
-	// Copy member by path from input to output if it exists and is a number within the range defined by min and max.
-
-	module.mergeNumOption = function( output, input, path, min = null, max = null )
-	{		
-		const inputValue = module.resolve( input, path );
-		if( typeof inputValue === "undefined" )
-			return;
-		
-		const value = Number( inputValue );
-		if( isNaN( value ) )
-		{
-			console.warn( "Invalid numeric option: " + path );
-			return;
-		}
-		
-		if( ( min !== null && value < min ) || ( max !== null && value > max ) )
-		{
-			console.warn( "Numeric option out of range: " + path );
-			return;		
-		}
-		
-		module.setPath( output, path, value );
-	}
-
-	//------------------------------------------------------------------------------------------------
-	// Copy member by path from input to output if it exists and its value can be found in the enumValues array
-	// Comparison with enumValues is case insensitive. Output will be the matching enumValues value.
-
-	module.mergeEnumOption = function( output, input, path, enumValues )
+	// Merge data of two objects recursively.
+	// Copies individual values from source to target.
+	
+	module.mergeObjectData = function( target, source, targetPath = null )
 	{
-		const inputValue = module.resolve( input, path );
-		if( typeof inputValue === "undefined" )
-			return;
-
-		for( const ev of enumValues ) 
+		for( const [ key, value ] of Object.entries( source ) ) 
 		{
-			if( ev.toLowerCase() === String( inputValue ).toLowerCase() )
+			const path = targetPath ? targetPath + "." + key : key;
+			
+			if( typeof value === "object" )
 			{
-				module.setPath( output, path, ev );
-				return;
+				if( value !== null )
+				{
+					// Recurse into nested objects
+					module.mergeObjectData( target, value, path );
+				}
 			}
-		}	
-
-		console.warn( "Enum option out of range: " + path );
-	}
-
-	//------------------------------------------------------------------------------------------------
-	// Copy member by path from input to output if it exists, converting to boolean.
-
-	module.mergeBoolOption = function( output, input, path )
-	{
-		const inputValue = module.resolve( input, path );
-		if( typeof inputValue === "undefined" )
-			return;
-
-		const inputValueLCase = String( inputValue ).toLowerCase();
-
-		const outValue = ( inputValueLCase === "true" || inputValueLCase === "1" );
-		
-		module.setPath( output, path, outValue );
+			else
+			{
+				// Merge single value
+				module.setPath( target, path, value );
+			}
+		}
 	}
 
 })(this);
