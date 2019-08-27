@@ -161,13 +161,20 @@ function z42Plasma( params ){
 		
 		let palIndex = 0;
 		const palRange = palette.length / m_paletteColorCount / 2;
+		
+		const bgColorRGBA = {
+			a: 255,
+			r: ( m_opt.palette.bgColor >> 16 ) & 0xFF,
+			g: ( m_opt.palette.bgColor >>  8 ) & 0xFF,
+			b: ( m_opt.palette.bgColor >>  0 ) & 0xFF,
+		};
 
 		for( let i = 0; i < m_paletteColorCount; ++i )
 		{
 			const colorRGBA = z42color.nextGoldenRatioColorRGBA( colorHsv ); 
 		
-			palIndex = z42color.makePaletteGradientRGBA( palette, palIndex, palRange, m_opt.palette.backgroundRGBA, colorRGBA, bgToFgFunction );
-			palIndex = z42color.makePaletteGradientRGBA( palette, palIndex, palRange, colorRGBA, m_opt.palette.backgroundRGBA, fgToBgFunction );			
+			palIndex = z42color.makePaletteGradientRGBA( palette, palIndex, palRange, bgColorRGBA, colorRGBA, bgToFgFunction );
+			palIndex = z42color.makePaletteGradientRGBA( palette, palIndex, palRange, colorRGBA, bgColorRGBA, fgToBgFunction );			
 		}
 	}
 	

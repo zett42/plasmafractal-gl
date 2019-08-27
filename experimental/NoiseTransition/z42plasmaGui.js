@@ -234,19 +234,19 @@ SOFTWARE.
 		});
 		
 		let bgColorChanged = false;
-		let oldBackgroundRGBA = m_opt.palette.backgroundRGBA;
+		let oldBgColor = m_opt.palette.bgColor;
 		
 		$("#bgColorPicker").spectrum({
 			theme: "sp-dark",
-			color: m_opt.palette.backgroundRGBA,
+			color: "#" + m_opt.palette.bgColor.toString( 16 ),
 			
 			show: function( color ) {
 				bgColorChanged = false;	
-				oldBackgroundRGBA = m_opt.palette.backgroundRGBA;				
+				oldBgColor = m_opt.palette.bgColor;				
 			},
 			move: function( color ) {
-				m_opt.palette.backgroundRGBA = color.toRgb();
-				m_opt.palette.backgroundRGBA.a = 255;
+				console.log("color:", color);
+				m_opt.palette.bgColor = parseInt( color.toHex(), 16 );
 				setPaletteOptions();
 			},
 		    change: function( color ) {
@@ -255,7 +255,7 @@ SOFTWARE.
 			hide: function() {
 				if( ! bgColorChanged )
 				{
-					m_opt.palette.backgroundRGBA = oldBackgroundRGBA;
+					m_opt.palette.bgColor = oldBgColor;
 					setPaletteOptions();
 				}
 			}
@@ -368,7 +368,8 @@ SOFTWARE.
 	function updatePermalink()
 	{
 		// Serialize all options to URL parameters.
-		const urlParams = $.param( m_opt );
+		
+		const urlParams = z42plasmaOptions.urlParamsMapper.createUrlParams( m_opt );
 
 		let href = window.location.href;
 		

@@ -52,7 +52,7 @@ Dependencies:
 				saturation         : 0.5,
 				brightness         : 0.75,
 				
-				backgroundRGBA     : { r: 0, g: 0, b: 0, a: 255 },
+				bgColor            : 0xff000000,
 				
 				isGrayScale        : false  // Set true for debugging, to see true output of noise function before palette gets applied.
 			},
@@ -68,7 +68,7 @@ Dependencies:
 		};
 
 		// Function from jquery-bbq to deserialize URL parameters.
-		let par = $.deparam.querystring( true );
+		const par = z42plasmaOptions.urlParamsMapper.parseUrlParams();
 		if( par )
 		{
 			console.log( "URL params:", par );
@@ -103,9 +103,7 @@ Dependencies:
 			z42opt.mergeEnumOption( opt, par, "palette.easeFunctionFgToBg", allEaseFunctions );
 			z42opt.mergeNumOption ( opt, par, "palette.saturation", 0, 1 );
 			z42opt.mergeNumOption ( opt, par, "palette.brightness", 0, 1 );
-			z42opt.mergeNumOption ( opt, par, "palette.backgroundRGBA.r", 0, 255 );
-			z42opt.mergeNumOption ( opt, par, "palette.backgroundRGBA.g", 0, 255 );
-			z42opt.mergeNumOption ( opt, par, "palette.backgroundRGBA.b", 0, 255 );
+			z42opt.mergeNumOption ( opt, par, "palette.bgColor", 0, 0xffffffff );
 			z42opt.mergeBoolOption( opt, par, "palette.isGrayScale" );
 		}
 		if( par.paletteAnim )
@@ -161,5 +159,26 @@ Dependencies:
 			"InOutBounce"
 		];		
 	}		
+	
+	//--------------------------------------------------------------------------------------------------------------
+
+	module.urlParamsMapper = new z42ObjectToUrlParams({
+		"noise.frequency"                : "f",
+		"noise.octaves"                  : "o",
+		"noise.gain"                     : "g",
+		"noise.lacunarity"               : "l",
+		"noise.amplitude"                : "a",
+		"palette.easeFunctionBgToFg"     : "pbf",
+		"palette.easeFunctionFgToBg"     : "pfb",
+		"palette.saturation"             : "ps",
+		"palette.brightness"             : "pb",
+		"palette.bgColor"                : "pbg",
+		"palette.isGrayScale"            : "pg",
+		"paletteAnim.rotaDuration"       : "prd",
+		"paletteAnim.transitionDelay"    : "ptde",
+		"paletteAnim.transitionDuration" : "ptd",
+		"noiseAnim.transitionDelay"      : "ntde",
+		"noiseAnim.transitionDuration"   : "ntd"
+	});
 
 })(this);
