@@ -72,7 +72,7 @@ function z42Plasma( params ){
 
 	// Generate initial palette.
 	generatePalette( m_startPalette, m_colorRnd.random() * 360 ); 
-	z42color.makePaletteGradientRGBA( m_grayScalePalette, 0, m_grayScalePalette.length, {r:0,g:0,b:0,a:255}, {r:255,g:255,b:255,a:255}, z42easing.easeLinear );
+	z42color.makePaletteGradientRGBA( m_grayScalePalette, 0, m_grayScalePalette.length, {r:0,g:0,b:0,a:1.0}, {r:255,g:255,b:255,a:1.0}, z42easing.easeLinear );
 
 	//===================================================================================================================
 	// Private Functions
