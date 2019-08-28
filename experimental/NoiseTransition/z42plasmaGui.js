@@ -335,7 +335,7 @@ SOFTWARE.
 	function onOptionsDialogClose( event, ui )
 	{
 		// Make it possible to use the browser back button to revert the current options.
-		window.history.pushState( $("#permaLink").attr( "href" ), document.title, "/new-url" );
+		window.history.pushState( { action: "optionsDialogClose" }, document.title, $("#permaLink").attr( "href" ) );
 	}	
 	//-------------------------------------------------------------------------------------------------------------------
 	
