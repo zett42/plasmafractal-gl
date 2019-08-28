@@ -46,6 +46,11 @@ SOFTWARE.
 			else
 				$("#optionsDialog").load( "optionsDialog.html", showOptionsDialog );
 		});
+
+		window.onpopstate = function( ev ) {
+			// Reload the state that onOptionsDialogClose() pushed to the history. 
+			window.location.reload();
+		};		
 	}
 	//-------------------------------------------------------------------------------------------------------------------
 	
