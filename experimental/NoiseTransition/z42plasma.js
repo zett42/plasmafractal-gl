@@ -71,7 +71,7 @@ function z42Plasma( params ){
 	let m_colorRnd = new MersenneTwister( Math.trunc( params.colorSeed * 0xFFFFFFFF ) );
 
 	// Generate initial palette.
-	generatePalette( m_startPalette, m_colorRnd.random() ); 
+	generatePalette( m_startPalette, m_colorRnd.random() * 360 ); 
 	z42color.makePaletteGradientRGBA( m_grayScalePalette, 0, m_grayScalePalette.length, {r:0,g:0,b:0,a:255}, {r:255,g:255,b:255,a:255}, z42easing.easeLinear );
 
 	//===================================================================================================================
@@ -120,7 +120,7 @@ function z42Plasma( params ){
 				m_isPaletteTransition = true;
 				m_paletteStartTime = curTime;
 
-				generatePalette( m_nextPalette, m_colorRnd.random() ); 
+				generatePalette( m_nextPalette, m_colorRnd.random() * 360 ); 
 			}
 			// else still in constant phase. Nothing to do.
 
@@ -162,19 +162,12 @@ function z42Plasma( params ){
 		let palIndex = 0;
 		const palRange = palette.length / m_paletteColorCount / 2;
 		
-		const bgColorRGBA = {
-			a: 255,
-			r: ( m_opt.palette.bgColor >> 16 ) & 0xFF,
-			g: ( m_opt.palette.bgColor >>  8 ) & 0xFF,
-			b: ( m_opt.palette.bgColor >>  0 ) & 0xFF,
-		};
-
 		for( let i = 0; i < m_paletteColorCount; ++i )
 		{
 			const colorRGBA = z42color.nextGoldenRatioColorRGBA( colorHsv ); 
 		
-			palIndex = z42color.makePaletteGradientRGBA( palette, palIndex, palRange, bgColorRGBA, colorRGBA, bgToFgFunction );
-			palIndex = z42color.makePaletteGradientRGBA( palette, palIndex, palRange, colorRGBA, bgColorRGBA, fgToBgFunction );			
+			palIndex = z42color.makePaletteGradientRGBA( palette, palIndex, palRange, m_opt.palette.bgColor, colorRGBA, bgToFgFunction );
+			palIndex = z42color.makePaletteGradientRGBA( palette, palIndex, palRange, colorRGBA, m_opt.palette.bgColor, fgToBgFunction );			
 		}
 	}
 	

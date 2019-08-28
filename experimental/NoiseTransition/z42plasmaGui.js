@@ -239,19 +239,19 @@ SOFTWARE.
 		});
 		
 		let bgColorChanged = false;
-		let oldBgColor = m_opt.palette.bgColor;
+		let oldBgColor = Object.assign( {}, m_opt.palette.bgColor );
 		
 		$("#bgColorPicker").spectrum({
 			theme: "sp-dark",
-			color: "#" + m_opt.palette.bgColor.toString( 16 ),
+			color: tinycolor( m_opt.palette.bgColor ).toHex(),
 			
 			show: function( color ) {
 				bgColorChanged = false;	
-				oldBgColor = m_opt.palette.bgColor;				
+				oldBgColor = Object.assign( {}, m_opt.palette.bgColor );				
 			},
 			move: function( color ) {
-				console.log("color:", color);
-				m_opt.palette.bgColor = parseInt( color.toHex(), 16 );
+				console.log( "color:", color );
+				m_opt.palette.bgColor = color.toRgb();
 				setPaletteOptions();
 			},
 		    change: function( color ) {

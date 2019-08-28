@@ -34,25 +34,27 @@ SOFTWARE.
 	
 	module.makePaletteGradientRGBA = function( paletteUint32, start, count, startColor, endColor, easeFunction )
 	{		
-		if( count <= 0 || start < 0 || start >= paletteUint32.length ) 
+		if( count <= 0 ) 
 			return;
-
-		let overflow = start + count - paletteUint32.length;
-		if( overflow > 0 )
-			count -= overflow;
+		if( count > paletteUint32.length )
+			count = paletteUint32.length;
 
 		for( let i = 0; i < count; ++i )
 		{		
-			let r = easeFunction( i, startColor.r, endColor.r - startColor.r, count - 1 );
-			let g = easeFunction( i, startColor.g, endColor.g - startColor.g, count - 1 );
-			let b = easeFunction( i, startColor.b, endColor.b - startColor.b, count - 1 );
-			let a = easeFunction( i, startColor.a, endColor.a - startColor.a, count - 1 );
+			const pos = module.mod( i + start, paletteUint32.length );
+
+			const r = Math.round( easeFunction( i, startColor.r, endColor.r - startColor.r, count - 1 ) );
+			const g = Math.round( easeFunction( i, startColor.g, endColor.g - startColor.g, count - 1 ) );
+			const b = Math.round( easeFunction( i, startColor.b, endColor.b - startColor.b, count - 1 ) );
+
+			// Note: alpha component is in 0..1 range, so we have to multiply with 255.
+			const a = Math.round( easeFunction( i, startColor.a, endColor.a - startColor.a, count - 1 ) * 255 );
 		
-			paletteUint32[ i + start ] = r | ( g << 8 ) | ( b << 16 ) | ( a << 24 );
+			paletteUint32[ pos ] = r | ( g << 8 ) | ( b << 16 ) | ( a << 24 );
 		}
 
 		return start + count;
-	}	
+	}
 	
 	//----------------------------------------------------------------------------------------------------------------
 	/// Rotate palette paletteUint32Src by given offset and store result in paletteUint32Dest.
@@ -141,50 +143,12 @@ SOFTWARE.
 	
 	module.nextGoldenRatioColorRGBA = function( hsva ) 
 	{ 
-		let result = module.hsva_to_rgba( hsva );
+		let result = tinycolor( hsva ).toRgb();
 		
-		const golden_ratio = 0.618033988749895;
-		hsva.h = ( hsva.h + golden_ratio ) % 1; 
+		const golden_ratio = 0.618033988749895 * 360;
+		hsva.h = ( hsva.h + golden_ratio ) % 360; 
 
 		return result;
-	}	
-	
-	//----------------------------------------------------------------------------------------------------------------
-	/// Standard HSV to RGB conversion with alpha component.
-	/// Parameters:
-	/// 	h  Object = { h, s, v, a }
-	/// OR 
-	/// 	h, s, v, a
-	
-	module.hsva_to_rgba = function( h, s, v, a ) 
-	{
-		var r, g, b, i, f, p, q, t;
-		if( arguments.length === 1 ) 
-		{
-			s = h.s, v = h.v, a = h.a, h = h.h;
-		}
-		
-		i = Math.floor( h * 6 );
-		f = h * 6 - i;
-		p = v * ( 1 - s );
-		q = v * ( 1 - f * s );
-		t = v * ( 1 - ( 1 - f ) * s );
-
-		switch( i % 6 ) 
-		{
-			case 0: r = v, g = t, b = p; break;
-			case 1: r = q, g = v, b = p; break;
-			case 2: r = p, g = v, b = t; break;
-			case 3: r = p, g = q, b = v; break;
-			case 4: r = t, g = p, b = v; break;
-			case 5: r = v, g = p, b = q; break;
-		}
-		return {
-			r: Math.round( r * 255 ),
-			g: Math.round( g * 255 ),
-			b: Math.round( b * 255 ),
-			a: Math.round( a * 255 )
-		};
 	}	
 	
 	//----------------------------------------------------------------------------------------------------------------

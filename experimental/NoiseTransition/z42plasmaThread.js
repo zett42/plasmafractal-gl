@@ -26,6 +26,7 @@ SOFTWARE.
 self.importScripts( 
 	'../../external/perlin.js',
 	'../../external/mersennetwister/MersenneTwister.js',
+	'../../external/tinycolor/tinycolor.js',
 	'z42color.js', 
 	'z42easing.js', 
 	'z42FractalNoise.js', 

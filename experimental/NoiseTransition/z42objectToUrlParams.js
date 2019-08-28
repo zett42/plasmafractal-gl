@@ -98,29 +98,22 @@ function z42ObjectToUrlParams( paramsDefinition )
 		for( const [ key, value ] of Object.entries( obj ) ) 
 		{
 			const path = parentPath ? parentPath + "." + key : key;
-			
-			if( typeof value === "object" )
+			const paramDef = paramsDefinition[ path ];		
+
+			if( paramDef )
 			{
-				if( value !== null )
-				{
-					// Recurse into nested objects
-					createUrlParamsInternal( urlParams, value, path );
-				}
+				const urlValue = createOneUrlParam( value, paramDef );		
+				urlParams.append( paramDef.urlKey, urlValue );
+			}
+			else if( typeof value === "object" )
+			{
+				// Recurse into nested objects
+				createUrlParamsInternal( urlParams, value, path );
 			}
 			else
 			{
-				// Single value
-				
-				const paramDef = paramsDefinition[ path ];		
-				if( typeof paramDef === "undefined" )
-				{
-					console.warn( "No URL key defined for object member:", path );
-					continue;
-				}
-		
-				const urlValue = createOneUrlParam( value, paramDef );
-				
-				urlParams.append( paramDef.urlKey, urlValue );
+				// Single value without paramDef -> this is an error
+				console.warn( "Missing paramsDefinition entry for object path:", path );
 			}
 		}
 	}	
@@ -161,7 +154,7 @@ function z42ObjectToUrlParams( paramsDefinition )
 			
 			case "rgbColor":
 			{
-				return value.toString( 16 );
+				return tinycolor( value ).toHex();
 			}			
 			break;
 			
@@ -224,14 +217,14 @@ function z42ObjectToUrlParams( paramsDefinition )
 			
 			case "rgbColor":
 			{
-				value = parseInt( value, 16 );
-				if( isNaN( value ) )
+				const color = tinycolor( value );
+				if( ! color.isValid()  )
 				{
-					console.warn( "Invalid URL param (type rgbColor): ", paramDef.urlKey );
+					console.warn( "Invalid URL param (type tinycolor): ", paramDef.urlKey );
 					return null;					
 				}
 				
-				return value;
+				return color.toRgb(); // keep it pure data to simplify merging
 			}			
 			break;
 			
