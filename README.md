@@ -46,6 +46,9 @@ This project uses the following open source libraries. Each library comes with i
 - [mersennetwister](https://github.com/pigulla/mersennetwister)
   - Copyright (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura, All rights reserved.
   - This implementation by Raphael Pigulla is based on Sean McCullough's port of the original C code written by Makato Matsumoto and Takuji Nishimura.
+  
+- [tinycolor](https://github.com/bgrins/TinyColor)
+  - Copyright (c), Brian Grinstead, http://briangrinstead.com
 
 - [stackoverflow](https://stackoverflow.com)
   - So many helpful answers, too many to credit them individually. Kudos to this awesome community!
