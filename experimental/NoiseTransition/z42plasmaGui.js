@@ -61,7 +61,8 @@ SOFTWARE.
 			scaleH: 0.9,         // responsive scale width percentage of viewport (0..1)
 			showTitleBar: true,  // false: hide titlebar
 
-			create: onOptionsDialogCreate
+			create: onOptionsDialogCreate,
+			close:  onOptionsDialogClose,
 		});	
 	}
 
@@ -328,6 +329,14 @@ SOFTWARE.
 			}
 		});			
 	}
+
+	//-------------------------------------------------------------------------------------------------------------------
+	
+	function onOptionsDialogClose( event, ui )
+	{
+		// Make it possible to use the browser back button to revert the current options.
+		window.history.pushState( $("#permaLink").attr( "href" ), document.title, "/new-url" );
+	}	
 	//-------------------------------------------------------------------------------------------------------------------
 	
 	function appendOption( selectElement, opt ){
