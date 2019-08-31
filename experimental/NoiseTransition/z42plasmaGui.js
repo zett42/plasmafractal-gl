@@ -239,7 +239,7 @@ SOFTWARE.
 		});
 		
 		let bgColorChanged = false;
-		let oldBgColor = Object.assign( {}, m_opt.palette.bgColor );
+		let oldBgColor = { ...m_opt.palette.bgColor };
 		
 		$("#bgColorPicker").spectrum({
 			theme: "sp-dark",
@@ -247,7 +247,7 @@ SOFTWARE.
 			
 			show: function( color ) {
 				bgColorChanged = false;	
-				oldBgColor = Object.assign( {}, m_opt.palette.bgColor );				
+				oldBgColor = { ...m_opt.palette.bgColor };				
 			},
 			move: function( color ) {
 				console.log( "color:", color );

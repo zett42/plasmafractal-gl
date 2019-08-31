@@ -185,7 +185,7 @@ function z42ObjectToUrlParams( paramsDefinition )
 					console.warn( "Invalid URL param (type int): ", paramDef.urlKey );
 					return null;
 				}
-				return clamp( Math.ceil( value ), paramDef.min, paramDef.max ); 
+				return clampOptional( Math.ceil( value ), paramDef.min, paramDef.max ); 
 			}
 			break;
 
@@ -197,7 +197,7 @@ function z42ObjectToUrlParams( paramsDefinition )
 					console.warn( "Invalid URL param (type float): ", paramDef.urlKey );
 					return null;
 				}
-				return clamp( value, paramDef.min, paramDef.max ); 				
+				return clampOptional( value, paramDef.min, paramDef.max ); 				
 			}	
 			break;
 
@@ -220,7 +220,7 @@ function z42ObjectToUrlParams( paramsDefinition )
 				const color = tinycolor( value );
 				if( ! color.isValid()  )
 				{
-					console.warn( "Invalid URL param (type tinycolor): ", paramDef.urlKey );
+					console.warn( "Invalid URL param (type rgbColor): ", paramDef.urlKey );
 					return null;					
 				}
 				
@@ -236,12 +236,12 @@ function z42ObjectToUrlParams( paramsDefinition )
 
 	//------------------------------------------------------------------------------------------------
 	
-	/// Clamp x to min and max.
+	/// Clamp x to min (optional) and max (optional).
 
-	function clamp( x, min, max )
+	function clampOptional( x, min = null, max = null )
 	{
-		if( typeof min !== "undefined" && x < min ) return min;
-		if( typeof max !== "undefined" && x > max ) return max;
+		if( min && x < min ) return min;
+		if( max && x > max ) return max;
 		return x;
 	}	
 }
