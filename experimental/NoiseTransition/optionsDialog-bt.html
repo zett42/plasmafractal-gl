@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<!--
+PlasmaFractal Copyright (c) 2019 zett42.
+https://github.com/zett42/PlasmaFractal
+
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+-->
+<!--===== CSS ===================================================================================================-->
+
+<style type="text/css">
+    #paletteEasingGroup {
+        display: flex;
+        flex-wrap: nowrap;
+		margin: 0 -0.5em 1em;
+    }
+    #paletteEasingGroup > div {
+        flex-grow: 1;
+		padding: 0 0.5em;
+    }
+    #optionsDialog .tab-pane {
+        padding-top: 1em;
+    }
+	#optionsDialog .modal-content {
+		background-color: rgba( 0, 0, 0, 0.7) !important;
+	}
+</style>
+
+<!--===== HTML ===================================================================================================-->
+
+<div id="optionsDialog" class="modal fade" tabindex="-1" role="dialog" 
+	aria-labelledby="optionsDialogModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="optionsDialogModalLabel">PlasmaFractal Options</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+			<div class="modal-body">
+				<!-- Common elements ............................................................ -->
+				<p>
+					<a href="https://github.com/zett42/PlasmaFractal" target="_blank" rel="noopener">GitHub Project</a>
+					<a id="permaLink" href="#" style="float: right">Permalink</a>
+				</p>
+				<!-- Tab buttons ................................................................ -->
+
+				<ul class="nav nav-tabs" id="myTab" role="tablist">
+					<li class="nav-item">
+						<a id="noise-tab" href="#noise" aria-controls="noise"
+						   class="nav-link active" data-toggle="tab" role="tab" aria-selected="true">
+							Noise
+						</a>
+					</li>
+					<li class="nav-item">
+						<a id="palette-tab" href="#palette" aria-controls="palette"
+						   class="nav-link" data-toggle="tab" role="tab" aria-selected="false">
+							Palette
+						</a>
+					</li>
+					<li class="nav-item">
+						<a id="animation-tab" href="#animation" aria-controls="animation"
+						   class="nav-link" data-toggle="tab" role="tab" aria-selected="false">
+							Animation
+						</a>
+					</li>
+				</ul>
+
+				<div class="tab-content" id="myTabContent">
+					<!-- Tab content ........................................................................ -->
+
+					<div id="noise" class="tab-pane fade show active" role="tabpanel" aria-labelledby="noise-tab">
+						<p>
+							<label for="frequencySlider">Frequency:</label>
+							<input id="frequencySlider" type="range" class="custom-range"
+								   min="-30" max="90" step="0.1" value="0">
+							<!-- Negative values set frequency from minFreq to 1, positive values set frequency from 1 to maxFreq. --> 
+						</p>
+						<p>
+							<label for="octavesSlider">Octaves:</label>
+							<input id="octavesSlider" type="range" class="custom-range"
+								   min="1" max="15" value="1">
+						</p>
+						<p>
+							<label for="gainSlider">Gain:</label>
+							<input id="gainSlider" type="range" class="custom-range"
+								   min="0.2" max="0.8" step="0.01" value="0.4">
+						</p>
+						<p>
+							<label for="lacunaritySlider">Lacunarity:</label>
+							<input id="lacunaritySlider" type="range" class="custom-range"
+								   min="2" max="10" step="=0.01" value="2">
+						</p>
+						<p>
+							<label for="amplitudeSlider">Amplitude:</label>
+							<input id="amplitudeSlider" type="range" class="custom-range"
+								   min="1" max="50" step="0.1" value="1">
+						</p>
+					</div>
+					<!-- Tab content ........................................................................ -->
+
+					<div id="palette" class="tab-pane fade" role="tabpanel" aria-labelledby="palette-tab">
+						<div id="paletteEasingGroup">
+							<div>
+								<label for="paletteEasingBgToFg">BG to FG easing:</label>
+								<select id="paletteEasingBgToFg" class="custom-select"></select>
+							</div>
+							<div>
+								<label for="paletteEasingFgToBg">FG to BG easing:</label>
+								<select id="paletteEasingFgToBg" class="custom-select"></select>
+							</div>
+						</div>
+						<p>
+							<label for="paletteSaturationSlider">Foreground saturation:</label>
+							<input id="paletteSaturationSlider" type="range" class="custom-range"
+								   min="0" max="1" step="0.01" value="0.5">
+						</p>
+						<p>
+							<label for="paletteValueSlider">Foreground brightness:</label>
+							<input id="paletteValueSlider" type="range" class="custom-range"
+								   min="0" max="1" step="0.01" value="0.75">
+						</p>
+						<p>
+							<label for="bgColorPicker">Background color:</label>
+							<input id="bgColorPicker" />
+						</p>
+						<div class="custom-control custom-checkbox">
+							<input id="grayScaleCheckBox" type="checkbox" class="custom-control-input">
+							<label for="grayScaleCheckBox" class="custom-control-label">Show original grayscale image</label>
+						</div>
+					</div>
+					<!-- Tab content ........................................................................ -->
+
+					<div id="animation" class="tab-pane fade" role="tabpanel" aria-labelledby="animation-tab">
+						<p>
+							<label for="animationSpeedSlider">Palette animation speed:</label>
+							<input id="animationSpeedSlider" type="range" class="custom-range"
+								   min="0" max="60000" value="30000">
+						</p>
+						<p>
+							<label for="paletteTransitionDelaySlider">Palette transition delay:</label>
+							<input id="paletteTransitionDelaySlider" type="range" class="custom-range"
+								   min="0" max="30000" value="10000">
+						</p>
+						<p>
+							<label for="paletteTransitionDurationSlider">Palette transition duration:</label>
+							<input id="paletteTransitionDurationSlider" type="range" class="custom-range"
+								   min="1" max="30000" value="5000">
+						</p>
+						<p>
+							<label for="noiseTransitionDelaySlider">Noise transition delay:</label>
+							<input id="noiseTransitionDelaySlider" type="range" class="custom-range"
+								   min="0" max="30000" value="10000">
+						</p>
+						<p>
+							<label for="noiseTransitionDurationSlider">Noise transition duration:</label>
+							<input id="noiseTransitionDurationSlider" type="range" class="custom-range"
+								   min="0" max="30000" value="5000">
+						</p>
+					</div>
+				</div>
+			</div>
+        </div>
+    </div>
+</div>
+
+<!--===== SCRIPT ===================================================================================================-->
+<script>
+
+function initOptionsDialog( callbacks, options )
+{
+	'use strict';
+
+	//... Init noise tab .....................................................................
+
+	const frqSlider = $("#frequencySlider");
+
+	// TODO: get min/max from options definition 
+	const minFreq = 0.01;
+	const maxFreq = 15;
+	const minSlider = frqSlider.attr( "min" );    
+	const maxSlider = frqSlider.attr( "max" );                
+		
+	frqSlider
+		.val( calcSliderValueFromInput( options.noise.frequency, minFreq, maxFreq, minSlider, maxSlider ) )
+		.on( "change", function ()
+		{
+			options.noise.frequency = calcInputValueFromSlider( $(this).val(), minFreq, maxFreq, minSlider, maxSlider );
+			setNoiseOptions();
+		});
+
+	$( "#octavesSlider" )
+		.val( options.noise.octaves )
+		.on( "change", function() 
+		{
+			options.noise.octaves = $(this).val();
+			setNoiseOptions();
+		});
+
+	//... Init palette tab ..................................................................
+
+	const smBgToFg = $( "#paletteEasingBgToFg" );
+	const smFgToBg = $( "#paletteEasingFgToBg" );
+		
+	z42plasmaOptions.availablePaletteEaseFunctions.forEach( function( name, index ){
+		appendOption( smBgToFg, { text: name, selected: name == options.palette.easeFunctionBgToFg } );
+		appendOption( smFgToBg, { text: name, selected: name == options.palette.easeFunctionFgToBg } );
+	});
+
+	smBgToFg.on( "change", function ()
+	{
+		options.palette.easeFunctionBgToFg = $(this).val();
+		setPaletteOptions();
+	});
+	smFgToBg.on( "change", function ()
+	{
+		options.palette.easeFunctionFgToBg = $(this).val();
+		setPaletteOptions();
+	});
+
+
+	//... Init animation tab ................................................................
+
+
+	//.......................................................................................
+
+	function calcSliderValueFromInput( inputValue, minValue, maxValue, minSlider, maxSlider )
+	{
+		let result = 0;
+		if( inputValue < 1 )
+			result = minSlider - minSlider * ( inputValue - minValue ) / ( 1 - minValue );  
+		else
+			result = maxSlider * ( inputValue - 1 ) / ( maxValue - 1 );
+
+		return z42color.clamp( result, minSlider, maxSlider );
+	}		
+		
+	function calcInputValueFromSlider( sliderValue, minValue, maxValue, minSlider, maxSlider )
+	{
+		if( sliderValue < 0 )
+			return minFreq + ( 1 - ( sliderValue / minSlider ) ) * ( 1 - minFreq );
+		else
+			return 1 + ( sliderValue / maxSlider ) * ( maxFreq - 1 );
+	}
+
+	//-------------------------------------------------------------------------------------------------------------------
+	
+	function appendOption( selectElement, opt ){
+		let optElem = $("<option></option>");
+		optElem.text( opt.text );
+		if( opt.selected )
+			optElem.attr( "selected", true );
+		selectElement.append( optElem );
+	}
+
+	//.......................................................................................
+
+	function setNoiseOptions()
+	{
+		callbacks.onChangedNoiseOptions( options.noise );
+		updatePermalink();
+	}
+	
+	function setPaletteOptions()
+	{
+		callbacks.onChangedPaletteOptions( options.palette );
+		updatePermalink();
+	}
+	
+	function setPaletteAnimOptions()
+	{
+		callbacks.onChangedPaletteAnimOptions( options.paletteAnim );
+		updatePermalink();
+	}
+	
+	function setNoiseAnimOptions()
+	{
+		callbacks.onChangedNoiseAnimOptions( options.noiseAnim );
+		updatePermalink();
+	}
+
+	//-------------------------------------------------------------------------------------------------------------------
+	
+	function onOptionsDialogClose( event, ui )
+	{
+		// Make it possible to use the browser back button to revert the current options.
+		window.history.pushState( { action: "optionsDialogClose" }, document.title, $("#permaLink").attr( "href" ) );
+	}	
+
+	//.......................................................................................
+	
+	function updatePermalink()
+	{
+		// Serialize all options to URL parameters.
+		/*
+		const urlParams = z42plasmaOptions.urlParamsMapper.createUrlParams( options );
+
+		let href = window.location.href;
+		
+		const iq = href.indexOf("?");
+		if( iq >= 0 )
+		{
+			href = href.substring( 0, iq );
+		}
+		
+		href += "?" + urlParams;
+		
+		console.log( "permaLink:", href );
+		
+		$("#permaLink").attr( "href", href );
+		*/
+	}	
+}
+</script>

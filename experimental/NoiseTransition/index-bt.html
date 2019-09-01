@@ -1,0 +1,258 @@
+﻿<!DOCTYPE html>
+<!--
+PlasmaFractal main script. Copyright (c) 2019 zett42.
+https://github.com/zett42/PlasmaFractal
+
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. 
+-->
+<html lang="us">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<title>zett42 PlasmaFractal</title>
+
+	<link rel="stylesheet" href="../../external/bootstrap/css/bootstrap.min.css">
+<!--
+	<link href="../../external/spectrum/spectrum.css" rel="stylesheet">
+	<link href="../../external/spectrum/sp-dark.css" rel="stylesheet">
+-->	
+	<link href="main-bt.css" rel="stylesheet">
+</head>
+<body>
+
+<button id="optionsDialogButton" title="Plasma Options" class="btn btn-primary" 
+	data-toggle="modal" data-target="#optionsDialog">⚙</button>
+	
+<div id="optionsDialog"></div>	<!-- loaded from external file -->
+	
+<canvas id="canvas2" class="plasmaCanvas">PlasmaFractal</canvas>
+<canvas id="canvas1" class="plasmaCanvas">PlasmaFractal</canvas>	
+
+<script src="../../external/jquery/jquery.min.js"></script>
+<script src="../../external/popper/popper.min.js"></script>
+<script src="../../external/bootstrap/js/bootstrap.min.js"></script>
+<script src="../../external/tinycolor/tinycolor.js"></script>
+<!--
+<script src="../../external/spectrum/spectrum.js"></script>
+-->
+
+<script src="z42optionUtils.js"></script>
+<script src="z42objectToUrlParams.js"></script>
+<script src="z42plasmaOptions.js"></script>
+<script src="z42color.js"></script>
+<script src="z42plasmaGui.js"></script>
+
+<script>
+(function(){
+
+	let m_plasmaThreadFG = null;
+	let m_plasmaThreadBG = null;
+
+	let m_canvasFG = canvas1;
+	let m_canvasBG = canvas2;
+
+	const m_colorSeed = Math.random();
+
+	const m_options = z42plasmaOptions.getDefaultOptions();
+
+	//===================================================================================================================
+	// Functions
+	//===================================================================================================================
+
+	function createPlasmaThreadForCanvas( canvas, isPaused )
+	{
+		let thread = new Worker( './z42plasmaThread.js' );
+
+		// Set callback to handle messages from worker thread.
+		thread.addEventListener( 'message', onPlasmaThreadMessage );
+
+		// Create an offscreen canvas, as regular canvas is bound to DOM and cannot be passed to web worker.
+		const offscreenCanvas = canvas.transferControlToOffscreen();
+
+		// Launch animation in worker thread. Threads will generate different noise images, but same sequence of
+		// random palette colors.
+		thread.postMessage(
+			{
+				action: "init",
+				isPaused: isPaused,
+				canvas: offscreenCanvas,
+				width: window.innerWidth,
+				height: window.innerHeight,
+				noiseSeed: Math.random(),
+				colorSeed: m_colorSeed,
+				options: m_options
+			},
+			[offscreenCanvas]   // transfer ownership of offscreenCanvas to thread
+		);
+
+		return thread;
+	}
+
+	//-------------------------------------------------------------------------------------------------------------------
+
+	function onPlasmaThreadMessage( ev )
+	{
+		console.log( "Message from plasmaThread:", ev );
+
+		switch ( ev.data.action )
+		{
+			case "onreseedfinished":
+				{
+					// Transition to newly created fractal.
+
+					setTimeout( startCanvasTransition, m_options.noiseAnim.transitionDelay );
+				}
+				break;
+		}
+	}
+	//-------------------------------------------------------------------------------------------------------------------
+
+	function initCanvasAnimation()
+	{
+		setCanvasTransitionDuration( m_options.noiseAnim.transitionDuration );
+
+		// Set callback to be notified when CSS transition has ended.
+		m_canvasFG.addEventListener( 'transitionend', () =>
+		{
+			console.log( 'm_canvasFG transitionend' );
+
+			// Swap foreground and background things.
+			[m_canvasFG, m_canvasBG] = [m_canvasBG, m_canvasFG];
+			[m_plasmaThreadFG, m_plasmaThreadBG] = [m_plasmaThreadBG, m_plasmaThreadFG];
+
+			// Pause the animation of the new background thread as its canvas is invisible anyway.
+			m_plasmaThreadBG.postMessage( { action: "pause" } );
+
+			// Start to calculate new fractal image in background thread.
+			// We will get notified by onPlasmaThreadMessage() when this is done.
+			m_plasmaThreadBG.postMessage( { action: "reseed", noiseSeed: Math.random() } );
+		} );
+
+		startCanvasTransition();
+	}
+
+	//-------------------------------------------------------------------------------------------------------------------
+
+	function setCanvasTransitionDuration( durationMillis )
+	{
+		$( ".plasmaCanvas" ).css( "transition-duration", durationMillis.toString() + "ms" );
+	}
+
+	//-------------------------------------------------------------------------------------------------------------------
+	// Start CSS transition animation (configured through CSS 'transition' attribute).
+
+	function startCanvasTransition()
+	{
+		// Wake the background thread up because its canvas will be visible soon.
+		m_plasmaThreadBG.postMessage( { action: "start" } );
+
+		$( m_canvasFG ).css( { opacity: 0.0 } );
+		$( m_canvasBG ).css( { opacity: 1.0 } );
+	}
+
+	//-------------------------------------------------------------------------------------------------------------------
+
+	function resizePlasmaToWindowSize()
+	{
+		// TODO: Use timer so thread isn't blocked by handling too many resize requests.
+
+		m_plasmaThreadFG.postMessage( { action: "resize", width: window.innerWidth, height: window.innerHeight } );
+		m_plasmaThreadBG.postMessage( { action: "resize", width: window.innerWidth, height: window.innerHeight } );
+	}
+
+	//-------------------------------------------------------------------------------------------------------------------
+
+	function setPlasmaOptions( functionName, options )
+	{
+		m_plasmaThreadFG.postMessage( {
+			action: "setOptions",
+			functionName: functionName,
+			options: options
+		} );
+
+		m_plasmaThreadBG.postMessage( {
+			action: "setOptions",
+			functionName: functionName,
+			options: options
+		} );
+	}
+
+	//-------------------------------------------------------------------------------------------------------------------
+
+	function setNoiseAnimOptions( options )
+	{
+		setCanvasTransitionDuration( options.transitionDuration );
+	}
+	//-------------------------------------------------------------------------------------------------------------------
+
+	function toggleFullscreen()
+	{
+		if ( document.documentElement.requestFullscreen )
+		{
+			if ( !document.fullscreenElement )
+				document.documentElement.requestFullscreen();
+			else
+				document.exitFullscreen();
+		}
+	}
+
+	//===================================================================================================================
+	// Main 
+	//===================================================================================================================
+	
+	$( "#optionsDialog" ).load( "optionsDialog-bt.html", function() {
+		// Replace optionsDialog div with the content loaded from file.
+		$(this).children( ":first" ).unwrap();
+
+		// Initialize GUI for setting parameters.
+		// Using callbacks here to decouple GUI from the thread API.
+		initOptionsDialog(
+			{
+				onChangedNoiseOptions       : ( opt ) => { setPlasmaOptions( 'setNoiseOptions', opt ) },
+				onChangedPaletteOptions     : ( opt ) => { setPlasmaOptions( 'setPaletteOptions', opt ) },
+				onChangedPaletteAnimOptions : ( opt ) => { setPlasmaOptions( 'setPaletteAnimOptions', opt ) },
+				onChangedNoiseAnimOptions   : ( opt ) => { setNoiseAnimOptions( opt ) }
+			},
+			m_options		
+		);
+	});
+	
+	// On window resize, resize the canvas to fill browser window dynamically.
+	window.addEventListener( "resize", resizePlasmaToWindowSize );
+
+	// When browser back/forward button gets pressed, reload the state that onOptionsDialogClose() pushed to the history. 
+	window.addEventListener( "popstate", window.location.reload );
+
+	// On double-click set fullscreen.
+	m_canvasFG.addEventListener( "dblclick", toggleFullscreen );
+
+	// Create threads for rendering plasma.
+	m_plasmaThreadFG = createPlasmaThreadForCanvas( m_canvasFG, false );
+	m_plasmaThreadBG = createPlasmaThreadForCanvas( m_canvasBG, true );
+
+	// Set timeout for first canvas fade animation.
+	setTimeout( initCanvasAnimation, m_options.noiseAnim.transitionDelay );
+
+})();
+</script>
+</body>
+</html>
