@@ -28,9 +28,12 @@ This project uses the following open source libraries. Each library comes with i
   - Better rank ordering method by Stefan Gustavson in 2012. 
   - Converted to Javascript by Joseph Gentle. 
 
-- [Bootstrap](https://getbootstrap.com/)
+- [Bootstrap](https://getbootstrap.com/) 
   - Copyright (c) 2011-2019 Twitter, Inc.
   - Copyright (c) 2011-2019 The Bootstrap Authors
+  
+- [Bootswatch](https://bootswatch.com/)
+  - Copyright (c) 2013 Thomas Park
   
 - [Popper.js](https://popper.js.org/)
   - Copyright © 2016 Federico Zivolo and contributors
