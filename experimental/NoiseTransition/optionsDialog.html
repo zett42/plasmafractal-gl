@@ -21,85 +21,433 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE. 
+SOFTWARE.
 -->
+<!--===== CSS ===================================================================================================-->
 
-<p>
-<a href="https://github.com/zett42/PlasmaFractal" target="_blank" rel="noopener">GitHub Project</a>
-<a id="permaLink" href="#">Permalink</a>
-</p>
+<style type="text/css">
+    #paletteEasingGroup {
+        display: flex;
+        flex-wrap: nowrap;
+		margin: 0 -0.5em 1em;
+    }
+    #paletteEasingGroup > div {
+        flex-grow: 1;
+		padding: 0 0.5em;
+    }
+    #optionsDialog .tab-pane {
+        padding-top: 1em;
+    }
+	#optionsDialog .modal-content {
+		background-color: rgba( 0, 0, 0, 0.7) !important;
+	}
+</style>
 
-<div id="tabs">
-	<ul>
-		<li><a href="#tabs-params">Noise</a></li>
-		<li><a href="#tabs-palette">Palette</a></li>
-		<li><a href="#tabs-animation">Animation</a></li>
-	</ul>
+<!--===== HTML ===================================================================================================-->
+
+<div id="optionsDialog" class="modal fade" tabindex="-1" role="dialog" 
+	aria-labelledby="optionsDialogModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="optionsDialogModalLabel">PlasmaFractal Options</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+			<div class="modal-body">
+				<!-- Common elements ............................................................ -->
+				<p>
+					<a href="https://github.com/zett42/PlasmaFractal" target="_blank" rel="noopener">GitHub Project</a>
+					<a id="permaLink" href="#" style="float: right">Permalink</a>
+				</p>
+				<!-- Tab buttons ................................................................ -->
+
+				<ul class="nav nav-tabs" id="myTab" role="tablist">
+					<li class="nav-item">
+						<a id="noise-tab" href="#noise" aria-controls="noise"
+						   class="nav-link active" data-toggle="tab" role="tab" aria-selected="true">
+							Noise
+						</a>
+					</li>
+					<li class="nav-item">
+						<a id="palette-tab" href="#palette" aria-controls="palette"
+						   class="nav-link" data-toggle="tab" role="tab" aria-selected="false">
+							Palette
+						</a>
+					</li>
+					<li class="nav-item">
+						<a id="animation-tab" href="#animation" aria-controls="animation"
+						   class="nav-link" data-toggle="tab" role="tab" aria-selected="false">
+							Animation
+						</a>
+					</li>
+				</ul>
+
+				<div class="tab-content" id="myTabContent">
+					<!-- Tab content ........................................................................ -->
+
+					<div id="noise" class="tab-pane fade show active" role="tabpanel" aria-labelledby="noise-tab">
+						<p>
+							<label for="frequencySlider">Frequency:</label>
+							<input id="frequencySlider" type="range" class="custom-range"
+								   min="-30" max="90" step="0.1" value="0">
+							<!-- Negative values set frequency from minFreq to 1, positive values set frequency from 1 to maxFreq. --> 
+						</p>
+						<p>
+							<label for="octavesSlider">Octaves:</label>
+							<input id="octavesSlider" type="range" class="custom-range"
+								   min="1" max="15" value="1">
+						</p>
+						<p>
+							<label for="gainSlider">Gain:</label>
+							<input id="gainSlider" type="range" class="custom-range"
+								   min="0.2" max="0.8" step="0.01" value="0.4">
+						</p>
+						<p>
+							<label for="lacunaritySlider">Lacunarity:</label>
+							<input id="lacunaritySlider" type="range" class="custom-range"
+								   min="2" max="10" step="0.01" value="2">
+						</p>
+						<p>
+							<label for="amplitudeSlider">Amplitude:</label>
+							<input id="amplitudeSlider" type="range" class="custom-range"
+								   min="1" max="100" step="0.1" value="1">
+						</p>
+					</div>
+					<!-- Tab content ........................................................................ -->
+
+					<div id="palette" class="tab-pane fade" role="tabpanel" aria-labelledby="palette-tab">
+						<div id="paletteEasingGroup">
+							<div>
+								<label for="paletteEasingBgToFg">BG to FG easing:</label>
+								<select id="paletteEasingBgToFg" class="custom-select"></select>
+							</div>
+							<div>
+								<label for="paletteEasingFgToBg">FG to BG easing:</label>
+								<select id="paletteEasingFgToBg" class="custom-select"></select>
+							</div>
+						</div>
+						<p>
+							<label for="paletteSaturationSlider">Foreground saturation:</label>
+							<input id="paletteSaturationSlider" type="range" class="custom-range"
+								   min="0" max="1" step="0.01" value="0.5">
+						</p>
+						<p>
+							<label for="paletteValueSlider">Foreground brightness:</label>
+							<input id="paletteValueSlider" type="range" class="custom-range"
+								   min="0" max="1" step="0.01" value="0.75">
+						</p>
+						<p>
+							<label for="bgColorPicker">Background color:</label>
+							<input id="bgColorPicker" />
+						</p>
+						<div class="custom-control custom-checkbox">
+							<input id="grayScaleCheckBox" type="checkbox" class="custom-control-input">
+							<label for="grayScaleCheckBox" class="custom-control-label">Show original grayscale image</label>
+						</div>
+					</div>
+					<!-- Tab content ........................................................................ -->
+
+					<div id="animation" class="tab-pane fade" role="tabpanel" aria-labelledby="animation-tab">
+						<p>
+							<label for="animationSpeedSlider">Palette animation speed:</label>
+							<input id="animationSpeedSlider" type="range" class="custom-range">
+						</p>
+						<p>
+							<label for="paletteTransitionDelaySlider">Palette transition delay:</label>
+							<input id="paletteTransitionDelaySlider" type="range" class="custom-range"
+								   min="0" max="30000" value="10000">
+						</p>
+						<p>
+							<label for="paletteTransitionDurationSlider">Palette transition duration:</label>
+							<input id="paletteTransitionDurationSlider" type="range" class="custom-range"
+								   min="1000" max="30000" value="5000">
+						</p>
+						<p>
+							<label for="noiseTransitionDelaySlider">Noise transition delay:</label>
+							<input id="noiseTransitionDelaySlider" type="range" class="custom-range"
+								   min="0" max="30000" value="10000">
+						</p>
+						<p>
+							<label for="noiseTransitionDurationSlider">Noise transition duration:</label>
+							<input id="noiseTransitionDurationSlider" type="range" class="custom-range"
+								   min="1000" max="30000" value="5000">
+						</p>
+					</div>
+				</div>
+			</div>
+        </div>
+    </div>
+</div>
+
+<!--===== SCRIPT ===================================================================================================-->
+<script>
+
+function initOptionsDialog( callbacks, options )
+{
+	'use strict';
+
+	// Register "on close" handler.
+	$( "#optionsDialog" ).on( "hide.bs.modal", function() 
+	{	
+		// Make it possible to use the browser back button to revert the current options.
+		window.history.pushState( { action: "optionsDialogClose" }, document.title, $("#permaLink").attr( "href" ) );
+	});
+
+	//... Init noise tab .....................................................................
+
+	const frqSlider = $("#frequencySlider");
+
+	// TODO: get min/max from options definition 
+	const minFreq = 0.01;
+	const maxFreq = 15;
+	const minSlider = frqSlider.attr( "min" );    
+	const maxSlider = frqSlider.attr( "max" );                
+		
+	frqSlider
+		.val( calcSliderValueFromInput( options.noise.frequency, minFreq, maxFreq, minSlider, maxSlider ) )
+		.on( "change", function()
+		{
+			options.noise.frequency = calcInputValueFromSlider( Number( $(this).val() ), minFreq, maxFreq, minSlider, maxSlider );
+			setNoiseOptions();
+		});
+
+	$( "#octavesSlider" )
+		.val( options.noise.octaves )
+		.on( "change", function() 
+		{
+			options.noise.octaves = Number( $(this).val() );
+			setNoiseOptions();
+		});
+
+	$( "#gainSlider" )
+		.val( options.noise.gain )   
+		.on( "change", function()
+		{
+			options.noise.gain = Number( $(this).val() );
+			setNoiseOptions();
+		});
+		
+	$( "#lacunaritySlider" )
+		.val( options.noise.lacunarity )   
+		.on( "change", function()
+		{
+			options.noise.lacunarity = Number( $(this).val() );
+			setNoiseOptions();
+		});
+		
+	$( "#amplitudeSlider" )
+		.val( options.noise.amplitude )   
+		.on( "change", function()
+		{
+			options.noise.amplitude = Number( $(this).val() );
+			setNoiseOptions();
+		});
+
+
+	//... Init palette tab ..................................................................
+
+	const smBgToFg = $( "#paletteEasingBgToFg" );
+	const smFgToBg = $( "#paletteEasingFgToBg" );
+		
+	z42plasmaOptions.availablePaletteEaseFunctions.forEach( function( name, index ){
+		appendOption( smBgToFg, { text: name, selected: name == options.palette.easeFunctionBgToFg } );
+		appendOption( smFgToBg, { text: name, selected: name == options.palette.easeFunctionFgToBg } );
+	});
+
+	smBgToFg.on( "change", function()
+	{
+		options.palette.easeFunctionBgToFg = $(this).val();
+		setPaletteOptions();
+	});
+
+	smFgToBg.on( "change", function()
+	{
+		options.palette.easeFunctionFgToBg = $(this).val();
+		setPaletteOptions();
+	});
+
+	$( "#paletteSaturationSlider" )
+		.val( options.palette.saturation )
+		.on( "input", function() 
+		{
+			options.palette.saturation = Number( $(this).val() );
+			setPaletteOptions();
+		});
+
+	$( "#paletteValueSlider" )
+		.val( options.palette.brightness )
+		.on( "input", function()
+		{
+			options.palette.brightness = Number( $(this).val() );
+			setPaletteOptions();
+		});
+
+	let bgColorChanged = false;
+	let oldBgColor = { ...options.palette.bgColor };
+		
+	$( "#bgColorPicker" ).spectrum({
+		theme: "sp-dark",
+		color: tinycolor( options.palette.bgColor ).toHex(),
+			
+		show: function( color ) {
+			bgColorChanged = false;	
+			oldBgColor = { ...options.palette.bgColor };				
+		},
+		move: function( color ) {
+			options.palette.bgColor = color.toRgb();
+			setPaletteOptions();
+		},
+		change: function( color ) {
+			bgColorChanged = true;	
+		},
+		hide: function() {
+			if( ! bgColorChanged )
+			{
+				options.palette.bgColor = oldBgColor;
+				setPaletteOptions();
+			}
+		}
+	});
+
+	$( "#grayScaleCheckBox" )
+		.prop("checked", options.palette.isGrayScale )
+		.on( "change", function()
+		{
+			options.palette.isGrayScale = $(this).prop( "checked" );
+			setPaletteOptions();
+		});
+
+
+	//... Init animation tab ................................................................
+
+	const animSpeedSlider = $( "#animationSpeedSlider" );
+	const rotaDurationMin =  5 * 1000;
+	const rotaDurationMax = 60 * 1000;
+	const rotaDurationRange = rotaDurationMax - rotaDurationMin;
+
+	animSpeedSlider
+		.attr( "min", 0 )
+		.attr( "max", rotaDurationRange )
+		.val( rotaDurationMin + rotaDurationRange - options.paletteAnim.rotaDuration )
+		.on( "change", function()
+		{
+			options.paletteAnim.rotaDuration = rotaDurationMin + rotaDurationRange - Number( $(this).val() );
+			setPaletteAnimOptions();
+		});		
+
+	$( "#paletteTransitionDelaySlider" )
+		.val( options.paletteAnim.transitionDelay )
+		.on( "change", function()
+		{
+			options.paletteAnim.transitionDelay = Number( $(this).val() );
+			setPaletteAnimOptions();
+		});
+		
+	$( "#paletteTransitionDurationSlider" )
+		.val( options.paletteAnim.transitionDuration )
+		.on( "change", function()
+		{
+			options.paletteAnim.transitionDuration = Number( $(this).val() );
+			setPaletteAnimOptions();
+		});
+				
+	$( "#noiseTransitionDelaySlider" )
+		.val( options.paletteAnim.transitionDelay )
+		.on( "change", function()
+		{
+			options.noiseAnim.transitionDelay = Number( $(this).val() );
+			setNoiseAnimOptions();
+		});		
+		
+	$( "#noiseTransitionDurationSlider" )
+		.val( options.paletteAnim.transitionDuration )
+		.on( "change", function()
+		{
+			options.noiseAnim.transitionDuration = Number( $(this).val() );
+			setNoiseAnimOptions();
+		});			
+
+	//.......................................................................................
+
+	function calcSliderValueFromInput( inputValue, minValue, maxValue, minSlider, maxSlider )
+	{
+		let result = 0;
+		if( inputValue < 1 )
+			result = minSlider - minSlider * ( inputValue - minValue ) / ( 1 - minValue );  
+		else
+			result = maxSlider * ( inputValue - 1 ) / ( maxValue - 1 );
+
+		return z42color.clamp( result, minSlider, maxSlider );
+	}		
+		
+	function calcInputValueFromSlider( sliderValue, minValue, maxValue, minSlider, maxSlider )
+	{
+		if( sliderValue < 0 )
+			return minFreq + ( 1 - ( sliderValue / minSlider ) ) * ( 1 - minFreq );
+		else
+			return 1 + ( sliderValue / maxSlider ) * ( maxFreq - 1 );
+	}
+
+	//-------------------------------------------------------------------------------------------------------------------
 	
-	<div id="tabs-params">
-		<p>
-		<label for="frequencyInput">Frequency: 
-		<input id="frequencyInput" type="number" step="0.1" style="width:6em;">
-		</p>
-		<div id="frequencySlider"></div>
+	function appendOption( selectElement, opt )
+	{
+		let optElem = $("<option></option>");
+		optElem.text( opt.text );
+		if( opt.selected )
+			optElem.attr( "selected", true );
+		selectElement.append( optElem );
+	}
+
+	//.......................................................................................
+
+	function setNoiseOptions()
+	{
+		callbacks.onChangedNoiseOptions( options.noise );
+		updatePermalink();
+	}
+	
+	function setPaletteOptions()
+	{
+		callbacks.onChangedPaletteOptions( options.palette );
+		updatePermalink();
+	}
+	
+	function setPaletteAnimOptions()
+	{
+		callbacks.onChangedPaletteAnimOptions( options.paletteAnim );
+		updatePermalink();
+	}
+	
+	function setNoiseAnimOptions()
+	{
+		callbacks.onChangedNoiseAnimOptions( options.noiseAnim );
+		updatePermalink();
+	}
+
+	//.......................................................................................
+	
+	function updatePermalink()
+	{
+		// Serialize all options to URL parameters.
 		
-		<p><label for="octavesSlider">Octaves:</label></p>
-		<div id="octavesSlider"></div>
+		const urlParams = z42plasmaOptions.urlParamsMapper.createUrlParams( options );
 
-		<p><label for="gainSlider">Gain:</label></p>
-		<div id="gainSlider"></div>	
-
-		<p><label for="lacunaritySlider">Lacunarity:</label></p>
-		<div id="lacunaritySlider"></div>
+		let href = window.location.href;
 		
-		<p><label for="amplitudeSlider">Amplitude:</label></p>
-		<div id="amplitudeSlider"></div>
-	</div>
-
-	<div id="tabs-palette">
-		<div id="paletteEasingGroup">
-			<div>
-				<p><label for="paletteEasingBgToFg">BG to FG easing:</label></p>
-				<select id="paletteEasingBgToFg"></select>	    
-			</div>
-			<div>	
-				<p><label for="paletteEasingFgToBg">FG to BG easing:</label></p>
-				<select id="paletteEasingFgToBg"></select>	
-			</div>
-		</div>
-
-		<p><label for="paletteSaturationSlider">Foreground saturation:</label></p>
-		<div id="paletteSaturationSlider"></div>
+		const iq = href.indexOf("?");
+		if( iq >= 0 )
+		{
+			href = href.substring( 0, iq );
+		}
 		
-		<p><label for="paletteValueSlider">Foreground brightness:</label></p>
-		<div id="paletteValueSlider"></div>
+		href += "?" + urlParams;
 		
-		<p>
-		<label for="bgColorPicker">Background color:</label>
-		<input id="bgColorPicker" />
-		</p>
+		console.log( "permaLink:", href );
 		
-		<p>
-		<input type="checkbox" id="grayScaleCheckBox">
-		<label for="grayScaleCheckBox">Show original grayscale image</label>
-		</p>
-		
-	</div>
-		
-	<div id="tabs-animation">
-		<p><label for="animationSpeedSlider">Palette animation speed:</label></p>
-		<div id="animationSpeedSlider"></div>		
-
-		<p><label for="paletteTransitionDelaySlider">Palette transition delay:</label></p>
-		<div id="paletteTransitionDelaySlider"></div>		
-
-		<p><label for="paletteTransitionDurationSlider">Palette transition duration:</label></p>
-		<div id="paletteTransitionDurationSlider"></div>		
-
-		<p><label for="noiseTransitionDelaySlider">Noise transition delay:</label></p>
-		<div id="noiseTransitionDelaySlider"></div>		
-
-		<p><label for="noiseTransitionDurationSlider">Noise transition duration:</label></p>
-		<div id="noiseTransitionDurationSlider"></div>		
-	</div>
-</div>	
+		$( "#permaLink" ).attr( "href", href );
+	}	
+}
+</script>

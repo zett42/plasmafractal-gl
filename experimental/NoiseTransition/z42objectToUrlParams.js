@@ -140,7 +140,7 @@ function z42ObjectToUrlParams( paramsDefinition )
 			{
 				if( typeof paramDef.maxFractionDigits !== "undefined" )
 				{
-					return Number( value.toFixed( paramDef.maxFractionDigits ) );
+					return Number( value ).toFixed( paramDef.maxFractionDigits );
 				}
 				return value;
 			}	

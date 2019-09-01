@@ -20,44 +20,17 @@ html, body {
 #canvas2 {
 	opacity: 0;
 }
-input {
-	padding-left: 5px;
-}
 #optionsDialogButton {		
-	margin:0; padding: 0 0 5px 1px;
-	
 	position: absolute;
-	left: 15px; 
-	top: 15px;
-	width: 1.5em; 
-	height: 1.5em;
+	left: 10px; 
+	top: 10px;
 	z-index: 10;
 
-	font-size: 20px;
+	transition-property: opacity;
+	transition-timing-function:	ease-in-out;
+	transition-duration: 500ms;
 }
-#dialog {
-	display: none;
+/* Show bootstrap modal dialogs without darkening backdrop but still allow to dismiss dialog by clicking outside */
+.modal-backdrop {
+	opacity: 0 !important;
 }
-#dialog a {
-	font-size: 12px;
-}
-#permaLink {
-	float: right;
-}
-
-.ui-dialog {
-	opacity:   .85 !important; /* Make sure to change both of these, as IE only sees the second one */
-	filter:    Alpha(Opacity=85) !important;
-	font-size: 14px !important;
-}
-.ui-dialog-titlebar-close { 
-	width: 30px !important; height: 26px !important; top: 40% !important; 
-}
-#paletteEasingGroup {
-	display: flex;
-	flex-wrap: nowrap;
-}
-#paletteEasingGroup > div {
-	flex-grow: 1;	
-}
-.selectOverflow { height: 350px; }
