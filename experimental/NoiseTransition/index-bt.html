@@ -23,6 +23,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. 
 -->
+<!--===== HTML ======================================================================================-->
+
 <html lang="us">
 <head>
 	<meta charset="utf-8">
@@ -31,11 +33,9 @@ SOFTWARE.
 	<title>zett42 PlasmaFractal</title>
 
 	<link rel="stylesheet" href="../../external/bootstrap/css/bootstrap.min.css">
-<!--
-	<link href="../../external/spectrum/spectrum.css" rel="stylesheet">
-	<link href="../../external/spectrum/sp-dark.css" rel="stylesheet">
--->	
-	<link href="main-bt.css" rel="stylesheet">
+	<link rel="stylesheet" href="../../external/spectrum/spectrum.css">
+	<link rel="stylesheet" href="../../external/spectrum/sp-dark.css">
+	<link rel="stylesheet" href="main-bt.css">
 </head>
 <body>
 
@@ -47,13 +47,13 @@ SOFTWARE.
 <canvas id="canvas2" class="plasmaCanvas">PlasmaFractal</canvas>
 <canvas id="canvas1" class="plasmaCanvas">PlasmaFractal</canvas>	
 
+<!--===== SCRIPTS ======================================================================================-->
+
 <script src="../../external/jquery/jquery.min.js"></script>
 <script src="../../external/popper/popper.min.js"></script>
 <script src="../../external/bootstrap/js/bootstrap.min.js"></script>
 <script src="../../external/tinycolor/tinycolor.js"></script>
-<!--
 <script src="../../external/spectrum/spectrum.js"></script>
--->
 
 <script src="z42optionUtils.js"></script>
 <script src="z42objectToUrlParams.js"></script>
@@ -61,20 +61,26 @@ SOFTWARE.
 <script src="z42color.js"></script>
 <script src="z42plasmaGui.js"></script>
 
+<!--..... Main script ...................................................................................-->
 <script>
 (function(){
 
-	let m_plasmaThreadFG = null;
-	let m_plasmaThreadBG = null;
-
-	let m_canvasFG = canvas1;
-	let m_canvasBG = canvas2;
-
+	const m_options = z42plasmaOptions.getDefaultOptions();
 	const m_colorSeed = Math.random();
 
-	const m_options = z42plasmaOptions.getDefaultOptions();
-
 	let m_optionsButtonFadeoutTimer = null;
+
+	let m_canvasFG = $("#canvas1");
+	let m_canvasBG = $("#canvas2");
+
+	// Create threads for rendering plasma.
+	let m_plasmaThreadFG = createPlasmaThreadForCanvas( m_canvasFG[ 0 ], false );
+	let m_plasmaThreadBG = createPlasmaThreadForCanvas( m_canvasBG[ 0 ], true );
+
+	// Set timeout for first canvas fade animation.
+	setTimeout( initCanvasAnimation, m_options.noiseAnim.transitionDelay );
+
+	initGui();
 
 	//===================================================================================================================
 	// Functions
@@ -133,7 +139,7 @@ SOFTWARE.
 		setCanvasTransitionDuration( m_options.noiseAnim.transitionDuration );
 
 		// Set callback to be notified when CSS transition has ended.
-		m_canvasFG.addEventListener( 'transitionend', () =>
+		m_canvasFG.on( 'transitionend', () =>
 		{
 			console.log( 'm_canvasFG transitionend' );
 
@@ -167,8 +173,53 @@ SOFTWARE.
 		// Wake the background thread up because its canvas will be visible soon.
 		m_plasmaThreadBG.postMessage( { action: "start" } );
 
-		$( m_canvasFG ).css( { opacity: 0.0 } );
-		$( m_canvasBG ).css( { opacity: 1.0 } );
+		m_canvasFG.css( { opacity: 0.0 } );
+		m_canvasBG.css( { opacity: 1.0 } );
+	}
+
+	//-------------------------------------------------------------------------------------------------------------------
+
+	function initGui()
+	{
+		// To work around blurry popup windows when browser zoom != 100%.
+		Popper.Defaults.modifiers.computeStyle.gpuAcceleration = false;
+
+		$( "#optionsDialog" ).load( "optionsDialog-bt.html", function() {
+			// Replace optionsDialog div with the content loaded from file.
+			$(this).children( ":first" ).unwrap();
+
+			// Initialize GUI for setting parameters.
+			// Using callbacks here to decouple GUI from the thread API.
+			initOptionsDialog(
+				{
+					onChangedNoiseOptions       : ( opt ) => { setPlasmaOptions( 'setNoiseOptions', opt ) },
+					onChangedPaletteOptions     : ( opt ) => { setPlasmaOptions( 'setPaletteOptions', opt ) },
+					onChangedPaletteAnimOptions : ( opt ) => { setPlasmaOptions( 'setPaletteAnimOptions', opt ) },
+					onChangedNoiseAnimOptions   : ( opt ) => { setNoiseAnimOptions( opt ) }
+				},
+				m_options		
+			);
+		});
+
+		// Wire up global events.
+	
+		$(window)
+			// On window resize, resize the canvas to fill browser window dynamically.
+			.on( "resize", resizePlasmaToWindowSize )
+			// When browser back/forward button gets pressed, reload the state that onOptionsDialogClose() pushed to the history. 
+			.on( "popstate", window.location.reload )
+			;
+
+		// On double-click set fullscreen.
+		$(document)
+			.on( "dblclick", toggleFullscreen )
+			// Toggle visibility of options button: fullscreen will hide it, mouse interaction will show it again.
+			.on( "fullscreenchange", updateOptionsButtonVisibility )
+			.on( "mousemove", updateOptionsButtonVisibility )
+			.on( "click", updateOptionsButtonVisibility )
+			// Handle keyboard shortcuts
+			.on( "keydown", onKeyDown )
+			; 
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------
@@ -218,6 +269,8 @@ SOFTWARE.
 		}
 	}
 
+	//-------------------------------------------------------------------------------------------------------------------
+
 	function updateOptionsButtonVisibility()
 	{
 		$("#optionsDialogButton").css( "opacity", 1 );
@@ -251,50 +304,6 @@ SOFTWARE.
 			case 79: $( "#optionsDialogButton" ).click(); break;
 		}
 	}
-
-	//===================================================================================================================
-	// Main 
-	//===================================================================================================================
-	
-	$( "#optionsDialog" ).load( "optionsDialog-bt.html", function() {
-		// Replace optionsDialog div with the content loaded from file.
-		$(this).children( ":first" ).unwrap();
-
-		// Initialize GUI for setting parameters.
-		// Using callbacks here to decouple GUI from the thread API.
-		initOptionsDialog(
-			{
-				onChangedNoiseOptions       : ( opt ) => { setPlasmaOptions( 'setNoiseOptions', opt ) },
-				onChangedPaletteOptions     : ( opt ) => { setPlasmaOptions( 'setPaletteOptions', opt ) },
-				onChangedPaletteAnimOptions : ( opt ) => { setPlasmaOptions( 'setPaletteAnimOptions', opt ) },
-				onChangedNoiseAnimOptions   : ( opt ) => { setNoiseAnimOptions( opt ) }
-			},
-			m_options		
-		);
-	});
-	
-	// On window resize, resize the canvas to fill browser window dynamically.
-	window.addEventListener( "resize", resizePlasmaToWindowSize );
-
-	// When browser back/forward button gets pressed, reload the state that onOptionsDialogClose() pushed to the history. 
-	window.addEventListener( "popstate", window.location.reload );
-
-	// On double-click set fullscreen.
-	document.addEventListener( "dblclick", toggleFullscreen );
-
-	// Toggle visibility of options button: fullscreen will hide it, mouse interaction will show it again.
-	document.addEventListener( "fullscreenchange", updateOptionsButtonVisibility );
-	document.addEventListener( "mousemove", updateOptionsButtonVisibility );
-	document.addEventListener( "click", updateOptionsButtonVisibility );
-
-	document.addEventListener( "keydown", onKeyDown ); 
-
-	// Create threads for rendering plasma.
-	m_plasmaThreadFG = createPlasmaThreadForCanvas( m_canvasFG, false );
-	m_plasmaThreadBG = createPlasmaThreadForCanvas( m_canvasBG, true );
-
-	// Set timeout for first canvas fade animation.
-	setTimeout( initCanvasAnimation, m_options.noiseAnim.transitionDelay );
 
 })();
 </script>
