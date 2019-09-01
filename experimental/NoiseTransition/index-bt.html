@@ -39,7 +39,7 @@ SOFTWARE.
 </head>
 <body>
 
-<button id="optionsDialogButton" title="Plasma Options" class="btn btn-primary" 
+<button id="optionsDialogButton" title="Plasma Options (Key 'o')" class="btn btn-primary" 
 	data-toggle="modal" data-target="#optionsDialog">⚙</button>
 	
 <div id="optionsDialog"></div>	<!-- loaded from external file -->
@@ -73,6 +73,8 @@ SOFTWARE.
 	const m_colorSeed = Math.random();
 
 	const m_options = z42plasmaOptions.getDefaultOptions();
+
+	let m_optionsButtonFadeoutTimer = null;
 
 	//===================================================================================================================
 	// Functions
@@ -202,16 +204,51 @@ SOFTWARE.
 	{
 		setCanvasTransitionDuration( options.transitionDuration );
 	}
+
 	//-------------------------------------------------------------------------------------------------------------------
 
 	function toggleFullscreen()
 	{
-		if ( document.documentElement.requestFullscreen )
+		if( document.documentElement.requestFullscreen )
 		{
-			if ( !document.fullscreenElement )
-				document.documentElement.requestFullscreen();
-			else
+			if ( document.fullscreenElement )
 				document.exitFullscreen();
+			else
+				document.documentElement.requestFullscreen();
+		}
+	}
+
+	function updateOptionsButtonVisibility()
+	{
+		$("#optionsDialogButton").css( "opacity", 1 );
+
+		if( m_optionsButtonFadeoutTimer )
+		{
+			clearTimeout( m_optionsButtonFadeoutTimer );
+		}
+
+		if( document.fullscreenElement )
+		{
+			// In fullscreen mode, options button will be hidden after timeout.
+			m_optionsButtonFadeoutTimer = setTimeout( () =>
+			{
+				$("#optionsDialogButton").css( "opacity", 0 );
+
+			}, 2000 );
+		}
+	}
+
+	//-------------------------------------------------------------------------------------------------------------------
+
+	function onKeyDown( event )
+	{
+		if( event.isComposing ) {
+			return;
+		}
+		switch( event.keyCode )
+		{
+			// Key "o" -> toggle options dialog
+			case 79: $( "#optionsDialogButton" ).click(); break;
 		}
 	}
 
@@ -243,7 +280,14 @@ SOFTWARE.
 	window.addEventListener( "popstate", window.location.reload );
 
 	// On double-click set fullscreen.
-	m_canvasFG.addEventListener( "dblclick", toggleFullscreen );
+	document.addEventListener( "dblclick", toggleFullscreen );
+
+	// Toggle visibility of options button: fullscreen will hide it, mouse interaction will show it again.
+	document.addEventListener( "fullscreenchange", updateOptionsButtonVisibility );
+	document.addEventListener( "mousemove", updateOptionsButtonVisibility );
+	document.addEventListener( "click", updateOptionsButtonVisibility );
+
+	document.addEventListener( "keydown", onKeyDown ); 
 
 	// Create threads for rendering plasma.
 	m_plasmaThreadFG = createPlasmaThreadForCanvas( m_canvasFG, false );
