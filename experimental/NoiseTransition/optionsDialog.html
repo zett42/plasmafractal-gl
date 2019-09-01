@@ -59,7 +59,7 @@ SOFTWARE.
 				<!-- Common elements ............................................................ -->
 				<p>
 					<a href="https://github.com/zett42/PlasmaFractal" target="_blank" rel="noopener">GitHub Project</a>
-					<a id="permaLink" href="#" style="float: right">Permalink</a>
+					<a id="permaLink" style="float: right">Permalink</a>
 				</p>
 				<!-- Tab buttons ................................................................ -->
 
@@ -437,10 +437,16 @@ function initOptionsDialog( callbacks, options )
 
 		let href = window.location.href;
 		
-		const iq = href.indexOf("?");
-		if( iq >= 0 )
+		let i = href.indexOf( "?" );
+		if( i >= 0 )
 		{
-			href = href.substring( 0, iq );
+			href = href.substring( 0, i );
+		}
+
+		i = href.indexOf( "#" );
+		if( i > 0 )
+		{
+			href = href.substring( 0, i );
 		}
 		
 		href += "?" + urlParams;
