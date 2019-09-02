@@ -65,19 +65,19 @@ SOFTWARE.
 
 				<ul class="nav nav-tabs" id="myTab" role="tablist">
 					<li class="nav-item">
-						<a id="noise-tab" href="#noise" aria-controls="noise"
+						<a id="noise-tab" href="#noise-tab-content" aria-controls="noise-tab-content"
 						   class="nav-link active" data-toggle="tab" role="tab" aria-selected="true">
 							Noise
 						</a>
 					</li>
 					<li class="nav-item">
-						<a id="palette-tab" href="#palette" aria-controls="palette"
+						<a id="palette-tab" href="#palette-tab-content" aria-controls="palette-tab-content"
 						   class="nav-link" data-toggle="tab" role="tab" aria-selected="false">
 							Palette
 						</a>
 					</li>
 					<li class="nav-item">
-						<a id="animation-tab" href="#animation" aria-controls="animation"
+						<a id="animation-tab" href="#animation-tab-content" aria-controls="animation-tab-content"
 						   class="nav-link" data-toggle="tab" role="tab" aria-selected="false">
 							Animation
 						</a>
@@ -87,37 +87,42 @@ SOFTWARE.
 				<div class="tab-content" id="myTabContent">
 					<!-- Tab content ........................................................................ -->
 
-					<div id="noise" class="tab-pane fade show active" role="tabpanel" aria-labelledby="noise-tab">
+					<div id="noise-tab-content" class="tab-pane fade show active" role="tabpanel" aria-labelledby="noise-tab">
 						<p>
 							<label for="frequencySlider">Frequency:</label>
+							<span id="frequencySliderValue"></span>
 							<input id="frequencySlider" type="range" class="custom-range"
 								   min="-30" max="90" step="0.1" value="0">
 							<!-- Negative values set frequency from minFreq to 1, positive values set frequency from 1 to maxFreq. --> 
 						</p>
 						<p>
 							<label for="octavesSlider">Octaves:</label>
+							<span id="octavesSliderValue"></span>
 							<input id="octavesSlider" type="range" class="custom-range"
 								   min="1" max="15" value="1">
 						</p>
 						<p>
 							<label for="gainSlider">Gain:</label>
+							<span id="gainSliderValue"></span>
 							<input id="gainSlider" type="range" class="custom-range"
 								   min="0.2" max="0.8" step="0.01" value="0.4">
 						</p>
 						<p>
 							<label for="lacunaritySlider">Lacunarity:</label>
+							<span id="lacunaritySliderValue"></span>
 							<input id="lacunaritySlider" type="range" class="custom-range"
 								   min="2" max="10" step="0.01" value="2">
 						</p>
 						<p>
 							<label for="amplitudeSlider">Amplitude:</label>
+							<span id="amplitudeSliderValue"></span>
 							<input id="amplitudeSlider" type="range" class="custom-range"
 								   min="1" max="100" step="0.1" value="1">
 						</p>
 					</div>
 					<!-- Tab content ........................................................................ -->
 
-					<div id="palette" class="tab-pane fade" role="tabpanel" aria-labelledby="palette-tab">
+					<div id="palette-tab-content" class="tab-pane fade" role="tabpanel" aria-labelledby="palette-tab">
 						<div id="paletteEasingGroup">
 							<div>
 								<label for="paletteEasingBgToFg">BG to FG easing:</label>
@@ -130,12 +135,14 @@ SOFTWARE.
 						</div>
 						<p>
 							<label for="paletteSaturationSlider">Foreground saturation:</label>
+							<span id="paletteSaturationSliderValue"></span>
 							<input id="paletteSaturationSlider" type="range" class="custom-range"
 								   min="0" max="1" step="0.01" value="0.5">
 						</p>
 						<p>
-							<label for="paletteValueSlider">Foreground brightness:</label>
-							<input id="paletteValueSlider" type="range" class="custom-range"
+							<label for="paletteBrightnessSlider">Foreground brightness:</label>
+							<span id="paletteBrightnessSliderValue"></span>
+							<input id="paletteBrightnessSlider" type="range" class="custom-range"
 								   min="0" max="1" step="0.01" value="0.75">
 						</p>
 						<p>
@@ -149,31 +156,41 @@ SOFTWARE.
 					</div>
 					<!-- Tab content ........................................................................ -->
 
-					<div id="animation" class="tab-pane fade" role="tabpanel" aria-labelledby="animation-tab">
-						<p>
-							<label for="animationSpeedSlider">Palette animation speed:</label>
-							<input id="animationSpeedSlider" type="range" class="custom-range">
-						</p>
-						<p>
-							<label for="paletteTransitionDelaySlider">Palette transition delay:</label>
-							<input id="paletteTransitionDelaySlider" type="range" class="custom-range"
-								   min="0" max="30000" value="10000">
-						</p>
-						<p>
-							<label for="paletteTransitionDurationSlider">Palette transition duration:</label>
-							<input id="paletteTransitionDurationSlider" type="range" class="custom-range"
-								   min="1000" max="30000" value="5000">
-						</p>
-						<p>
-							<label for="noiseTransitionDelaySlider">Noise transition delay:</label>
-							<input id="noiseTransitionDelaySlider" type="range" class="custom-range"
-								   min="0" max="30000" value="10000">
-						</p>
-						<p>
-							<label for="noiseTransitionDurationSlider">Noise transition duration:</label>
-							<input id="noiseTransitionDurationSlider" type="range" class="custom-range"
-								   min="1000" max="30000" value="5000">
-						</p>
+					<div id="animation-tab-content" class="tab-pane fade" role="tabpanel" aria-labelledby="animation-tab">
+						<fieldset id="paletteAnimationGroup" class="form-group">
+							<p>
+								<label for="paletteRotaDurationSlider">Palette rotation duration:</label>
+								<span id="paletteRotaDurationSliderValue"></span>
+								<input id="paletteRotaDurationSlider" type="range" class="custom-range"
+									   min="2000" max="60000" value="40000">
+							</p>
+							<p>
+								<label for="paletteTransitionDelaySlider">Palette transition delay:</label>
+								<span id="paletteTransitionDelaySliderValue"></span>
+								<input id="paletteTransitionDelaySlider" type="range" class="custom-range"
+									   min="0" max="30000" value="10000">
+							</p>
+							<p>
+								<label for="paletteTransitionDurationSlider">Palette transition duration:</label>
+								<span id="paletteTransitionDurationSliderValue"></span>
+								<input id="paletteTransitionDurationSlider" type="range" class="custom-range"
+									   min="1000" max="30000" value="5000">
+							</p>
+						</fieldset>
+						<fieldset id="noiseAnimationGroup" class="form-group">
+							<p>
+								<label for="noiseTransitionDelaySlider">Noise transition delay:</label>
+								<span id="noiseTransitionDelaySliderValue"></span>
+								<input id="noiseTransitionDelaySlider" type="range" class="custom-range"
+									   min="0" max="30000" value="10000">
+							</p>
+							<p>
+								<label for="noiseTransitionDurationSlider">Noise transition duration:</label>
+								<span id="noiseTransitionDurationSliderValue"></span>
+								<input id="noiseTransitionDurationSlider" type="range" class="custom-range"
+									   min="1000" max="30000" value="5000">
+							</p>
+						</fieldset>
 					</div>
 				</div>
 			</div>
@@ -188,12 +205,15 @@ function initOptionsDialog( callbacks, options )
 {
 	'use strict';
 
+	updatePermalink();
+
 	// Register "on close" handler.
 	$( "#optionsDialog" ).on( "hide.bs.modal", function() 
 	{	
 		// Make it possible to use the browser back button to revert the current options.
 		window.history.pushState( { action: "optionsDialogClose" }, document.title, $("#permaLink").attr( "href" ) );
 	});
+
 
 	//... Init noise tab .....................................................................
 
@@ -204,46 +224,52 @@ function initOptionsDialog( callbacks, options )
 	const maxFreq = 15;
 	const minSlider = frqSlider.attr( "min" );    
 	const maxSlider = frqSlider.attr( "max" );                
-		
+
 	frqSlider
 		.val( calcSliderValueFromInput( options.noise.frequency, minFreq, maxFreq, minSlider, maxSlider ) )
-		.on( "change", function()
+		.on( "input", function()
 		{
 			options.noise.frequency = calcInputValueFromSlider( Number( $(this).val() ), minFreq, maxFreq, minSlider, maxSlider );
-			setNoiseOptions();
+			$( "#frequencySliderValue" ).text( options.noise.frequency.toFixed( 3 ) );
 		});
 
 	$( "#octavesSlider" )
 		.val( options.noise.octaves )
-		.on( "change", function() 
+		.on( "input", function()
 		{
 			options.noise.octaves = Number( $(this).val() );
-			setNoiseOptions();
+			$( "#octavesSliderValue" ).text( options.noise.octaves );
 		});
 
 	$( "#gainSlider" )
 		.val( options.noise.gain )   
-		.on( "change", function()
+		.on( "input", function()
 		{
 			options.noise.gain = Number( $(this).val() );
-			setNoiseOptions();
+			$( "#gainSliderValue" ).text( options.noise.gain.toFixed( 2 ) );
 		});
 		
 	$( "#lacunaritySlider" )
 		.val( options.noise.lacunarity )   
-		.on( "change", function()
+		.on( "input", function()
 		{
 			options.noise.lacunarity = Number( $(this).val() );
-			setNoiseOptions();
+			$( "#lacunaritySliderValue" ).text( options.noise.lacunarity.toFixed( 2 ) );
 		});
 		
 	$( "#amplitudeSlider" )
 		.val( options.noise.amplitude )   
-		.on( "change", function()
+		.on( "input", function()
 		{
 			options.noise.amplitude = Number( $(this).val() );
-			setNoiseOptions();
+			$( "#amplitudeSliderValue" ).text( options.noise.amplitude.toFixed( 2 ) );
 		});
+
+	$( "#noise-tab-content" ).find( "input,select" ).each( function()
+	{
+		$(this).triggerHandler( "input" );  // to initially set value text
+		$(this).on( "change", setNoiseOptions );
+	});
 
 
 	//... Init palette tab ..................................................................
@@ -256,16 +282,14 @@ function initOptionsDialog( callbacks, options )
 		appendOption( smFgToBg, { text: name, selected: name == options.palette.easeFunctionFgToBg } );
 	});
 
-	smBgToFg.on( "change", function()
+	smBgToFg.on( "input", function()
 	{
 		options.palette.easeFunctionBgToFg = $(this).val();
-		setPaletteOptions();
 	});
 
-	smFgToBg.on( "change", function()
+	smFgToBg.on( "input", function()
 	{
 		options.palette.easeFunctionFgToBg = $(this).val();
-		setPaletteOptions();
 	});
 
 	$( "#paletteSaturationSlider" )
@@ -273,15 +297,15 @@ function initOptionsDialog( callbacks, options )
 		.on( "input", function() 
 		{
 			options.palette.saturation = Number( $(this).val() );
-			setPaletteOptions();
+			$( "#paletteSaturationSliderValue" ).text( options.palette.saturation.toFixed( 2 ) );
 		});
 
-	$( "#paletteValueSlider" )
+	$( "#paletteBrightnessSlider" )
 		.val( options.palette.brightness )
 		.on( "input", function()
 		{
 			options.palette.brightness = Number( $(this).val() );
-			setPaletteOptions();
+			$( "#paletteBrightnessSliderValue" ).text( options.palette.brightness.toFixed( 2 ) );
 		});
 
 	let bgColorChanged = false;
@@ -313,61 +337,71 @@ function initOptionsDialog( callbacks, options )
 
 	$( "#grayScaleCheckBox" )
 		.prop("checked", options.palette.isGrayScale )
-		.on( "change", function()
+		.on( "input", function()
 		{
 			options.palette.isGrayScale = $(this).prop( "checked" );
-			setPaletteOptions();
 		});
+
+	$( "#palette-tab-content" ).find( "input,select" ).each( function()
+	{
+		$(this).triggerHandler( "input" );  // to initially set value text
+		$(this).on( "input", setPaletteOptions );
+	});
 
 
 	//... Init animation tab ................................................................
 
-	const animSpeedSlider = $( "#animationSpeedSlider" );
-	const rotaDurationMin =  5 * 1000;
-	const rotaDurationMax = 60 * 1000;
-	const rotaDurationRange = rotaDurationMax - rotaDurationMin;
-
-	animSpeedSlider
-		.attr( "min", 0 )
-		.attr( "max", rotaDurationRange )
-		.val( rotaDurationMin + rotaDurationRange - options.paletteAnim.rotaDuration )
-		.on( "change", function()
+	$( "#paletteRotaDurationSlider" )
+		.val( options.paletteAnim.rotaDuration )
+		.on( "input", function()
 		{
-			options.paletteAnim.rotaDuration = rotaDurationMin + rotaDurationRange - Number( $(this).val() );
-			setPaletteAnimOptions();
-		});		
+			options.paletteAnim.rotaDuration = Number( $(this).val() );
+			$( "#paletteRotaDurationSliderValue" ).text( formatDuration( options.paletteAnim.rotaDuration ) );
+		});
 
 	$( "#paletteTransitionDelaySlider" )
 		.val( options.paletteAnim.transitionDelay )
-		.on( "change", function()
+		.on( "input", function()
 		{
 			options.paletteAnim.transitionDelay = Number( $(this).val() );
-			setPaletteAnimOptions();
+			$( "#paletteTransitionDelaySliderValue" ).text( formatDuration( options.paletteAnim.transitionDelay ) );
 		});
 		
 	$( "#paletteTransitionDurationSlider" )
 		.val( options.paletteAnim.transitionDuration )
-		.on( "change", function()
+		.on( "input", function()
 		{
 			options.paletteAnim.transitionDuration = Number( $(this).val() );
-			setPaletteAnimOptions();
+			$( "#paletteTransitionDurationSliderValue" ).text( formatDuration( options.paletteAnim.transitionDuration ) );
 		});
 				
 	$( "#noiseTransitionDelaySlider" )
-		.val( options.paletteAnim.transitionDelay )
-		.on( "change", function()
+		.val( options.noiseAnim.transitionDelay )
+		.on( "input", function()
 		{
 			options.noiseAnim.transitionDelay = Number( $(this).val() );
-			setNoiseAnimOptions();
+			$( "#noiseTransitionDelaySliderValue" ).text( formatDuration( options.noiseAnim.transitionDelay ) );
 		});		
 		
 	$( "#noiseTransitionDurationSlider" )
-		.val( options.paletteAnim.transitionDuration )
-		.on( "change", function()
+		.val( options.noiseAnim.transitionDuration )
+		.on( "input", function()
 		{
 			options.noiseAnim.transitionDuration = Number( $(this).val() );
-			setNoiseAnimOptions();
+			$( "#noiseTransitionDurationSliderValue" ).text( formatDuration( options.noiseAnim.transitionDuration ) );
 		});			
+
+	$( "#paletteAnimationGroup" ).find( "input,select" ).each( function()
+	{
+		$(this).triggerHandler( "input" );  // to initially set value text
+		$(this).on( "change", setPaletteAnimOptions );
+	});
+
+	$( "#noiseAnimationGroup" ).find( "input,select" ).each( function()
+	{
+		$(this).triggerHandler( "input" );  // to initially set value text
+		$(this).on( "change", setNoiseAnimOptions );
+	});
 
 	//.......................................................................................
 
@@ -388,6 +422,13 @@ function initOptionsDialog( callbacks, options )
 			return minFreq + ( 1 - ( sliderValue / minSlider ) ) * ( 1 - minFreq );
 		else
 			return 1 + ( sliderValue / maxSlider ) * ( maxFreq - 1 );
+	}
+
+	//-------------------------------------------------------------------------------------------------------------------
+
+	function formatDuration( millis )
+	{
+		return ( millis / 1000 ).toFixed( 1 ).toString() + " s";
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------
