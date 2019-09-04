@@ -25,13 +25,17 @@ SOFTWARE.
 (function(global){
 	'use strict';
 	
-	// Create a "namespace" for our stuff.
-	var module = global.z42comp = {};
+	// Create a "namespace" for our stuff, if not already exists.
+	const module = global.z42comp || ( global.z42comp = {} );
 
 	// TIP: Install VSCode "Comment tagged templates" extensions for syntax highlighting
 	// within template string literals.
 
-	module.sliderOption = Vue.component( "slider-option", {
+	//===================================================================================================
+	// Public components
+	//===================================================================================================
+
+	module.rangeComp = Vue.component( "z42opt-range", {
 		inheritAttrs: false,
 		props: { 
 			id: {
@@ -61,6 +65,21 @@ SOFTWARE.
 				required: false,
 				default: 1
 			},
+			isScale: {   // If true, the slider becomes better usable to edit scale factors below and above 1.
+				type: Boolean,
+				required: false,
+				default: false
+			},
+			scaleNormalPos: {  // If isScale is true, this defines the relative position of the value 1 on the slider.
+				type: Number,
+				required: false,
+				default: 0.5
+			},
+			scaleMaxFractionDigits: {  // If isScale is true, 'step' can't be used. Instead use this property to limit number of fraction digits.
+				type: Number,
+				required: false,
+				default: 3
+			},
 			lazy: {  // This is a workaround for "lazy" modifier of v-model not working in component
 				type: Boolean,
 				required: false,
@@ -68,21 +87,81 @@ SOFTWARE.
 			}  
 		},
 		computed: {
-			eventName(){ return this.lazy ? "change" : "input"; }
+			eventName(){ 
+				return this.lazy ? "change" : "input"; 
+			},
+			sliderValue(){
+				if( this.isScale )
+					return calcSliderValueFromScale( this.value, this.min, this.max, this.sliderMin, this.sliderMax );
+
+				return this.value;
+			},
+			sliderMin(){
+				if( this.isScale )
+					return -1000 * this.scaleNormalPos;
+
+				return this.min;
+			},
+			sliderMax(){
+				if( this.isScale )
+					return 1000 * ( 1 - this.scaleNormalPos );					
+
+				return this.max;
+			}
+		},
+		methods: {
+			onUpdate( value ) {
+				if( this.isScale )
+				{
+					value = calcScaleFromSliderValue( value, this.min, this.max, this.sliderMin, this.sliderMax );
+					value = Number( value ).toFixed( this.scaleMaxFractionDigits );
+				}
+
+				this.$emit('input', value );
+			}
 		},
 		template: /*html*/ `
 			<p>
 				<label :for="id">{{ label }}:</label> {{ value }}
 				<b-input type="range"
 						 :id="id"
-						 :value="value"
-						 :min="min"
-						 :max="max"
+						 :value="sliderValue"
+						 :min="sliderMin"
+						 :max="sliderMax"
 						 :step="step"
-						 @[eventName]="$emit('input', $event)"
+						 @[eventName]="onUpdate($event)"
 				/>
 			</p>`
 	});
+
+	//===================================================================================================
+	// Private utility functions
+	//===================================================================================================
+
+	function calcSliderValueFromScale( value, minValue, maxValue, minSlider, maxSlider )
+	{
+		let result = 0;
+		if( value < 1 )
+			result = minSlider - minSlider * ( value - minValue ) / ( 1 - minValue );  
+		else
+			result = maxSlider * ( value - 1 ) / ( maxValue - 1 );
+
+		if( result < minSlider )
+			return minSlider;
+		if( result > maxSlider )
+			return maxSlider;
+		return result;
+	}		
+		
+	function calcScaleFromSliderValue( sliderValue, minValue, maxValue, minSlider, maxSlider )
+	{
+		if( sliderValue < 0 )
+			return minValue + ( 1 - ( sliderValue / minSlider ) ) * ( 1 - minValue );
+
+		return 1 + ( sliderValue / maxSlider ) * ( maxValue - 1 );
+	}
+
+	//---------------------------------------------------------------------------------------------------
 
 
 })(this);

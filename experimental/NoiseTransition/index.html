@@ -46,8 +46,8 @@ SOFTWARE.
 <!-- This is the template for the #app element -->
 <script type="text/x-template" id="app-template">
 <div>
-	<b-button id="button-options-dialog" title="Plasma Options (Key 'o')" v-b-modal.options-dialog>⚙</b-button>
-	<options-dialog />
+	<b-button id="button-options-dialog" title="Plasma Options (Key 'o')" v-b-modal.z42opt-dialog>⚙</b-button>
+	<z42opt-dialog />
 </div>
 </script>
 
@@ -195,7 +195,7 @@ SOFTWARE.
 
 		// Register options dialog and wire it up with the data.
 
-		z42optionsDialog.registerComponent({
+		z42comp.registerOptionsDialog({
 			data: m_options,
 			watch: {
 				"options.noise": {

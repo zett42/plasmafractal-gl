@@ -25,25 +25,26 @@ SOFTWARE.
 (function(global){
 	'use strict';
 	
-	// Create a "namespace" for our stuff.
-	var module = global.z42optionsDialog = {};
+	// Create a "namespace" for our stuff, if not already exists.
+	const module = global.z42comp || ( global.z42comp = {} );
 
 	// TIP: Install VSCode "Comment tagged templates" extensions for syntax highlighting
 	// within template string.
 
 	const dialogTemplate = /*html*/ `
-		<b-modal title="PlasmaFractal Options" id="options-dialog"
+		<b-modal title="PlasmaFractal Options" id="z42opt-dialog"
 			scrollable hide-footer>
 
 		<b-tabs>
 			<b-tab title="Noise">
-				<slider-option id="frequency" label="Frequency" :min="1" :max="15" 
+				<z42opt-range id="frequency" label="Frequency" :min="0.01" :max="15" 
+					isScale :scaleNormalPos="0.333" :scaleMaxFractionDigits="2" 
 					v-model.number="options.noise.frequency" lazy />
 
-				<slider-option id="octaves" label="Octaves" :min="1" :max="15" 
+				<z42opt-range id="octaves" label="Octaves" :min="1" :max="15" 
 					v-model.number="options.noise.octaves" lazy />
 
-				<slider-option id="gain" label="Gain" :min="0.2" :max="0.8" :step="0.01" 
+				<z42opt-range id="gain" label="Gain" :min="0.2" :max="0.8" :step="0.01" 
 					v-model.number="options.noise.gain" lazy />
 
 			</b-tab>
@@ -59,9 +60,9 @@ SOFTWARE.
 		</b-modal>
 		`;
 	
-	module.registerComponent = function( params ) 
+	module.registerOptionsDialog  = function( params ) 
 	{
-		Vue.component( "options-dialog", {
+		Vue.component( "z42opt-dialog", {
 			data: function() { 
 				return { options: params.data } 
 			},
