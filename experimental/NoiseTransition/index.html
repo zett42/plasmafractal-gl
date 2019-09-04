@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <!--
 PlasmaFractal main script. Copyright (c) 2019 zett42.
 https://github.com/zett42/PlasmaFractal
@@ -39,19 +39,27 @@ SOFTWARE.
 </head>
 <body>
 
-<button id="optionsDialogButton" title="Plasma Options (Key 'o')" class="btn btn-primary" 
-	data-toggle="modal" data-target="#optionsDialog">⚙</button>
-	
-<div id="optionsDialog"></div>	<!-- loaded from external file -->
-	
-<canvas id="canvas2" class="plasmaCanvas">PlasmaFractal</canvas>
-<canvas id="canvas1" class="plasmaCanvas">PlasmaFractal</canvas>	
+<!-- Mounting point for Vue.js. We could place the template inside but it is advised to use
+     a script tag instead, to prevent the content from being parsed by the browser. -->
+<div id="app"></div>
+
+<!-- This is the template for the #app element -->
+<script type="text/x-template" id="app-template">
+<div>
+	<b-button id="button-options-dialog" title="Plasma Options (Key 'o')" v-b-modal.options-dialog>⚙</b-button>
+	<options-dialog />
+</div>
+</script>
+
+<canvas id="canvas2" class="plasma">PlasmaFractal</canvas>
+<canvas id="canvas1" class="plasma">PlasmaFractal</canvas>
 
 <!--===== SCRIPTS ======================================================================================-->
 
 <script src="../../external/jquery/jquery.min.js"></script>
 <script src="../../external/popper/popper.min.js"></script>
-<script src="../../external/bootstrap/js/bootstrap.min.js"></script>
+<script src="../../external/vue/vue.js"></script>
+<script src="../../external/bootstrap-vue/bootstrap-vue.js"></script>
 <script src="../../external/tinycolor/tinycolor.js"></script>
 <script src="../../external/spectrum/spectrum.js"></script>
 
@@ -59,6 +67,8 @@ SOFTWARE.
 <script src="z42objectToUrlParams.js"></script>
 <script src="z42plasmaOptions.js"></script>
 <script src="z42color.js"></script>
+<script src="components/optionComponents.js"></script>
+<script src="components/optionsDialog.js"></script>
 
 <!--..... Main script ...................................................................................-->
 <script>
@@ -79,7 +89,7 @@ SOFTWARE.
 	// Set timeout for first canvas fade animation.
 	setTimeout( initCanvasAnimation, m_options.noiseAnim.transitionDelay );
 
-	initGui();
+	let m_app = initGui();
 
 	//===================================================================================================================
 	// Functions
@@ -118,7 +128,7 @@ SOFTWARE.
 
 	function onPlasmaThreadMessage( ev )
 	{
-		console.log( "Message from plasmaThread:", ev );
+		console.debug( "Message from plasmaThread:", ev );
 
 		switch ( ev.data.action )
 		{
@@ -140,7 +150,7 @@ SOFTWARE.
 		// Set callback to be notified when CSS transition has ended.
 		m_canvasFG.on( 'transitionend', () =>
 		{
-			console.log( 'm_canvasFG transitionend' );
+			console.debug( 'm_canvasFG transitionend' );
 
 			// Swap foreground and background things.
 			[m_canvasFG, m_canvasBG] = [m_canvasBG, m_canvasFG];
@@ -161,7 +171,7 @@ SOFTWARE.
 
 	function setCanvasTransitionDuration( durationMillis )
 	{
-		$( ".plasmaCanvas" ).css( "transition-duration", durationMillis.toString() + "ms" );
+		$( ".plasma" ).css( "transition-duration", durationMillis.toString() + "ms" );
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------
@@ -183,24 +193,45 @@ SOFTWARE.
 		// To work around blurry popup windows when browser zoom != 100%.
 		Popper.Defaults.modifiers.computeStyle.gpuAcceleration = false;
 
-		// Load and initialize options dialog.
-		$( "#optionsDialog" ).load( "optionsDialog.html", function() 
-		{
-			// Replace optionsDialog div with the content loaded from file.
-			$(this).children( ":first" ).unwrap();
+		// Register options dialog and wire it up with the data.
 
-			initOptionsDialog(
-				// Using callbacks to decouple GUI from the thread API.
-				{
-					onChangedNoiseOptions       : ( opt ) => { setPlasmaOptions( 'setNoiseOptions', opt ) },
-					onChangedPaletteOptions     : ( opt ) => { setPlasmaOptions( 'setPaletteOptions', opt ) },
-					onChangedPaletteAnimOptions : ( opt ) => { setPlasmaOptions( 'setPaletteAnimOptions', opt ) },
-					onChangedNoiseAnimOptions   : ( opt ) => { setNoiseAnimOptions( opt ) }
+		z42optionsDialog.registerComponent({
+			data: m_options,
+			watch: {
+				"options.noise": {
+					deep: true,   // watch child elements too
+					handler: function( val, oldVal ) {
+						setPlasmaOptions( 'setNoiseOptions', val );
+					}
 				},
-				m_options		
-			);
+				"options.palette": {
+					deep: true,   // watch child elements too
+					handler: function( val, oldVal ) {
+						setPlasmaOptions( 'setPaletteOptions', val );
+					}
+				},
+				"options.paletteAnim": {
+					deep: true,   // watch child elements too
+					handler: function( val, oldVal ) {
+						setPlasmaOptions( 'setPaletteAnimOptions', val );
+					}
+				},
+				"options.noiseAnim": {
+					deep: true,   // watch child elements too
+					handler: function( val, oldVal ) {
+						setNoiseAnimOptions( val );
+					}
+				}
+			}
 		});
 
+		// Create root Vue instance (process templates).
+
+		let app = new Vue({
+			el: '#app',
+			template: "#app-template",
+  		});	
+	
 		// Wire up global events.
 	
 		$(window)
@@ -221,6 +252,8 @@ SOFTWARE.
 			// Handle keyboard shortcuts
 			.on( "keydown", onKeyDown )
 			; 
+
+		return app;
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------

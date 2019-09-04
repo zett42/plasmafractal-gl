@@ -39,7 +39,7 @@ Dependencies:
 	{
 		let res = {
 			noise: {
-				frequency  : 0.4,  // increase for smaller structures
+				frequency  : 1,  // increase for smaller structures
 				octaves    : 4,    // number of passes (level of detail, typically 1 to 8)
 				gain       : 0.5,  // how much amplification for each pass (typically 0.3 to 0.7, default 0.5)
 				lacunarity : 2,    // frequency multiplicator for each pass (default 2)	

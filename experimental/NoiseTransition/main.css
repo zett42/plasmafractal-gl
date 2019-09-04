@@ -5,7 +5,7 @@ html, body {
 	overflow: hidden;
 	background: black;
 } 
-.plasmaCanvas {
+.plasma {
 	margin:0; padding:0;
 	display: block;  /* To remove the scrollbars */
 	background: black;	
@@ -13,24 +13,28 @@ html, body {
 	
 	mix-blend-mode: screen;
 
-	transition-property: opacity;
-	transition-timing-function:	ease-in-out;
+	transition: opacity ease-in-out;
 	/* NOTE: transition-duration is set by JS */
 }
 #canvas2 {
 	opacity: 0;
 }
-#optionsDialogButton {		
+#button-options-dialog {		
 	position: absolute;
 	left: 10px; 
 	top: 10px;
 	z-index: 10;
-
-	transition-property: opacity;
-	transition-timing-function:	ease-in-out;
-	transition-duration: 500ms;
+	transition: opacity ease-in-out 500ms;
 }
 /* Show bootstrap modal dialogs without darkening backdrop but still allow to dismiss dialog by clicking outside */
 .modal-backdrop {
 	opacity: 0 !important;
 }
+/* Make only dialog background semi-transparent */
+.modal-content {
+	background-color: rgba( 0, 0, 0, 0.7) !important;
+}
+.tab-pane {
+	padding-top: 1em;
+}
+ 

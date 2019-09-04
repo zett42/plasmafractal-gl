@@ -46,7 +46,7 @@ let m_isPaused = false;
 
 self.onmessage = function( ev ) 
 {
-	console.log( "z42plasmaThread: Message received: ", ev );
+	console.debug( "z42plasmaThread: Message received: ", ev );
 
 	switch( ev.data.action )
 	{

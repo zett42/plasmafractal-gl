@@ -213,7 +213,7 @@ function z42Plasma( params ){
 
 		z42fractal.generateFractalNoiseImageUint16( m_plasmaPixels, m_width, m_height, m_currentPalette.length, m_opt.noise ); 
 
-		console.log( "Fractal generation took %d ms", performance.now() - fracStartTime );
+		console.debug( "Fractal generation took %d ms", performance.now() - fracStartTime );
 	}
 	
 	//-------------------------------------------------------------------------------------------------------------------
