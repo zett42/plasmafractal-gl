@@ -37,16 +37,25 @@ SOFTWARE.
 
 		<b-tabs>
 			<b-tab title="Noise">
-				<z42opt-range id="frequency" label="Frequency" :min="0.01" :max="15" 
-					isScale :scaleNormalPos="0.333" :scaleMaxFractionDigits="2" 
+				<z42opt-range id="frequency" label="Frequency" 
+					:min="0.01" :max="15" isScale :scaleNormalPos="0.33" :scaleMaxFractionDigits="2" 
 					v-model.number="options.noise.frequency" lazy />
 
-				<z42opt-range id="octaves" label="Octaves" :min="1" :max="15" 
+				<z42opt-range id="octaves" label="Octaves" 
+					:min="1" :max="15" 
 					v-model.number="options.noise.octaves" lazy />
 
-				<z42opt-range id="gain" label="Gain" :min="0.2" :max="0.8" :step="0.01" 
+				<z42opt-range id="gain" label="Gain" 
+					:min="0.2" :max="0.8" :step="0.01" 
 					v-model.number="options.noise.gain" lazy />
 
+				<z42opt-range id="lacunarity" label="Lacunarity"
+					:min="2" :max="10" :step="0.01"
+					v-model.number="options.noise.lacunarity" lazy />
+
+				<z42opt-range id="amplitude" label="Amplitude"
+					:min="2" :max="100" :step="0.01"
+					v-model.number="options.noise.amplitude" lazy />
 			</b-tab>
 
 			<b-tab title="Palette">
