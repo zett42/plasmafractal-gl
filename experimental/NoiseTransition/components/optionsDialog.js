@@ -34,38 +34,89 @@ SOFTWARE.
 	const dialogTemplate = /*html*/ `
 		<b-modal title="PlasmaFractal Options" id="z42opt-dialog"
 			scrollable hide-footer>
+			<p>
+				<a href="https://github.com/zett42/PlasmaFractal" target="_blank" rel="noopener">GitHub Project</a>
+				<a id="permaLink" style="float: right">Permalink</a>
+			</p>
+			<b-tabs>
+				<b-tab title="Noise">
+					<z42opt-range label="Frequency" 
+						:min="0.01" :max="15" isScale :scaleNormalPos="0.33" :displayMaxFractionDigits="2" 
+						v-model.number="options.noise.frequency" lazy />
 
-		<b-tabs>
-			<b-tab title="Noise">
-				<z42opt-range id="frequency" label="Frequency" 
-					:min="0.01" :max="15" isScale :scaleNormalPos="0.33" :scaleMaxFractionDigits="2" 
-					v-model.number="options.noise.frequency" lazy />
+					<z42opt-range label="Octaves" 
+						:min="1" :max="15" 
+						v-model.number="options.noise.octaves" lazy />
 
-				<z42opt-range id="octaves" label="Octaves" 
-					:min="1" :max="15" 
-					v-model.number="options.noise.octaves" lazy />
+					<z42opt-range label="Gain" 
+						:min="0.2" :max="0.8" :step="0.01" 
+						v-model.number="options.noise.gain" lazy />
 
-				<z42opt-range id="gain" label="Gain" 
-					:min="0.2" :max="0.8" :step="0.01" 
-					v-model.number="options.noise.gain" lazy />
+					<z42opt-range label="Lacunarity"
+						:min="2" :max="10" :step="0.01"
+						v-model.number="options.noise.lacunarity" lazy />
 
-				<z42opt-range id="lacunarity" label="Lacunarity"
-					:min="2" :max="10" :step="0.01"
-					v-model.number="options.noise.lacunarity" lazy />
+					<z42opt-range id="options.noise.amplitude" label="Amplitude"
+						:min="2" :max="100" :step="0.01"
+						v-model.number="options.noise.amplitude" lazy />
+				</b-tab>
 
-				<z42opt-range id="amplitude" label="Amplitude"
-					:min="2" :max="100" :step="0.01"
-					v-model.number="options.noise.amplitude" lazy />
-			</b-tab>
+				<b-tab title="Palette" class="container">
+					<b-form-row no-gutters>
+						<b-col>
+							<z42opt-select label="BG to FG easing"
+								:options="paletteEaseFunctions"
+								v-model="options.palette.easeFunctionBgToFg" />
+						</b-col>
+						<b-col>
+							<z42opt-select label="FG to BG easing"
+								:options="paletteEaseFunctions"
+								v-model="options.palette.easeFunctionFgToBg" />
+						</b-col>
+					</b-form-row>
 
-			<b-tab title="Palette">
+					<z42opt-range label="Foreground saturation"
+						:min="0" :max="1" :step="0.01"
+						v-model.number="options.palette.saturation" />
+						
+					<z42opt-range label="Foreground brightness"
+						:min="0" :max="1" :step="0.01"
+						v-model.number="options.palette.brightness" />
 
-			</b-tab>
+					<z42opt-color label="Background color"
+						v-model="options.palette.bgColor" />
 
-			<b-tab title="Animation">
+					<z42opt-check label="Show original grayscale image"
+						v-model="options.palette.isGrayScale" />
+				</b-tab>
 
-			</b-tab>
-		</b-tabs>	
+				<b-tab title="Animation">
+					<z42opt-range label="Palette rotation duration"
+							:min="2000" :max="60000" :step="100"
+							displayUnit="s" :displayFactor="0.001"
+							v-model.number="options.paletteAnim.rotaDuration" lazy />
+
+					<z42opt-range label="Palette transition delay"
+							:min="0" :max="30000" :step="100"
+							displayUnit="s" :displayFactor="0.001"
+							v-model.number="options.paletteAnim.transitionDelay" lazy />
+
+					<z42opt-range label="Palette transition duration"
+							:min="1000" :max="30000" :step="100"
+							displayUnit="s" :displayFactor="0.001"
+							v-model.number="options.paletteAnim.transitionDuration" lazy />
+
+					<z42opt-range label="Noise transition delay"
+							:min="0" :max="30000" :step="100"
+							displayUnit="s" :displayFactor="0.001"
+							v-model.number="options.noiseAnim.transitionDelay" lazy />
+
+					<z42opt-range label="Noise transition duration"
+							:min="1000" :max="30000" :step="100"
+							displayUnit="s" :displayFactor="0.001"
+							v-model.number="options.noiseAnim.transitionDuration" lazy />
+				</b-tab>
+			</b-tabs>	
 		</b-modal>
 		`;
 	
@@ -73,7 +124,10 @@ SOFTWARE.
 	{
 		Vue.component( "z42opt-dialog", {
 			data: function() { 
-				return { options: params.data } 
+				return { 
+					options: params.options,
+					paletteEaseFunctions: params.paletteEaseFunctions
+				};
 			},
 			watch: params.watch,
 			template: dialogTemplate

@@ -196,7 +196,8 @@ SOFTWARE.
 		// Register options dialog and wire it up with the data.
 
 		z42comp.registerOptionsDialog({
-			data: m_options,
+			options: m_options,
+			paletteEaseFunctions: z42plasmaOptions.availablePaletteEaseFunctions,
 			watch: {
 				"options.noise": {
 					deep: true,   // watch child elements too

@@ -31,6 +31,8 @@ SOFTWARE.
 	// TIP: Install VSCode "Comment tagged templates" extensions for syntax highlighting
 	// within template string literals.
 
+	let defaultId = 0;
+
 	//===================================================================================================
 	// Public components
 	//===================================================================================================
@@ -40,7 +42,8 @@ SOFTWARE.
 		props: { 
 			id: {
 				type: String,
-				required: true
+				required: false,
+				default: null
 			}, 
 			label: {
 				type: String,
@@ -75,7 +78,17 @@ SOFTWARE.
 				required: false,
 				default: 0.5
 			},
-			scaleMaxFractionDigits: {  // If isScale is true, 'step' can't be used. Instead use this property to limit number of fraction digits.
+			displayUnit: {
+				type: String,
+				required: false,
+				default: ""
+			},
+			displayFactor: {
+				type: Number,
+				required: false,
+				default: 1.0
+			},
+			displayMaxFractionDigits: {  // Number of fraction digits to show
 				type: Number,
 				required: false,
 				default: 3
@@ -86,7 +99,13 @@ SOFTWARE.
 				default: false
 			}  
 		},
+		beforeCreate(){
+			++defaultId;
+		},
 		computed: {
+			autoId(){
+				return this.id || getDefaultId( "z42opt-range" );
+			},
 			eventName(){ 
 				return this.lazy ? "change" : "input"; 
 			},
@@ -107,36 +126,174 @@ SOFTWARE.
 					return 1000 * ( 1 - this.scaleNormalPos );					
 
 				return this.max;
+			},
+			displayValue(){
+				let value = this.value * this.displayFactor;
+				value = Number( value.toFixed( this.displayMaxFractionDigits ) );
+				return value.toString() + ' ' + this.displayUnit;
 			}
 		},
 		methods: {
-			onUpdate( value ) {
+			onModified( value ) {
+				value = Number( value );
+
 				if( this.isScale )
-				{
 					value = calcScaleFromSliderValue( value, this.min, this.max, this.sliderMin, this.sliderMax );
-					value = Number( value ).toFixed( this.scaleMaxFractionDigits );
-				}
 
 				this.$emit('input', value );
 			}
 		},
 		template: /*html*/ `
-			<p>
-				<label :for="id">{{ label }}:</label> {{ value }}
+			<b-form-group
+				:label="label + ': ' + displayValue"
+				:label-for="autoId">
+
 				<b-input type="range"
-						 :id="id"
-						 :value="sliderValue"
-						 :min="sliderMin"
-						 :max="sliderMax"
-						 :step="step"
-						 @[eventName]="onUpdate($event)"
+					:id="autoId"
+					:value="sliderValue"
+					:min="sliderMin"
+					:max="sliderMax"
+					:step="step"
+					@[eventName]="onModified( $event )"
 				/>
-			</p>`
+			</b-form-group>`
 	});
+
+	//---------------------------------------------------------------------------------------------------
+
+	module.selectComp = Vue.component( "z42opt-select", {
+		inheritAttrs: false,
+		props: { 
+			id: {
+				type: String,
+				required: false,
+				default: null
+			}, 
+			label: {
+				type: String,
+				required: true
+			},
+			options: {
+				type: Array,
+				required: true
+			},
+			value: {
+				required: false
+			},
+		},
+		beforeCreate(){
+			++defaultId;
+		},
+		computed: {
+			autoId(){
+				return this.id || getDefaultId( "z42opt-select" );
+			}
+		},
+		template: /*html*/ `
+			<b-form-group
+				:label="label + ':'"
+				:label-for="autoId">
+
+				<b-form-select 
+					:id="autoId"
+					:options="options"
+					:value="value"
+					@input="$emit( 'input', $event )"
+				/>
+			</b-form-group>`
+	});
+
+	//---------------------------------------------------------------------------------------------------
+
+	module.checkComp = Vue.component( "z42opt-check", {
+		inheritAttrs: false,
+		props: { 
+			id: {
+				type: String,
+				required: false,
+				default: null
+			}, 
+			label: {
+				type: String,
+				required: true
+			},
+			checked: {
+				required: false,
+				default: false
+			},
+		},
+		template: /*html*/ `
+			<b-form-group>
+				<b-form-checkbox 
+					:id="id"
+					:checked="checked"
+					@input="$emit( 'input', $event )"
+					>
+				{{ label }}
+				</b-form-checkbox>
+			</b-form-group>`
+	});	
+
+	//---------------------------------------------------------------------------------------------------
+
+	module.colorComp = Vue.component( "z42opt-color", {
+		inheritAttrs: false,
+		props: { 
+			id: {
+				type: String,
+				required: false,
+				default: null
+			}, 
+			label: {
+				type: String,
+				required: true
+			},
+			value: {
+				required: false,
+				default: "#000000"
+			},
+		},
+		beforeCreate(){
+			++defaultId;
+		},
+		computed: {
+			autoId(){
+				return this.id || getDefaultId( "z42opt-select" );
+			},
+			hexValue(){
+				return tinycolor( this.value ).toHexString();
+			},
+		},		
+		methods: {
+			onModified( value ){
+				this.$emit( "input", tinycolor( value ).toRgb() );
+			}
+		},
+		template: /*html*/ `
+			<b-form-group class="container">
+				<b-row align-v="center">
+					<b-col>
+						<label :for="autoId">{{ label }}: </label>
+					</b-col>
+					<b-col>
+						<b-form-input type="color"
+							:id="autoId"
+							:value="hexValue"
+							@input="onModified( $event )"				
+						/>
+					</b-col>
+				</b-row>
+			</b-form-group>`
+	});	
 
 	//===================================================================================================
 	// Private utility functions
 	//===================================================================================================
+
+	function getDefaultId( baseName )
+	{
+		return "__" + baseName + "_" + defaultId.toString();
+	}
 
 	function calcSliderValueFromScale( value, minValue, maxValue, minSlider, maxSlider )
 	{
