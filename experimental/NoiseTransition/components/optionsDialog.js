@@ -28,15 +28,20 @@ SOFTWARE.
 	// Create a "namespace" for our stuff, if not already exists.
 	const module = global.z42comp || ( global.z42comp = {} );
 
+	//===================================================================================================
+	// Public components
+	//===================================================================================================
+
 	// TIP: Install VSCode "Comment tagged templates" extensions for syntax highlighting
 	// within template string.
 
 	const dialogTemplate = /*html*/ `
 		<b-modal title="PlasmaFractal Options" id="z42opt-dialog"
-			scrollable hide-footer>
+			scrollable hide-footer
+			@show="onShow" @hide="onHide">
 			<p>
 				<a href="https://github.com/zett42/PlasmaFractal" target="_blank" rel="noopener">GitHub Project</a>
-				<a id="permaLink" style="float: right">Permalink</a>
+				<a :href="permaLinkUrl" style="float: right">Permalink</a>
 			</p>
 			<b-tabs>
 				<b-tab title="Noise">
@@ -120,8 +125,7 @@ SOFTWARE.
 		</b-modal>
 		`;
 	
-	module.registerOptionsDialog  = function( params ) 
-	{
+	module.registerOptionsDialog  = function( params ) {
 		Vue.component( "z42opt-dialog", {
 			data: function() { 
 				return { 
@@ -130,8 +134,41 @@ SOFTWARE.
 				};
 			},
 			watch: params.watch,
-			template: dialogTemplate
+			
+			template: dialogTemplate,
+
+			myInitialPermaLinkUrl: null, 
+
+			computed: {
+				permaLinkUrl() {
+					return createPermalink( this.options );
+				}
+			},
+			methods: {
+				onShow(){
+					this.myInitialPermaLinkUrl = createPermalink( this.options );
+				},
+				onHide(){
+					// When options have changed, make it possible to use the browser back button to revert the current options.
+					if( this.permaLinkUrl !== this.myInitialPermaLinkUrl ){
+						window.history.pushState( { action: "optionsDialogClose" }, document.title, this.permaLinkUrl );
+					}
+				}
+			}
 		});
 	}
+	//===================================================================================================
+	// Private functions
+	//===================================================================================================
+
+	function createPermalink( options )
+	{
+		const urlParams = z42plasmaOptions.urlParamsMapper.createUrlParams( options );
+
+		// Remove sub string after "#" and "?", if exists.
+		const baseUrl = window.location.href.split( "#" )[ 0 ].split( "?" )[ 0 ];
+
+		return baseUrl + "?" + urlParams;
+	}	
 
 })(this);
