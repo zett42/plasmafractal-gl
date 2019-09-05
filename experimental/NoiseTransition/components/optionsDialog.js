@@ -44,7 +44,7 @@ SOFTWARE.
 				<a :href="permaLinkUrl" style="float: right">Permalink</a>
 			</p>
 			<b-tabs>
-				<b-tab title="Noise">
+				<b-tab title="Noise" class="container px-0">
 					<z42opt-range label="Frequency" 
 						:min="0.01" :max="15" isScale :scaleNormalPos="0.33" :displayMaxFractionDigits="2" 
 						v-model.number="options.noise.frequency" lazy />
@@ -66,8 +66,8 @@ SOFTWARE.
 						v-model.number="options.noise.amplitude" lazy />
 				</b-tab>
 
-				<b-tab title="Palette" class="container">
-					<b-form-row no-gutters>
+				<b-tab title="Palette" class="container px-0">
+					<b-form-row>
 						<b-col>
 							<z42opt-select label="BG to FG easing"
 								:options="paletteEaseFunctions"
@@ -95,7 +95,7 @@ SOFTWARE.
 						v-model="options.palette.isGrayScale" />
 				</b-tab>
 
-				<b-tab title="Animation">
+				<b-tab title="Animation" class="container px-0">
 					<z42opt-range label="Palette rotation duration"
 							:min="2000" :max="60000" :step="100"
 							displayUnit="s" :displayFactor="0.001"

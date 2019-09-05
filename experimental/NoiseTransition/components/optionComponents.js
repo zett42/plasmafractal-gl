@@ -270,7 +270,7 @@ SOFTWARE.
 			}
 		},
 		template: /*html*/ `
-			<b-form-group class="container">
+			<b-form-group class="container px-0">
 				<b-row align-v="center">
 					<b-col>
 						<label :for="autoId">{{ label }}: </label>
