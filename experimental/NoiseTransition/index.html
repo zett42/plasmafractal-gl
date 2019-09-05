@@ -309,7 +309,7 @@ SOFTWARE.
 
 	function updateOptionsButtonVisibility()
 	{
-		$("#optionsDialogButton").css( "opacity", 1 );
+		$("#button-options-dialog").css( "opacity", 1 );
 
 		if( m_optionsButtonFadeoutTimer )
 		{
@@ -319,11 +319,7 @@ SOFTWARE.
 		if( document.fullscreenElement )
 		{
 			// In fullscreen mode, options button will be hidden after timeout.
-			m_optionsButtonFadeoutTimer = setTimeout( () =>
-			{
-				$("#optionsDialogButton").css( "opacity", 0 );
-
-			}, 2000 );
+			m_optionsButtonFadeoutTimer = setTimeout( () =>	$("#button-options-dialog").css( "opacity", 0 ), 2000 );
 		}
 	}
 
@@ -336,8 +332,8 @@ SOFTWARE.
 		}
 		switch( event.keyCode )
 		{
-			// Key "o" -> toggle options dialog
-			case 79: $( "#optionsDialogButton" ).click(); break;
+			// toggle options dialog
+			case "O".charCodeAt( 0 ): $( "#button-options-dialog" ).click(); break;
 		}
 	}
 
