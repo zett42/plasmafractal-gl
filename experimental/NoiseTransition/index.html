@@ -194,7 +194,7 @@ SOFTWARE.
 		// To work around blurry popup windows when browser zoom != 100%.
 		Popper.Defaults.modifiers.computeStyle.gpuAcceleration = false;
 
-		// Register options dialog and wire it up with the data.
+		// Register options dialog and wire it up with the data and change-handlers.
 
 		z42comp.registerOptionsDialog({
 			options: m_options,
@@ -202,27 +202,19 @@ SOFTWARE.
 			watch: {
 				"options.noise": {
 					deep: true,   // watch child elements too
-					handler: function( val, oldVal ) {
-						setPlasmaOptions( 'setNoiseOptions', val );
-					}
+					handler: ( val, oldVal ) => setPlasmaOptions( 'setNoiseOptions', val )
 				},
 				"options.palette": {
 					deep: true,   // watch child elements too
-					handler: function( val, oldVal ) {
-						setPlasmaOptions( 'setPaletteOptions', val );
-					}
+					handler: ( val, oldVal ) => setPlasmaOptions( 'setPaletteOptions', val )
 				},
 				"options.paletteAnim": {
 					deep: true,   // watch child elements too
-					handler: function( val, oldVal ) {
-						setPlasmaOptions( 'setPaletteAnimOptions', val );
-					}
+					handler: ( val, oldVal ) => setPlasmaOptions( 'setPaletteAnimOptions', val )
 				},
 				"options.noiseAnim": {
 					deep: true,   // watch child elements too
-					handler: function( val, oldVal ) {
-						setNoiseAnimOptions( val );
-					}
+					handler: ( val, oldVal ) => setNoiseAnimOptions( val )
 				}
 			}
 		});
@@ -319,7 +311,10 @@ SOFTWARE.
 		if( document.fullscreenElement )
 		{
 			// In fullscreen mode, options button will be hidden after timeout.
-			m_optionsButtonFadeoutTimer = setTimeout( () =>	$("#button-options-dialog").css( "opacity", 0 ), 2000 );
+			m_optionsButtonFadeoutTimer = setTimeout( 
+				() => $("#button-options-dialog").css( "opacity", 0 ), 
+				2000 
+			);
 		}
 	}
 
