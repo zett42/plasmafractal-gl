@@ -70,12 +70,12 @@ SOFTWARE.
 					<b-form-row>
 						<b-col>
 							<z42opt-select label="BG to FG easing"
-								:options="paletteEaseFunctions"
+								:options="paletteEaseFunctionNames"
 								v-model="options.palette.easeFunctionBgToFg" />
 						</b-col>
 						<b-col>
 							<z42opt-select label="FG to BG easing"
-								:options="paletteEaseFunctions"
+								:options="paletteEaseFunctionNames"
 								v-model="options.palette.easeFunctionFgToBg" />
 						</b-col>
 					</b-form-row>
@@ -130,7 +130,7 @@ SOFTWARE.
 			data: function() { 
 				return { 
 					options: params.options,
-					paletteEaseFunctions: params.paletteEaseFunctions
+					paletteEaseFunctionNames: z42plasmaOptions.paletteEaseFunctionNames
 				};
 			},
 			watch: params.watch,
@@ -163,7 +163,7 @@ SOFTWARE.
 
 	function createPermalink( options )
 	{
-		const urlParams = z42plasmaOptions.urlParamsMapper.createUrlParams( options );
+		const urlParams = z42opt.optionsToUrlParams( options, z42plasmaOptions.optionsDescriptor );
 
 		// Remove sub string after "#" and "?", if exists.
 		const baseUrl = window.location.href.split( "#" )[ 0 ].split( "?" )[ 0 ];

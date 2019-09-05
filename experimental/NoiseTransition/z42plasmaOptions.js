@@ -34,59 +34,9 @@ Dependencies:
 	var module = global.z42plasmaOptions = {};
 
 	//------------------------------------------------------------------------------------------------
-	
-	module.getDefaultOptions = function()
-	{
-		let res = {
-			noise: {
-				frequency  : 1,  // increase for smaller structures
-				octaves    : 4,    // number of passes (level of detail, typically 1 to 8)
-				gain       : 0.5,  // how much amplification for each pass (typically 0.3 to 0.7, default 0.5)
-				lacunarity : 2,    // frequency multiplicator for each pass (default 2)	
-				amplitude  : 8     // output of noise function (default 1)
-			},
-			palette: {
-				easeFunctionBgToFg : "InBounce",   // function from 'z42ease.js' without 'ease' prefix
-				easeFunctionFgToBg : "OutBounce",  // function from 'z42ease.js' without 'ease' prefix
-				
-				saturation         : 0.5,
-				brightness         : 0.75,
-				
-				bgColor            : { r: 0, g: 0, b: 0, a: 1 },
-				
-				isGrayScale        : false  // Set true for debugging, to see true output of noise function before palette gets applied.
-			},
-			paletteAnim: {		
-				rotaDuration       : 20 * 1000,  // Time in ms for a full palette rotation.
-				transitionDelay    : 10 * 1000,  // Time in ms during which palette colors won't change.
-				transitionDuration :  5 * 1000,  // Time in ms for palette color transition.
-			},
-			noiseAnim: {
-				transitionDelay    :  3 * 1000,  // Time in ms during which canvas is not cross-faded.
-				transitionDuration : 10 * 1000   // Time in ms for canvas cross-fading.
-			}
-		};
-		
-		console.log( "Default options:", JSON.parse( JSON.stringify( res ) ) );
-
-		// Deserialize and validate URL parameters.
-		const par = module.urlParamsMapper.parseUrlParams( window.location.search );
-		if( par )
-		{
-			console.log( "URL params:", JSON.parse( JSON.stringify( par ) ) );
-
-			z42opt.mergeObjectData( res, par );
-
-			console.log( "Merged options:", JSON.parse( JSON.stringify( res ) ) );
-		}
-
-		return res;
-	}		
-	
-	//------------------------------------------------------------------------------------------------
 	// Ease functions from 'z42ease.js' to use (excluded some which doesn't look good).
 	
-	module.availablePaletteEaseFunctions = [
+	module.paletteEaseFunctionNames = [
 		"Linear",
 		"InQuad",
 		"OutQuad",
@@ -119,99 +69,155 @@ Dependencies:
 		"InBounce",
 		"OutBounce",
 		"InOutBounce"
-	];		
-	
-	//------------------------------------------------------------------------------------------------
-	// Define mapping of options to URL parameters for permalinks.
+	];
 
-	module.urlParamsMapper = new z42ObjectToUrlParams({
-		"noise.frequency": { 
-			urlKey: "f",
-			type: "float",
-			min: 0.001,
-			max: 1000,
-			maxFractionDigits: 3
-		},
-		"noise.octaves": {
-			urlKey: "o",
-			type: "int",
-			min: 1,
-			max: 32
-		},
-		"noise.gain": {
-			urlKey: "g",
-			type: "float",
-			min: 0.001,
-			max: 100,
-			maxFractionDigits: 3
-		},
-		"noise.lacunarity": {
-			urlKey: "l",
-			type: "float",
-			min: 0.001,
-			max: 100,
-			maxFractionDigits: 3
-		},
-		"noise.amplitude": {
-			urlKey: "a",
-			type: "float",
-			min: 0.001,
-			max: 100,
-			maxFractionDigits: 3
-		},
-		"palette.easeFunctionBgToFg": {
-			urlKey: "pbf",
-			type: "enum",
-			enumValues: module.availablePaletteEaseFunctions
-		},
-		"palette.easeFunctionFgToBg": {
-			urlKey: "pfb",
-			type: "enum",
-			enumValues: module.availablePaletteEaseFunctions
-		},
-		"palette.saturation": {
-			urlKey: "ps",
-			type: "float",
-			min: 0,
-			max: 1,
-			maxFractionDigits: 3
-		},
-		"palette.brightness": {
-			urlKey: "pb",
-			type: "float",
-			min: 0,
-			max: 1,
-			maxFractionDigits: 3
-		},
-		"palette.bgColor": {
-			urlKey: "pbg",
-			type: "rgbColor"
-		},
-		"palette.isGrayScale": {
-			urlKey: "pg",
-			type: "boolean"
-		},
-		"paletteAnim.rotaDuration": {
-			urlKey: "prd",
-			type: "int"
-		},
-		"paletteAnim.transitionDelay": {
-			urlKey: "ptde",
-			type: "int"
-		},
-		"paletteAnim.transitionDuration": {
-			urlKey: "ptd",
-			type: "int"
-		},
-		"noiseAnim.transitionDelay": {
-			urlKey: "ntde",
-			type: "int"
-		},
-		"noiseAnim.transitionDuration": {
-			urlKey: "ntd",
-			type: "int"
-		}
+	// This describes all available options, e. g. default values, constraints, mapping to URL params.
+	// It does NOT store actual option values!
+
+	module.optionsDescriptor = new z42opt.Group({ title: "PlasmaFractal Options" }, {
+		noise: new z42opt.Group({ title: "Noise" }, {
+			frequency: new z42opt.FloatOpt({ 
+				shortKey: "f",
+				title: "Frequency",
+				min: 0.001,
+				max: 1000,
+				maxFractionDigits: 3,
+				defaultVal: 1
+			}),
+			octaves: new z42opt.IntOpt({
+				shortKey: "o",
+				title: "Octaves",
+				min: 1,
+				max: 32,
+				defaultVal: 4
+			}),
+			gain: new z42opt.FloatOpt({
+				shortKey: "g",
+				title: "Gain",
+				min: 0.001,
+				max: 100,
+				maxFractionDigits: 3,
+				defaultVal: 0.5
+			}),
+			lacunarity: new z42opt.FloatOpt({
+				shortKey: "l",
+				title: "Lacunarity",
+				min: 0.001,
+				max: 100,
+				maxFractionDigits: 3,
+				defaultVal: 2
+			}),
+			amplitude: new z42opt.FloatOpt({
+				shortKey: "a",
+				title: "Amplitude",
+				min: 0.001,
+				max: 100,
+				maxFractionDigits: 3,
+				defaultVal: 8
+			})
+		}),
+		palette: new z42opt.Group({ title: "Palette" }, {
+			easeFunctionBgToFg: new z42opt.EnumOpt({
+				shortKey: "pbf",
+				title: "BG to FG easing",
+				enumValues: module.paletteEaseFunctionNames,
+				defaultVal: "InBounce"
+			}),
+			easeFunctionFgToBg: new z42opt.EnumOpt({
+				shortKey: "pfb",
+				title: "FG to BG easing",
+				enumValues: module.paletteEaseFunctionNames,
+				defaultVal: "OutBounce"
+			}),
+			saturation: new z42opt.FloatOpt({
+				shortKey: "ps",
+				title: "Saturation",
+				min: 0,
+				max: 1,
+				maxFractionDigits: 3,
+				defaultVal: 0.5
+			}),
+			brightness: new z42opt.FloatOpt({
+				shortKey: "pb",
+				title: "Brightness",
+				min: 0,
+				max: 1,
+				maxFractionDigits: 3,
+				defaultVal: 0.75
+			}),
+			bgColor: new z42opt.ColorOpt({
+				shortKey: "pbg",
+				title: "Background color",
+				defaultVal: { r: 0, g: 0, b: 0, a: 1 },
+			}),
+			isGrayScale: new z42opt.BoolOpt({
+				shortKey: "pg",
+				title: "Show original grayscale image",
+				defaultVal: false
+			})
+		}),
+		paletteAnim: new z42opt.Group({ title: "Palette Animation" }, {
+			rotaDuration: new z42opt.IntOpt({
+				shortKey: "prd",
+				title: "Palette rotation duration",
+				min: 2000,
+				max: 30000,
+				defaultVal: 30 * 1000
+			}),
+			transitionDelay: new z42opt.IntOpt({
+				shortKey: "ptde",
+				title: "Palette transition delay",
+				min: 0,
+				max: 30000,
+				defaultVal: 10 * 1000
+			}),
+			transitionDuration: new z42opt.IntOpt({
+				shortKey: "ptd",
+				title: "Palette transition duration",
+				min: 100,
+				max: 30000,
+				defaultVal: 5 * 1000
+			}),
+		}),
+		noiseAnim: new z42opt.Group({ title: "Noise Animation" }, {
+			transitionDelay: new z42opt.IntOpt({
+				shortKey: "ntde",
+				title: "Noise transition delay",
+				min: 0,
+				max: 30000,
+				defaultVal: 3 * 1000
+			}),
+			transitionDuration: new z42opt.IntOpt({
+				shortKey: "ntd",
+				title: "Noise transition duration",
+				min: 100,
+				max: 30000,
+				defaultVal: 10 * 1000
+			})
+		})
 	});
-	
 
+	//------------------------------------------------------------------------------------------------
+	
+	module.getDefaultOptions = function()
+	{
+		let result = {};
+		z42opt.setDefaultOptions( result, module.optionsDescriptor );
+
+		console.log( "Default options:", JSON.parse( JSON.stringify( result ) ) );
+
+		// Deserialize and validate URL parameters.	
+		const par = z42opt.optionsFromUrlParams( window.location.search, module.optionsDescriptor );
+		if( par )
+		{
+			console.log( "URL params:", JSON.parse( JSON.stringify( par ) ) );
+
+			z42opt.mergeObjectData( result, par );
+
+			console.log( "Merged options:", JSON.parse( JSON.stringify( result ) ) );
+		}
+
+		return result;
+	}	
+	
 })(this);

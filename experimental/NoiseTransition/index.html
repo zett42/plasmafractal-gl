@@ -65,7 +65,6 @@ SOFTWARE.
 <script src="../../external/spectrum/spectrum.js"></script>
 
 <script src="z42optionUtils.js"></script>
-<script src="z42objectToUrlParams.js"></script>
 <script src="z42plasmaOptions.js"></script>
 <script src="z42color.js"></script>
 <script src="components/optionComponents.js"></script>
@@ -198,7 +197,6 @@ SOFTWARE.
 
 		z42comp.registerOptionsDialog({
 			options: m_options,
-			paletteEaseFunctions: z42plasmaOptions.availablePaletteEaseFunctions,
 			watch: {
 				"options.noise": {
 					deep: true,   // watch child elements too
