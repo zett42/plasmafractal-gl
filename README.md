@@ -32,6 +32,12 @@ This project uses the following open source libraries. Each library comes with i
   - Copyright (c) 2011-2019 Twitter, Inc.
   - Copyright (c) 2011-2019 The Bootstrap Authors
   
+- [Vue.js](https://vuejs.org/)
+  - Copyright (c) 2013-present, Yuxi (Evan) You 
+  
+- [Bootstrap-Vue](https://bootstrap-vue.js.org/)
+  - Copyright (c) 2016-2019 - BootstrapVue
+  
 - [Bootswatch](https://bootswatch.com/)
   - Copyright (c) 2013 Thomas Park
   
