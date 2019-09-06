@@ -1,5 +1,5 @@
 /*
-Option utilities. Copyright (c) 2019 zett42.
+Option UI components. Copyright (c) 2019 zett42.
 https://github.com/zett42/PlasmaFractal
 
 MIT License
@@ -31,129 +31,209 @@ SOFTWARE.
 	// TIP: Install VSCode "Comment tagged templates" extensions for syntax highlighting
 	// within template string literals.
 
-	let defaultId = 0;
-
 	//===================================================================================================
 	// Public components
 	//===================================================================================================
 
+	// Component that generates tabs for the groups defined by the options view.
+
+	module.tabsComp = Vue.component( "z42opt-tabs", {
+		inheritAttrs: false,		
+		props: {
+			id:      { type: String, required: true },
+			value:   { type: Object, required: true },
+			optDesc: { type: z42opt.Node, required: true }, 
+			optView: { type: Object, required: true },
+		},
+		methods: {
+			childId( key ) { 
+				return z42opt.joinPath( this.id, key, "#" ); 
+			},
+			contentComponentName( group ){
+				// Default component name can be overridden via optView (group.component).
+				if( group.component )
+					return group.component;
+
+				// If group contains sub groups, create nested tabs. This works, but doesn't seem to be optimal.
+				// Maybe a group box would be better suitable?
+				if( group.groups )
+					return 'z42opt-tabs';
+
+				// Otherwise create a flat view of the options.
+				return 'z42opt-container';
+			},
+		},
+		template: /*html*/ `
+			<b-tabs>
+				<!-- Note: 'key' attribute required when using v-for with component (https://vuejs.org/v2/guide/list.html#v-for-with-a-Component) -->
+				
+				<b-tab v-for="( group, key ) in optView.groups"
+					:key="childId( key )"
+					:id="childId( key )"
+					:title="group.title"
+					>
+					<component
+						:is="contentComponentName( group )"
+						:id="childId( key )" 
+						:value="value"
+						:optDesc="optDesc"
+						:optView="group"
+						class="container px-0"
+					/>
+				</b-tab>
+			</b-tabs>
+			`
+	});
+
+	//---------------------------------------------------------------------------------------------------
+	// Component that generates a flat list of components for the individual options (the leafs of the tree).
+
+	module.containerComp = Vue.component( "z42opt-container", {
+		inheritAttrs: false,
+		props: {
+			id:      { type: String, required: true },
+			value:   { type: Object, required: true },
+			optDesc: { type: z42opt.Node, required: true }, 
+			optView: { type: Object, required: true },
+		},
+		methods: {
+			childId( key ) {  
+				return z42opt.joinPath( this.id, key, "#" ); 
+			},			
+			// Return a flat array of options descriptors from given path.
+			resolveOptDesc( path ){
+				let node = z42opt.getMemberByPath( this.optDesc, path );
+				if( node instanceof z42opt.Option ){
+					return [{ path: path, node: node }];
+				}
+				let res = [];
+				for( const key of Object.keys( node ) ){
+					const childPath = z42opt.joinPath( path, key );
+					// Recurse to append child option descriptors
+					res = res.concat( this.resolveOptDesc( childPath ) );
+				}
+				return res;
+			},	
+			resolveValue( path ){
+				return z42opt.getMemberByPath( this.value, path );
+			},	
+			onModified( value, path ){
+				const optDescNode = z42opt.getMemberByPath( this.optDesc, path ); 
+				if( optDescNode instanceof z42opt.Option ) {
+					z42opt.setMemberByPath( this.value, path, value );
+				}
+			}
+		},
+		template: /*html*/ `
+			<div>
+				<template v-for="basePath in optView.options">				
+					<!-- Note: 'key' attribute required when using v-for with component (https://vuejs.org/v2/guide/list.html#v-for-with-a-Component) -->
+
+					<component v-for="opt in resolveOptDesc( basePath )"
+						:is="opt.node.$component" 
+						:key="childId( opt.path )"
+						:id="childId( opt.path )"
+						:optDesc="opt.node" 
+						:value="resolveValue( opt.path )"
+						@input="onModified( $event, opt.path )"
+					/>
+				</template>
+			</div>
+			`
+	});	
+
+	//---------------------------------------------------------------------------------------------------
+
 	module.rangeComp = Vue.component( "z42opt-range", {
 		inheritAttrs: false,
 		props: { 
-			id: {
-				type: String,
-				required: false,
-				default: null
-			}, 
-			label: {
-				type: String,
-				required: true
-			}, 
-			value: {
-				type: Number,
-				required: false,
-				default: 0
-			},
-			min: {
-				type: Number,
-				required: false,
-				default: 0
-			},
-			max: {
-				type: Number,
-				required: true
-			},
-			step: {
-				type: Number,
-				required: false,
-				default: 1
-			},
-			isScale: {   // If true, the slider becomes better usable to edit scale factors below and above 1.
-				type: Boolean,
-				required: false,
-				default: false
-			},
-			scaleNormalPos: {  // If isScale is true, this defines the relative position of the value 1 on the slider.
-				type: Number,
-				required: false,
-				default: 0.5
-			},
-			displayUnit: {
-				type: String,
-				required: false,
-				default: ""
-			},
-			displayFactor: {
-				type: Number,
-				required: false,
-				default: 1.0
-			},
-			displayMaxFractionDigits: {  // Number of fraction digits to show
-				type: Number,
-				required: false,
-				default: 3
-			},
-			lazy: {  // This is a workaround for "lazy" modifier of v-model not working in component
-				type: Boolean,
-				required: false,
-				default: false
-			}  
+			id:      { type: String, required: true },
+			value:   { required: true },
+			optDesc: { type: z42opt.Option, required: true }, 
 		},
-		beforeCreate(){
-			++defaultId;
+		created() {
+			//console.log("z42opt-range.optDesc:", this.optDesc);
+			//console.log("z42opt-range.value:", this.value);
 		},
 		computed: {
-			autoId(){
-				return this.id || getDefaultId( "z42opt-range" );
-			},
 			eventName(){ 
-				return this.lazy ? "change" : "input"; 
+				return this.optDesc.$attrs.isSlow ? "change" : "input"; 
 			},
 			sliderValue(){
-				if( this.isScale )
-					return calcSliderValueFromScale( this.value, this.min, this.max, this.sliderMin, this.sliderMax );
-
+				if( this.optDesc.$attrs.isScale ) 
+					return calcSliderValueFromScale( this.value, 
+						this.optDesc.$attrs.min, this.optDesc.$attrs.max, this.sliderMin, this.sliderMax );
 				return this.value;
 			},
 			sliderMin(){
-				if( this.isScale )
-					return -1000 * this.scaleNormalPos;
+				if( this.optDesc.$attrs.isScale )
+					return -1000 * this.optDesc.$attrs.scaleNormalPos;
 
-				return this.min;
+				if( this.optDesc.$attrs.min != null )
+					return this.optDesc.$attrs.min;
+
+				return 0;
 			},
 			sliderMax(){
-				if( this.isScale )
-					return 1000 * ( 1 - this.scaleNormalPos );					
+				if( this.optDesc.$attrs.isScale )
+					return 1000 * ( 1 - this.optDesc.$attrs.scaleNormalPos );	
 
-				return this.max;
+				if( this.optDesc.$attrs.max != null )
+					return this.optDesc.$attrs.max;
+
+				return 1000;
+			},
+			sliderStep(){
+				if( this.optDesc.$attrs.step != null )
+					return this.optDesc.$attrs.step;
+
+				if( this.optDesc.$attrs.maxFractionDigits != null )
+					return 1 / ( Math.pow( 10, this.optDesc.$attrs.maxFractionDigits ) );
+
+				return 1;
 			},
 			displayValue(){
-				let value = this.value * this.displayFactor;
-				value = Number( value.toFixed( this.displayMaxFractionDigits ) );
-				return value.toString() + ' ' + this.displayUnit;
+				let value = this.value;
+
+				if( this.optDesc.$attrs.displayFactor != null )
+					value *= this.optDesc.$attrs.displayFactor;
+
+				if( this.optDesc.$attrs.maxFractionDigits != null )
+					value = Number( value.toFixed( this.optDesc.$attrs.maxFractionDigits ) );
+
+				let result = value.toString();
+
+				if( this.optDesc.$attrs.displayUnit != null )
+					result += " " + this.optDesc.$attrs.displayUnit;
+
+				return result;
 			}
 		},
 		methods: {
 			onModified( value ) {
 				value = Number( value );
 
-				if( this.isScale )
-					value = calcScaleFromSliderValue( value, this.min, this.max, this.sliderMin, this.sliderMax );
+				if( this.optDesc.$attrs.isScale && 
+					this.optDesc.$attrs.min != null && 
+					this.optDesc.$attrs.max != null ) {
+					value = calcScaleFromSliderValue( value, 
+						this.optDesc.$attrs.min, this.optDesc.$attrs.max, this.sliderMin, this.sliderMax );
+				}
 
-				this.$emit('input', value );
+				this.$emit( "input", value );
 			}
 		},
 		template: /*html*/ `
 			<b-form-group
-				:label="label + ': ' + displayValue"
-				:label-for="autoId">
-
+				:label="optDesc.$attrs.title + ': ' + displayValue"
+				:label-for="id">
+				
 				<b-input type="range"
-					:id="autoId"
+					:id="id"
 					:value="sliderValue"
 					:min="sliderMin"
 					:max="sliderMax"
-					:step="step"
+					:step="sliderStep"
 					@[eventName]="onModified( $event )"
 				/>
 			</b-form-group>`
@@ -164,39 +244,21 @@ SOFTWARE.
 	module.selectComp = Vue.component( "z42opt-select", {
 		inheritAttrs: false,
 		props: { 
-			id: {
-				type: String,
-				required: false,
-				default: null
-			}, 
-			label: {
-				type: String,
-				required: true
-			},
-			options: {
-				type: Array,
-				required: true
-			},
-			value: {
-				required: false
-			},
+			id:      { type: String, required: true },
+			value:   { required: true },
+			optDesc: { type: z42opt.Option, required: true }, 
 		},
-		beforeCreate(){
-			++defaultId;
-		},
-		computed: {
-			autoId(){
-				return this.id || getDefaultId( "z42opt-select" );
-			}
+		created() {
+			//console.log("z42opt-select.optDesc:", this.optDesc);
 		},
 		template: /*html*/ `
 			<b-form-group
-				:label="label + ':'"
-				:label-for="autoId">
+				:label="optDesc.$attrs.title + ':'"
+				:label-for="id">
 
 				<b-form-select 
-					:id="autoId"
-					:options="options"
+					:id="id"
+					:options="optDesc.$attrs.values"
 					:value="value"
 					@input="$emit( 'input', $event )"
 				/>
@@ -208,28 +270,21 @@ SOFTWARE.
 	module.checkComp = Vue.component( "z42opt-check", {
 		inheritAttrs: false,
 		props: { 
-			id: {
-				type: String,
-				required: false,
-				default: null
-			}, 
-			label: {
-				type: String,
-				required: true
-			},
-			checked: {
-				required: false,
-				default: false
-			},
+			id:      { type: String, required: true },
+			value:   { required: true },
+			optDesc: { type: z42opt.Option, required: true }, 
+		},
+		created() {
+			//console.log("z42opt-check.optDesc:", this.optDesc);
 		},
 		template: /*html*/ `
 			<b-form-group>
-				<b-form-checkbox 
+				<b-form-checkbox
 					:id="id"
-					:checked="checked"
+					:checked="value"
 					@input="$emit( 'input', $event )"
 					>
-				{{ label }}
+					{{ optDesc.$attrs.title }}
 				</b-form-checkbox>
 			</b-form-group>`
 	});	
@@ -239,27 +294,14 @@ SOFTWARE.
 	module.colorComp = Vue.component( "z42opt-color", {
 		inheritAttrs: false,
 		props: { 
-			id: {
-				type: String,
-				required: false,
-				default: null
-			}, 
-			label: {
-				type: String,
-				required: true
-			},
-			value: {
-				required: false,
-				default: "#000000"
-			},
+			id:      { type: String, required: true },
+			value:   { required: true },
+			optDesc: { type: z42opt.Option, required: true }, 
 		},
-		beforeCreate(){
-			++defaultId;
+		created() {
+			//console.log("z42opt-color.optDesc:", this.optDesc);
 		},
 		computed: {
-			autoId(){
-				return this.id || getDefaultId( "z42opt-select" );
-			},
 			hexValue(){
 				return tinycolor( this.value ).toHexString();
 			},
@@ -273,27 +315,23 @@ SOFTWARE.
 			<b-form-group class="container px-0">
 				<b-row align-v="center">
 					<b-col>
-						<label :for="autoId">{{ label }}: </label>
+						<label :for="id">{{ optDesc.$attrs.title }}: </label>
 					</b-col>
 					<b-col>
 						<b-form-input type="color"
-							:id="autoId"
+							:id="id"
 							:value="hexValue"
 							@input="onModified( $event )"				
 						/>
 					</b-col>
 				</b-row>
-			</b-form-group>`
+			</b-form-group>
+			`
 	});	
 
 	//===================================================================================================
 	// Private utility functions
 	//===================================================================================================
-
-	function getDefaultId( baseName )
-	{
-		return "__" + baseName + "_" + defaultId.toString();
-	}
 
 	function calcSliderValueFromScale( value, minValue, maxValue, minSlider, maxSlider )
 	{
@@ -319,6 +357,5 @@ SOFTWARE.
 	}
 
 	//---------------------------------------------------------------------------------------------------
-
 
 })(this);

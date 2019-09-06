@@ -40,17 +40,8 @@ SOFTWARE.
 </head>
 <body>
 
-<!-- Mounting point for Vue.js. We could place the template inside but it is advised to use
-     a script tag instead, to prevent the content from being parsed by the browser. -->
+<!-- Mounting point for Vue.js -->
 <div id="app"></div>
-
-<!-- This is the template for the #app element -->
-<script type="text/x-template" id="app-template">
-<div>
-	<b-button id="button-options-dialog" title="Plasma Options (Key 'o')" v-b-modal.z42opt-dialog>⚙</b-button>
-	<z42opt-dialog />
-</div>
-</script>
 
 <canvas id="canvas2" class="plasma">PlasmaFractal</canvas>
 <canvas id="canvas1" class="plasma">PlasmaFractal</canvas>
@@ -59,7 +50,7 @@ SOFTWARE.
 
 <script src="../../external/jquery/jquery.min.js"></script>
 <script src="../../external/popper/popper.min.js"></script>
-<script src="../../external/vue/vue.min.js"></script>
+<script src="../../external/vue/vue.js"></script>
 <script src="../../external/bootstrap-vue/bootstrap-vue.min.js"></script>
 <script src="../../external/tinycolor/tinycolor.js"></script>
 <script src="../../external/spectrum/spectrum.js"></script>
@@ -74,7 +65,8 @@ SOFTWARE.
 <script>
 (function(){
 
-	const m_options = z42plasmaOptions.getDefaultOptions();
+	const m_options = z42opt.mergeDefaultsWithUrlParams( z42plasmaOptions.optionsDescriptor, 
+	                                                     window.location.search );
 	const m_colorSeed = Math.random();
 
 	let m_optionsButtonFadeoutTimer = null;
@@ -193,35 +185,44 @@ SOFTWARE.
 		// To work around blurry popup windows when browser zoom != 100%.
 		Popper.Defaults.modifiers.computeStyle.gpuAcceleration = false;
 
-		// Register options dialog and wire it up with the data and change-handlers.
+		// Create root Vue instance, which represents the GUI of this application.
 
-		z42comp.registerOptionsDialog({
-			options: m_options,
+		let app = new Vue({
+			el: "#app",
+			data: function() { 
+				return {
+					optData: m_options,
+					optDesc: z42plasmaOptions.optionsDescriptor,
+					optView: z42plasmaOptions.optionsView,
+				};
+			},			
 			watch: {
-				"options.noise": {
+				"optData.noise": {
 					deep: true,   // watch child elements too
 					handler: ( val, oldVal ) => setPlasmaOptions( 'setNoiseOptions', val )
 				},
-				"options.palette": {
+				"optData.palette": {
 					deep: true,   // watch child elements too
 					handler: ( val, oldVal ) => setPlasmaOptions( 'setPaletteOptions', val )
 				},
-				"options.paletteAnim": {
+				"optData.paletteAnim": {
 					deep: true,   // watch child elements too
 					handler: ( val, oldVal ) => setPlasmaOptions( 'setPaletteAnimOptions', val )
 				},
-				"options.noiseAnim": {
+				"optData.noiseAnim": {
 					deep: true,   // watch child elements too
 					handler: ( val, oldVal ) => setNoiseAnimOptions( val )
 				}
-			}
-		});
-
-		// Create root Vue instance (process templates).
-
-		let app = new Vue({
-			el: '#app',
-			template: "#app-template",
+			},
+			template: /*html*/ `
+				<div>
+					<b-button id="button-options-dialog" 
+						v-b-modal.z42opt-dialog 
+						title="Plasma Options (Key 'o')">⚙</b-button>
+					<z42opt-dialog id="z42opt-dialog" 
+						:optData="optData" :optDesc="optDesc" :optView="optView" />
+				</div>
+			`
   		});	
 	
 		// Wire up global events.
