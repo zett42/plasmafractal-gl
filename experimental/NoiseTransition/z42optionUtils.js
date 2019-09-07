@@ -256,6 +256,8 @@ SOFTWARE.
 
 		let result = {};
 
+		validateUniqueShortKeys( descriptor );	
+
 		let shortKeyToPath = {};
 		createShortKeyToPathMap( shortKeyToPath, descriptor );
 		
@@ -289,6 +291,8 @@ SOFTWARE.
 		if( ! ( descriptor instanceof Node ) )
 			throw new Error( "Invalid argument: descriptor must be instance of z42opt.Node" );
 
+		validateUniqueShortKeys( descriptor );	
+		
 		let urlParams = new URLSearchParams();		
 		
 		createUrlParams( urlParams, options, descriptor );
@@ -349,19 +353,67 @@ SOFTWARE.
 	// Private functions
 	//================================================================================================
 
-	function createShortKeyToPathMap( result, descriptor, path = null ) {
+	// Validate uniqueShortKey attribute of options descriptor and log any errors to console.
+	// - all Option descriptors must have a uniqueShortKey attribute
+	// - no duplicates
+	// - short key is all lowercase
+
+	function validateUniqueShortKeys( descriptor ) {
+		let shortKeyMap = new Map();
+		validateShortKeysRecursively( shortKeyMap, descriptor );
+		
+		for( const [ key, value ] of shortKeyMap.entries() ){
+			if( value.length > 1 ){
+				console.error( `Duplicate value '${key}' of attribute 'uniqueShortKey' detected for the following options:`, value );
+			}
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------
+
+	function validateShortKeysRecursively( result, descriptor, path = null ) {
+
 		for( const [ key, childDescriptor ] of Object.entries( descriptor ) ) {
 			const childPath = module.joinPath( path, key );
 
 			if( childDescriptor instanceof Option ){
-				if( ! childDescriptor.$attrs.uniqueShortKey ){
-					console.error( "Missing attribute uniqueShortKey for option:", childPath );
+				const shortKey = childDescriptor.$attrs.uniqueShortKey;
+				if( ! shortKey ){
+					console.error( "Missing attribute 'uniqueShortKey' for option:", childPath );
 					continue;
-				}  
-				result[ childDescriptor.$attrs.uniqueShortKey ] = childPath; 
+				}
+				const shortKeyLCase = shortKey.toLowerCase();
+				if( shortKeyLCase !== shortKey ){
+					console.error( "Attribute 'uniqueShortKey' is not all lowercase for option:", childPath );
+					continue;
+				}
+				// To detect dupes.
+				if( result.has( shortKey ) ) {
+					result.get( shortKey ).push( childPath );
+				}
+				else {
+					result.set( shortKey, [ childPath ] );
+				}
 			}
 			else {
-				// Recurse into child child descriptor.
+				// Recurse into child descriptor.
+				validateShortKeysRecursively( result, childDescriptor, childPath );
+			}
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------
+
+	function createShortKeyToPathMap( result, descriptor, path = null ) {
+
+		for( const [ key, childDescriptor ] of Object.entries( descriptor ) ) {
+			const childPath = module.joinPath( path, key );
+
+			if( childDescriptor instanceof Option ){
+				result[ childDescriptor.$attrs.uniqueShortKey ] = childPath;
+			}
+			else {
+				// Recurse into child descriptor.
 				createShortKeyToPathMap( result, childDescriptor, childPath );
 			}
 		}
@@ -370,8 +422,6 @@ SOFTWARE.
 	//------------------------------------------------------------------------------------------------
 	
 	function createUrlParams( urlParams, options, rootDescriptor, path = null ) {
-		
-		// TODO: check for duplicates of uniqueShortKey
 
 		for( const [ key, value ] of Object.entries( options ) ) {
 			const childPath = module.joinPath( path, key );
