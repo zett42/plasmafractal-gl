@@ -27,10 +27,10 @@ self.importScripts(
 	'../../external/perlin.js',
 	'../../external/mersennetwister/MersenneTwister.js',
 	'../../external/tinycolor/tinycolor.js',
-	'z42color.js', 
-	'z42easing.js', 
-	'z42FractalNoise.js', 
-	'z42plasma.js' 
+	'components/color.js', 
+	'components/easing.js', 
+	'components/fractalNoise.js', 
+	'plasma.js' 
 );
 
 let m_plasma = null;
