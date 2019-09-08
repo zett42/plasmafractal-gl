@@ -164,15 +164,15 @@ function initGui()
 		watch: {
 			"optData.noise": {
 				deep: true,   // watch child elements too
-				handler: ( val, oldVal ) => setPlasmaOptions( 'setNoiseOptions', val )
+				handler: ( val, oldVal ) => setPlasmaOptions( 'noiseOptions', val )
 			},
 			"optData.palette": {
 				deep: true,   // watch child elements too
-				handler: ( val, oldVal ) => setPlasmaOptions( 'setPaletteOptions', val )
+				handler: ( val, oldVal ) => setPlasmaOptions( 'paletteOptions', val )
 			},
 			"optData.paletteAnim": {
 				deep: true,   // watch child elements too
-				handler: ( val, oldVal ) => setPlasmaOptions( 'setPaletteAnimOptions', val )
+				handler: ( val, oldVal ) => setPlasmaOptions( 'paletteAnimOptions', val )
 			},
 			"optData.noiseAnim": {
 				deep: true,   // watch child elements too
@@ -228,18 +228,18 @@ function resizePlasmaToWindowSize()
 
 //-------------------------------------------------------------------------------------------------------------------
 
-function setPlasmaOptions( functionName, options )
+function setPlasmaOptions( propName, value )
 {
 	m_plasmaThreadFG.postMessage( {
 		action: "setOptions",
-		functionName: functionName,
-		options: options
+		propName: propName,
+		value: value
 	} );
 
 	m_plasmaThreadBG.postMessage( {
 		action: "setOptions",
-		functionName: functionName,
-		options: options
+		propName: propName,
+		value: value
 	} );
 }
 
