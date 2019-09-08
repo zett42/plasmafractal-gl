@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. 
 */
 
-import * as z42opt from './components/optionsDescriptor.module.js'
+import * as z42opt from './components/optionsDescriptorValues.module.js'
 
 //------------------------------------------------------------------------------------------------
 // Ease functions from 'z42ease.js' to use (excluded some which doesn't look good).

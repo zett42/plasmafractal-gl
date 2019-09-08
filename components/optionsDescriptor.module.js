@@ -24,6 +24,7 @@ SOFTWARE.
 */
 //------------------------------------------------------------------------------------------------
 // A node of arbitrary attributes and child nodes similar to XML.
+// This serves as a base class but can also be instanciated to group options.
 
 class Node {
 	constructor( attrs, nodes ) {
@@ -42,7 +43,10 @@ class Node {
 }
 
 //------------------------------------------------------------------------------------------------
-// Describes a single option. The option could be a primitive value or an object.
+// Base class for a single option. The option could be a primitive value or an object.
+//
+// This class should not be instanciated directly. Instead instanciate derived classes 
+// for concrete option types.
 
 class Option extends Node {
 	constructor( attrs ){
@@ -70,132 +74,7 @@ class Option extends Node {
 
 //------------------------------------------------------------------------------------------------
 
-class IntOpt extends Option {
-	constructor( attrs ){
-		super( attrs );
-	}
-
-	$serialize( value ) { 
-		return Math.trunc( value ).toString(); 
-	}
-
-	$deserialize( value ) {
-		value = parseInt( value, 10 );
-		if( isNaN( value ) ) {
-			this.$parseError( value );
-			return null;
-		}
-		return clampOptional( Math.ceil( value ), this.$attrs.min, this.$attrs.max );
-	}
-
-	get $defaultComponent() { return "z42opt-range"; }
-}
-
-//------------------------------------------------------------------------------------------------
-
-class FloatOpt extends Option {
-	constructor( attrs ){
-		super( attrs );
-	}
-
-	$serialize( value ) { 
-		if( typeof this.$attrs.maxFractionDigits !== "undefined" ) {
-			return Number( value.toFixed( this.$attrs.maxFractionDigits ) );
-		}
-		return value;
-	}
-
-	$deserialize( value ) {
-		value = parseFloat( value );
-		if( isNaN( value ) ) {
-			this.$parseError( value );
-			return null;
-		}
-		return clampOptional( value, this.$attrs.min, this.$attrs.max ); 			
-	}
-
-	get $defaultComponent() { return "z42opt-range"; }
-}
-
-//------------------------------------------------------------------------------------------------
-
-class BoolOpt extends Option {
-	constructor( attrs ){
-		super( attrs );
-	}
-
-	$serialize( value ) {
-		return value ? "1" : "0";			
-	}
-
-	$deserialize( value ) {
-		const valueLCase = value.toString().toLowerCase();
-		return ( valueLCase === "true" || valueLCase === "1" );
-	}
-
-	get $defaultComponent() { return "z42opt-check"; }
-}
-
-//------------------------------------------------------------------------------------------------
-
-class EnumOpt extends Option {
-	constructor( attrs ){
-		super( attrs );
-	}
-
-	$deserialize( value ) {
-		for( const ev of this.$attrs.values ) {
-			if( ev.toLowerCase() === String( value ).toLowerCase() ) {
-				return ev;
-			}
-		}
-		this.$parseError( value );
-		return null;
-	}
-
-	get $defaultComponent() { return "z42opt-select"; }
-}
-
-//------------------------------------------------------------------------------------------------
-
-class ColorOpt extends Option {
-	constructor( attrs ){
-		super( attrs );
-	}
-
-	$serialize( value ) {
-		return tinycolor( value ).toHex();
-	}
-
-	$deserialize( value ) {
-		const color = tinycolor( value );
-		if( ! color.isValid() )	{
-			this.$parseError( value );
-			return null;					
-		}
-		
-		return color.toRgb(); // keep it pure data to simplify merging			
-	}
-
-	get $defaultComponent() { return "z42opt-color"; }
-}	
-
-//------------------------------------------------------------------------------------------------
-
-function clampOptional( value, min = null, max = null ) {
-	if( min && value < min ) return min;
-	if( max && value > max ) return max;
-	return value;
-}		
-
-//------------------------------------------------------------------------------------------------
-
 export { 
 	Node,
 	Option,
-	IntOpt,
-	FloatOpt,
-	BoolOpt,
-	EnumOpt,
-	ColorOpt,
 }
