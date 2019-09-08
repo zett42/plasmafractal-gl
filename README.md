@@ -20,6 +20,7 @@ Multithreading:
 - Requires [Offscreen Canvas](https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas) (experimental API) support by browser.
 - :white_check_mark: Tested successfully with Chrome v76.0.3809.100 and Opera v63.0.3368.71.
 - :warning: Firefox currently not supported (tested with v69.0, which is still [missing 2D-OffscreenCanvas support](https://bugzilla.mozilla.org/show_bug.cgi?id=801176)). 
+  - Note that the [old version of the PlasmaFractal](https://zett42.github.io/PlasmaFractal/) still works with Firefox!
 
 ## Credits
 This project uses the following open source libraries. Each library comes with its own license terms, which can be found in the source code included in this project.
