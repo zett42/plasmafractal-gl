@@ -24,7 +24,7 @@ html, body {
 	left: 10px; 
 	top: 10px;
 	z-index: 10;
-	transition: opacity ease-in-out 500ms;
+	transition: all ease-in-out 300ms;
 }
 /* Show bootstrap modal dialogs without darkening backdrop but still allow to dismiss dialog by clicking outside */
 .modal-backdrop {
