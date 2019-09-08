@@ -33,7 +33,7 @@ const rangeComponent = Vue.component( "z42opt-range", {
 	inheritAttrs: false,
 	props: { 
 		id:      { type: String, required: true },
-		value:   { required: true },
+		value:   { type: Number, required: true },
 		optDesc: { type: z42opt.Option, required: true }, 
 	},
 	data() {
