@@ -24,9 +24,9 @@ SOFTWARE.
 */
 //---------------------------------------------------------------------------------------------------
 
-import "./optionsValueComp.js"
-import * as z42opt from "./optionsDescriptor.js"
-import * as z42optUtil from "./optionsUtils.js"
+import "./optionsValueComp.module.js"
+import * as z42opt from "./optionsDescriptor.module.js"
+import * as z42optUtil from "./optionsUtils.module.js"
 
 //---------------------------------------------------------------------------------------------------
 // Component that generates tabs for the groups defined by the options view.

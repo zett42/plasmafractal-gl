@@ -24,10 +24,10 @@ SOFTWARE.
 */
 //------------------------------------------------------------------------------------------------
 
-import "./optionsStructureComp.js"
-import "./optionsDescriptor.js"
-import * as z42opt from "./optionsDescriptor.js"
-import * as z42optUtil from "./optionsUtils.js"
+import "./optionsStructureComp.module.js"
+import "./optionsDescriptor.module.js"
+import * as z42opt from "./optionsDescriptor.module.js"
+import * as z42optUtil from "./optionsUtils.module.js"
 
 //------------------------------------------------------------------------------------------------
 // Component for a dynamic options dialog. 

@@ -26,9 +26,9 @@ SOFTWARE.
 // Main entry point
 //===================================================================================================================
 
-import * as plasmaOpt from "./plasmaOptions.js"
-import * as z42optUtil from "./components/optionsUtils.js"
-import "./components/optionsDialog.js"
+import * as plasmaOpt from "./plasmaOptions.module.js"
+import * as z42optUtil from "./components/optionsUtils.module.js"
+import "./components/optionsDialog.module.js"
 
 const m_options = z42optUtil.mergeDefaultsWithUrlParams( plasmaOpt.optionsDescriptor, window.location.search );
 

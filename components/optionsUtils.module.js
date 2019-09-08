@@ -24,7 +24,7 @@ SOFTWARE.
 */
 //------------------------------------------------------------------------------------------------
 
-import * as z42opt from "./optionsDescriptor.js"
+import * as z42opt from "./optionsDescriptor.module.js"
 
 //------------------------------------------------------------------------------------------------
 // Get the default option values from optionsDescriptor and merge them with the given URL params.
