@@ -32,41 +32,41 @@ SOFTWARE.
 	
 	<!-- favicon -->
 	<meta name="msapplication-TileColor" content="#ffffff"> 
-	<meta name="msapplication-TileImage" content="favicon/mstile-144x144.png"
+	<meta name="msapplication-TileImage" content="favicon/mstile-144x144.png">
 	<link rel="shortcut icon" href="favicon/favicon.ico"> 
 	<link rel="icon" type="image/png" href="favicon/favicon32.png" sizes="32x32"> 
 	<link rel="icon" type="image/png" href="favicon/favicon96.png" sizes="96x96"> 
 	<link rel="apple-touch-icon" sizes="180x180" href="favicon/favicon180.png"> 
 
 	<!-- CSS -->
-	<link rel="stylesheet" href="external/bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="external/bootstrap/css/bootstrap.css">
 	<link rel="stylesheet" href="external/bootstrap-vue/bootstrap-vue.min.css">
 	<link rel="stylesheet" href="external/spectrum/spectrum.css">
 	<link rel="stylesheet" href="external/spectrum/sp-dark.css">
+	<link rel="stylesheet" href="external/nouislider/nouislider.min.css">
+	<link rel="stylesheet" href="external/nouislider/nouislider-flat-dark.css">
 	<link rel="stylesheet" href="app.css">
 
 	<title>zett42 PlasmaFractal</title>
 </head>
 <body>
+	<!-- Mounting point for Vue.js -->
+	<div id="app"></div>
 
-<!-- Mounting point for Vue.js -->
-<div id="app"></div>
+	<canvas id="canvas2" class="plasma">PlasmaFractal</canvas>
+	<canvas id="canvas1" class="plasma">PlasmaFractal</canvas>
 
-<canvas id="canvas2" class="plasma">PlasmaFractal</canvas>
-<canvas id="canvas1" class="plasma">PlasmaFractal</canvas>
+	<!-- Scripts must be included after all other HTML elements! -->
 
-<!-- Scripts must be included after all other HTML elements! -->
+	<script src="external/jquery/jquery.min.js"></script>
+	<script src="external/popper/popper.min.js"></script>
+	<script src="external/vue/vue.js"></script>
+	<script src="external/bootstrap-vue/bootstrap-vue.min.js"></script>
+	<script src="external/tinycolor/tinycolor.js"></script>
+	<script src="external/spectrum/spectrum.js"></script>
 
-<script src="external/jquery/jquery.min.js"></script>
-<script src="external/popper/popper.min.js"></script>
-<script src="external/vue/vue.js"></script>
-<script src="external/bootstrap-vue/bootstrap-vue.min.js"></script>
-<script src="external/tinycolor/tinycolor.js"></script>
-<script src="external/spectrum/spectrum.js"></script>
+	<script src="components/color.js"></script>
 
-<script src="components/color.js"></script>
-
-<script type="module" src="app.module.js"></script>
-
+	<script type="module" src="app.module.js"></script>
 </body>
 </html>

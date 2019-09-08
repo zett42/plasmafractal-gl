@@ -42,11 +42,13 @@ let m_contextPixels = null;
 
 let m_isPaused = false;
 
+const m_ndebug = true;
+
 //-------------------------------------------------------------------------------------------------------------------
 
 self.onmessage = function( ev ) 
 {
-	console.debug( "z42plasmaThread: Message received: ", ev );
+	m_ndebug || console.debug( "z42plasmaThread: Message received: ", ev );
 
 	switch( ev.data.action )
 	{

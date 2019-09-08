@@ -30,6 +30,8 @@ import * as plasmaOpt from "./plasmaOptions.module.js"
 import * as z42optUtil from "./components/optionsUtils.module.js"
 import "./components/optionsDialog.module.js"
 
+const m_ndebug = true;
+
 const m_options = z42optUtil.mergeDefaultsWithUrlParams( plasmaOpt.optionsDescriptor, window.location.search );
 
 const m_colorSeed = Math.random();
@@ -85,7 +87,7 @@ function createPlasmaThreadForCanvas( canvas, isPaused )
 
 function onPlasmaThreadMessage( ev )
 {
-	console.debug( "Message from plasmaThread:", ev );
+	m_ndebug || console.debug( "Message from plasmaThread:", ev );
 
 	switch ( ev.data.action )
 	{
@@ -107,7 +109,7 @@ function initCanvasAnimation()
 	// Set callback to be notified when CSS transition has ended.
 	m_canvasFG.on( 'transitionend', () =>
 	{
-		console.debug( 'm_canvasFG transitionend' );
+		m_ndebug || console.debug( 'm_canvasFG transitionend' );
 
 		// Swap foreground and background things.
 		[m_canvasFG, m_canvasBG] = [m_canvasBG, m_canvasFG];

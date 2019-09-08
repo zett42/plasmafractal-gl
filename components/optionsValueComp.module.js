@@ -25,6 +25,7 @@ SOFTWARE.
 //---------------------------------------------------------------------------------------------------
 
 import * as z42opt from "./optionsDescriptor.module.js"
+import "../external/nouislider/nouislider.js"
 
 //---------------------------------------------------------------------------------------------------
 
@@ -35,61 +36,43 @@ const rangeComponent = Vue.component( "z42opt-range", {
 		value:   { required: true },
 		optDesc: { type: z42opt.Option, required: true }, 
 	},
-	created() {
-		//console.log("z42opt-range.optDesc:", this.optDesc);
-		//console.log("z42opt-range.value:", this.value);
+	data() {
+		return {
+		  	initialized: false,
+		}
 	},
 	computed: {
-		eventName(){ 
-			return this.optDesc.$attrs.isSlow ? "change" : "input"; 
+		sliderElem() {
+			return document.getElementById( this.id );
 		},
-		sliderValue(){
-			const min = this.optDesc.$attrs.min;
-			const max = this.optDesc.$attrs.max;
-
-			if( this.optDesc.$attrs.isScale && min != null && max != null )
-			{
-				let result = 0;
-				if( this.value < 1 )
-					result = this.sliderMin - this.sliderMin * ( this.value - min ) / ( 1 - min );  
-				else
-					result = this.sliderMax * ( this.value - 1 ) / ( max - 1 );
-			
-				if( result < this.sliderMin )
-					return this.sliderMin;
-				if( result > this.sliderMax )
-					return this.sliderMax;
-				return result;
+		sliderConfig(){
+			let step = 1;
+			if( this.optDesc.$attrs.step != null ){
+				step = this.optDesc.$attrs.step;
+			}
+			else if( this.optDesc.$attrs.maxFractionDigits != null ){
+				step = 1 / ( Math.pow( 10, this.optDesc.$attrs.maxFractionDigits ) );
 			}
 
-			return this.value;
-		},
-		sliderMin(){
-			if( this.optDesc.$attrs.isScale )
-				return -1000 * this.optDesc.$attrs.scaleNormalPos;
+			let range = {
+				min: this.optDesc.$attrs.min,
+				max: this.optDesc.$attrs.max,
+			};
 
-			if( this.optDesc.$attrs.min != null )
-				return this.optDesc.$attrs.min;
+			if( this.optDesc.$attrs.isScale ){
+				// Make the slider non-linear to make it easier to select values below 1.
+				let percent = 50;
+				if( this.optDesc.$attrs.scaleNormalPos != null ){
+					percent = this.optDesc.$attrs.scaleNormalPos * 100;
+				}
+				range[ `${percent}%` ] = 1.0;
+			}
 
-			return 0;
-		},
-		sliderMax(){
-			if( this.optDesc.$attrs.isScale )
-				return 1000 * ( 1 - this.optDesc.$attrs.scaleNormalPos );	
-
-			if( this.optDesc.$attrs.max != null )
-				return this.optDesc.$attrs.max;
-
-			return 1000;
-		},
-		sliderStep(){
-			if( this.optDesc.$attrs.step != null )
-				return this.optDesc.$attrs.step;
-
-			if( this.optDesc.$attrs.maxFractionDigits != null )
-				return 1 / ( Math.pow( 10, this.optDesc.$attrs.maxFractionDigits ) );
-
-			return 1;
+			return {
+				start: [ this.value ],
+				step: step,
+				range: range
+			};
 		},
 		displayValue(){
 			let value = this.value;
@@ -106,39 +89,42 @@ const rangeComponent = Vue.component( "z42opt-range", {
 				result += " " + this.optDesc.$attrs.displayUnit;
 
 			return result;
-		}
+		},
 	},
-	methods: {
-		onModified( value ) {
-			value = Number( value );
+	mounted() {
+		noUiSlider.create( this.sliderElem, this.sliderConfig );
 
-			const min = this.optDesc.$attrs.min;
-			const max = this.optDesc.$attrs.max;
+		const eventName = this.optDesc.$attrs.isSlow ? "change" : "slide";
 
-			if( this.optDesc.$attrs.isScale && min != null && max != null ) {
-				if( value < 0 )
-					value = min + ( 1 - ( value / this.sliderMin ) ) * ( 1 - min );
-				else
-					value = 1 + ( value / this.sliderMax ) * ( max - 1 );
+		this.sliderElem.noUiSlider.on( eventName, ( values, handle ) => {
+			const newValue = Number( values[ 0 ] );
+			if( newValue !== this.value ){
+				// emit as "input" event to make it compatible with v-model
+				this.$emit( "input", newValue );
 			}
-
-			this.$emit( "input", value );
+		});
+	},
+	watch: {
+		value( newValue ) {
+			if( ! this.initialized ){
+				this.initialized = true;
+				return;
+			}
+			const curValue = Number( this.sliderElem.noUiSlider.get() );
+			if( curValue !== newValue ) {
+				this.sliderElem.noUiSlider.set([ newValue ]);
+			}
 		}
 	},
 	template: /*html*/ `
 		<b-form-group
 			:label="optDesc.$attrs.title + ': ' + displayValue"
 			:label-for="id">
-			
-			<b-input type="range"
-				:id="id"
-				:value="sliderValue"
-				:min="sliderMin"
-				:max="sliderMax"
-				:step="sliderStep"
-				@[eventName]="onModified( $event )"
-			/>
-		</b-form-group>`
+
+			<!-- Mounting point for nouislider -->
+			<div :id="id"></div>
+		</b-form-group>
+	`,
 });	
 
 //---------------------------------------------------------------------------------------------------

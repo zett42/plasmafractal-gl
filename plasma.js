@@ -167,9 +167,8 @@ class z42Plasma {
 
 		z42fractal.generateFractalNoiseImageUint16( this._plasmaPixels, this._width, this._height, this._currentPalette.length, this._options.noise ); 
 
-		console.debug( "Fractal generation took %d ms", performance.now() - fracStartTime );
-	}
-	
+		//console.debug( "Fractal generation took %d ms", performance.now() - fracStartTime );
+	}	
 
 	//===================================================================================================================
 	// Private methods
