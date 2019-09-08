@@ -1,5 +1,5 @@
 /*
-2D fractal noise image generation and animation. Copyright (c) 2019 zett42.
+PlasmaFractal options module. Copyright (c) 2019 zett42.
 https://github.com/zett42/PlasmaFractal
 
 MIT License
@@ -23,256 +23,251 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. 
 */
 
-/*
-Dependencies:
-	z42optionUtils.js
-*/
+import * as z42opt from './components/optionsDescriptor.js'
 
-(function(global){
-	'use strict';
+//------------------------------------------------------------------------------------------------
+// Ease functions from 'z42ease.js' to use (excluded some which doesn't look good).
+
+const paletteEaseFunctionNames = [
+	"Linear",
+	"InQuad",
+	"OutQuad",
+	"InOutQuad",
+	"InCubic",
+	"OutCubic",
+	"InOutCubic",
+	"InQuart",
+	"OutQuart",
+	"InOutQuart",
+	"InQuint",
+	"OutQuint",
+	"InOutQuint",
+	"InSine",
+	"OutSine",
+	"InOutSine",
+	"InOutSine2_3",
+	"InOutSine2_5",
+	"InOutSine2_9",
+	"InOutSine2_13",
+	"InExpo",
+	"OutExpo",
+	"InOutExpo",
+	"InExpo2",
+	"OutExpo2",
+	"InOutExpo2",
+	"InCirc",
+	"OutCirc",
+	"InOutCirc",
+	"InBounce",
+	"OutBounce",
+	"InOutBounce"
+];
+
+//------------------------------------------------------------------------------------------------
+// Describes all available options, e. g. default values, constraints, mapping to URL params, etc.
+// It does NOT store actual option values!
+
+const optionsDescriptor = new z42opt.Node( {}, {
+	noise: new z42opt.Node( {}, {
+		frequency: new z42opt.FloatOpt({ 
+			uniqueShortKey: "f",
+			title: "Frequency",
+			min: 0.01,
+			max: 15,
+			maxFractionDigits: 2,
+			isScale: true,
+			scaleNormalPos: 0.33,
+			isSlow: true,
+			defaultVal: 1,
+		}),
+		octaves: new z42opt.IntOpt({
+			uniqueShortKey: "o",
+			title: "Octaves",
+			min: 1,
+			max: 15,
+			isSlow: true,
+			defaultVal: 4,
+		}),
+		gain: new z42opt.FloatOpt({
+			uniqueShortKey: "g",
+			title: "Gain",
+			min: 0.2,
+			max: 0.8,
+			maxFractionDigits: 3,
+			isSlow: true,
+			defaultVal: 0.5,
+		}),
+		lacunarity: new z42opt.FloatOpt({
+			uniqueShortKey: "l",
+			title: "Lacunarity",
+			min: 1,
+			max: 10,
+			maxFractionDigits: 2,
+			isSlow: true,
+			defaultVal: 2,
+		}),
+		amplitude: new z42opt.FloatOpt({
+			uniqueShortKey: "a",
+			title: "Amplitude",
+			min: 1,
+			max: 100,
+			maxFractionDigits: 2,
+			isSlow: true,
+			defaultVal: 8,
+		}),
+	}),
+	palette: new z42opt.Node( {}, {
+		easeFunctionBgToFg: new z42opt.EnumOpt({
+			uniqueShortKey: "pbf",
+			title: "Background to foreground easing",
+			values: paletteEaseFunctionNames,
+			defaultVal: "InBounce",
+		}),
+		easeFunctionFgToBg: new z42opt.EnumOpt({
+			uniqueShortKey: "pfb",
+			title: "Foreground to background easing",
+			values: paletteEaseFunctionNames,
+			defaultVal: "OutBounce",
+		}),
+		saturation: new z42opt.FloatOpt({
+			uniqueShortKey: "ps",
+			title: "Saturation",
+			min: 0,
+			max: 1,
+			maxFractionDigits: 2,
+			defaultVal: 0.5,
+		}),
+		brightness: new z42opt.FloatOpt({
+			uniqueShortKey: "pb",
+			title: "Brightness",
+			min: 0,
+			max: 1,
+			maxFractionDigits: 2,
+			defaultVal: 0.75,
+		}),
+		bgColor: new z42opt.ColorOpt({
+			uniqueShortKey: "pbg",
+			title: "Background color",
+			defaultVal: { r: 0, g: 0, b: 0, a: 1 },
+		}),
+		isGrayScale: new z42opt.BoolOpt({
+			uniqueShortKey: "pg",
+			title: "Show original grayscale image",
+			defaultVal: false,
+		}),
+	}),
+	noiseAnim: new z42opt.Node( {}, {
+		// TODO: these should be FloatOpt instead		
+		transitionDelay: new z42opt.IntOpt({
+			uniqueShortKey: "ntde",
+			title: "Noise transition delay",
+			min: 0,
+			max: 30000,
+			displayFactor: 0.001,
+			displayUnit: "s",
+			maxFractionDigits: 1,
+			step: 100,
+			isSlow: true,
+			defaultVal: 3 * 1000,
+		}),
+		transitionDuration: new z42opt.IntOpt({
+			uniqueShortKey: "ntd",
+			title: "Noise transition duration",
+			min: 100,
+			max: 30000,
+			displayFactor: 0.001,
+			displayUnit: "s",
+			maxFractionDigits: 1,
+			step: 100,
+			isSlow: true,
+			defaultVal: 10 * 1000,
+		}),
+	}),
+	paletteAnim: new z42opt.Node( {}, {
+		// TODO: these should be FloatOpt instead		
+		rotaDuration: new z42opt.IntOpt({
+			uniqueShortKey: "prd",
+			title: "Palette rotation duration",
+			min: 2000,
+			max: 60000,
+			displayFactor: 0.001,
+			displayUnit: "s",
+			maxFractionDigits: 1,
+			step: 100,
+			defaultVal: 30 * 1000,
+		}),
+		transitionDelay: new z42opt.IntOpt({
+			uniqueShortKey: "ptde",
+			title: "Palette transition delay",
+			min: 0,
+			max: 30000,
+			displayFactor: 0.001,
+			displayUnit: "s",
+			maxFractionDigits: 1,
+			step: 100,
+			isSlow: true,
+			defaultVal: 10 * 1000,
+		}),
+		transitionDuration: new z42opt.IntOpt({
+			uniqueShortKey: "ptd",
+			title: "Palette transition duration",
+			min: 100,
+			max: 30000,
+			displayFactor: 0.001,
+			displayUnit: "s",
+			maxFractionDigits: 1,
+			step: 100,
+			isSlow: true,
+			defaultVal: 5 * 1000,
+		}),
+	}),
+});
+
+//------------------------------------------------------------------------------------------------
+// Describes the GUI structure of the options.
+
+const optionsView = {
+	title: "PlasmaFractal Options",
+	moreInfoLinkUrl: "https://github.com/zett42/PlasmaFractal",
+	moreInfoLinkText: "GitHub Project",
 	
-	var module = global.z42plasmaOptions = {};
+	//Group components can be customized, this is the default:
+	//component: "z42opt-tabs",
 
-	//------------------------------------------------------------------------------------------------
-	// Ease functions from 'z42ease.js' to use (excluded some which doesn't look good).
-	
-	const paletteEaseFunctionNames = [
-		"Linear",
-		"InQuad",
-		"OutQuad",
-		"InOutQuad",
-		"InCubic",
-		"OutCubic",
-		"InOutCubic",
-		"InQuart",
-		"OutQuart",
-		"InOutQuart",
-		"InQuint",
-		"OutQuint",
-		"InOutQuint",
-		"InSine",
-		"OutSine",
-		"InOutSine",
-		"InOutSine2_3",
-		"InOutSine2_5",
-		"InOutSine2_9",
-		"InOutSine2_13",
-		"InExpo",
-		"OutExpo",
-		"InOutExpo",
-		"InExpo2",
-		"OutExpo2",
-		"InOutExpo2",
-		"InCirc",
-		"OutCirc",
-		"InOutCirc",
-		"InBounce",
-		"OutBounce",
-		"InOutBounce"
-	];
+	groups: {
+		noiseTab: {
+			title: "Noise",
+			options: [ "noise" ]
+		},
+		paletteTab: {
+			title: "Palette",
+			options: [ "palette" ]
+		},
+		animTab: {
+			title: "Animation",
 
-	//------------------------------------------------------------------------------------------------
-	// Describes all available options, e. g. default values, constraints, mapping to URL params, etc.
-	// It does NOT store actual option values!
+			// This creates a flat view of the palette and noise anim options:
+			options: [ "paletteAnim", "noiseAnim" ],
 
-	module.optionsDescriptor = new z42opt.Node( {}, {
-		noise: new z42opt.Node( {}, {
-			frequency: new z42opt.FloatOpt({ 
-				uniqueShortKey: "f",
-				title: "Frequency",
-				min: 0.01,
-				max: 15,
-				maxFractionDigits: 2,
-				isScale: true,
-				scaleNormalPos: 0.33,
-				isSlow: true,
-				defaultVal: 1,
-			}),
-			octaves: new z42opt.IntOpt({
-				uniqueShortKey: "o",
-				title: "Octaves",
-				min: 1,
-				max: 15,
-				isSlow: true,
-				defaultVal: 4,
-			}),
-			gain: new z42opt.FloatOpt({
-				uniqueShortKey: "g",
-				title: "Gain",
-				min: 0.2,
-				max: 0.8,
-				maxFractionDigits: 3,
-				isSlow: true,
-				defaultVal: 0.5,
-			}),
-			lacunarity: new z42opt.FloatOpt({
-				uniqueShortKey: "l",
-				title: "Lacunarity",
-				min: 1,
-				max: 10,
-				maxFractionDigits: 2,
-				isSlow: true,
-				defaultVal: 2,
-			}),
-			amplitude: new z42opt.FloatOpt({
-				uniqueShortKey: "a",
-				title: "Amplitude",
-				min: 1,
-				max: 100,
-				maxFractionDigits: 2,
-				isSlow: true,
-				defaultVal: 8,
-			}),
-		}),
-		palette: new z42opt.Node( {}, {
-			easeFunctionBgToFg: new z42opt.EnumOpt({
-				uniqueShortKey: "pbf",
-				title: "Background to foreground easing",
-				values: paletteEaseFunctionNames,
-				defaultVal: "InBounce",
-			}),
-			easeFunctionFgToBg: new z42opt.EnumOpt({
-				uniqueShortKey: "pfb",
-				title: "Foreground to background easing",
-				values: paletteEaseFunctionNames,
-				defaultVal: "OutBounce",
-			}),
-			saturation: new z42opt.FloatOpt({
-				uniqueShortKey: "ps",
-				title: "Saturation",
-				min: 0,
-				max: 1,
-				maxFractionDigits: 2,
-				defaultVal: 0.5,
-			}),
-			brightness: new z42opt.FloatOpt({
-				uniqueShortKey: "pb",
-				title: "Brightness",
-				min: 0,
-				max: 1,
-				maxFractionDigits: 2,
-				defaultVal: 0.75,
-			}),
-			bgColor: new z42opt.ColorOpt({
-				uniqueShortKey: "pbg",
-				title: "Background color",
-				defaultVal: { r: 0, g: 0, b: 0, a: 1 },
-			}),
-			isGrayScale: new z42opt.BoolOpt({
-				uniqueShortKey: "pg",
-				title: "Show original grayscale image",
-				defaultVal: false,
-			}),
-		}),
-		noiseAnim: new z42opt.Node( {}, {
-			// TODO: these should be FloatOpt instead		
-			transitionDelay: new z42opt.IntOpt({
-				uniqueShortKey: "ntde",
-				title: "Noise transition delay",
-				min: 0,
-				max: 30000,
-				displayFactor: 0.001,
-				displayUnit: "s",
-				maxFractionDigits: 1,
-				step: 100,
-				isSlow: true,
-				defaultVal: 3 * 1000,
-			}),
-			transitionDuration: new z42opt.IntOpt({
-				uniqueShortKey: "ntd",
-				title: "Noise transition duration",
-				min: 100,
-				max: 30000,
-				displayFactor: 0.001,
-				displayUnit: "s",
-				maxFractionDigits: 1,
-				step: 100,
-				isSlow: true,
-				defaultVal: 10 * 1000,
-			}),
-		}),
-		paletteAnim: new z42opt.Node( {}, {
-			// TODO: these should be FloatOpt instead		
-			rotaDuration: new z42opt.IntOpt({
-				uniqueShortKey: "prd",
-				title: "Palette rotation duration",
-				min: 2000,
-				max: 60000,
-				displayFactor: 0.001,
-				displayUnit: "s",
-				maxFractionDigits: 1,
-				step: 100,
-				defaultVal: 30 * 1000,
-			}),
-			transitionDelay: new z42opt.IntOpt({
-				uniqueShortKey: "ptde",
-				title: "Palette transition delay",
-				min: 0,
-				max: 30000,
-				displayFactor: 0.001,
-				displayUnit: "s",
-				maxFractionDigits: 1,
-				step: 100,
-				isSlow: true,
-				defaultVal: 10 * 1000,
-			}),
-			transitionDuration: new z42opt.IntOpt({
-				uniqueShortKey: "ptd",
-				title: "Palette transition duration",
-				min: 100,
-				max: 30000,
-				displayFactor: 0.001,
-				displayUnit: "s",
-				maxFractionDigits: 1,
-				step: 100,
-				isSlow: true,
-				defaultVal: 5 * 1000,
-			}),
-		}),
-	});
-
-	//------------------------------------------------------------------------------------------------
-	// Describes the GUI structure of the options.
-
-	module.optionsView = {
-		title: "PlasmaFractal Options",
-		moreInfoLinkUrl: "https://github.com/zett42/PlasmaFractal",
-		moreInfoLinkText: "GitHub Project",
-		
-		//Group components can be customized, this is the default:
-		//component: "z42opt-tabs",
-
-		groups: {
-			noiseTab: {
-				title: "Noise",
-				options: [ "noise" ]
-			},
-			paletteTab: {
-				title: "Palette",
-				options: [ "palette" ]
-			},
-			animTab: {
-				title: "Animation",
-
-				// This creates a flat view of the palette and noise anim options:
-				options: [ "paletteAnim", "noiseAnim" ],
-
-				/* This would create nested tabs instead:
-				groups: {
-					paletteAnimGrp: {
-						title: "Palette",
-						options: [ "paletteAnim" ]
-					},
-					noiseAnimGrp: {
-						title: "Noise",
-						options: [ "noiseAnim" ]
-					}
+			/* This would create nested tabs instead:
+			groups: {
+				paletteAnimGrp: {
+					title: "Palette",
+					options: [ "paletteAnim" ]
 				},
-				*/
+				noiseAnimGrp: {
+					title: "Noise",
+					options: [ "noiseAnim" ]
+				}
 			},
-		}
-	};
+			*/
+		},
+	}
+};
 
-	//------------------------------------------------------------------------------------------------
-	
-})(this);
+//------------------------------------------------------------------------------------------------
+
+export {
+	optionsDescriptor,
+	optionsView,
+}
