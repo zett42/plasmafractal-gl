@@ -24,9 +24,9 @@ SOFTWARE.
 */
 
 self.importScripts( 
-	'../../external/perlin.js',
-	'../../external/mersennetwister/MersenneTwister.js',
-	'../../external/tinycolor/tinycolor.js',
+	'external/perlin.js',
+	'external/mersennetwister/MersenneTwister.js',
+	'external/tinycolor/tinycolor.js',
 	'components/color.js', 
 	'components/easing.js', 
 	'components/fractalNoise.js', 

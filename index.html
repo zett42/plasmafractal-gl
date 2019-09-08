@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-PlasmaFractal main script. Copyright (c) 2019 zett42.
+Main page. Copyright (c) 2019 zett42.
 https://github.com/zett42/PlasmaFractal
 
 MIT License
@@ -23,129 +23,41 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. 
 -->
+<!--===========================================================================================-->
+
 <html lang="us">
 <head>
 	<meta charset="utf-8">
-	<meta name="viewport" content="initial-scale=1, maximum-scale=1">	
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
 	<title>zett42 PlasmaFractal</title>
 
-	<link href="external/jquery-ui/jquery-ui.css" rel="stylesheet">
-	<link href="external/spectrum/spectrum.css" rel="stylesheet">
-	<link href="external/spectrum/sp-dark.css" rel="stylesheet">
-	<link href="main.css" rel="stylesheet">
+	<link rel="stylesheet" href="external/bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="external/bootstrap-vue/bootstrap-vue.min.css">
+	<link rel="stylesheet" href="external/spectrum/spectrum.css">
+	<link rel="stylesheet" href="external/spectrum/sp-dark.css">
+	<link rel="stylesheet" href="app.css">
 </head>
 <body>
 
-<button id="optionsDialogButton" title="Plasma Options" class="ui-button ui-corner-all ui-widget">⚙</button>
+<!-- Mounting point for Vue.js -->
+<div id="app"></div>
 
-<div id="optionsDialog" title="Plasma Options"></div>
+<canvas id="canvas2" class="plasma">PlasmaFractal</canvas>
+<canvas id="canvas1" class="plasma">PlasmaFractal</canvas>
 
-<canvas id="canvas">PlasmaFractal</canvas>	
+<!-- Scripts must be included after all other HTML elements! -->
 
-<script src="external/jquery/jquery.js"></script>
-<script src="external/jquery-ui/jquery-ui.js"></script>
-<script src="external/jquery.dialogOptions.js"></script>
-<script src="external/jquery.ui.touch-punch.js"></script>
+<script src="external/jquery/jquery.min.js"></script>
+<script src="external/popper/popper.min.js"></script>
+<script src="external/vue/vue.js"></script>
+<script src="external/bootstrap-vue/bootstrap-vue.min.js"></script>
+<script src="external/tinycolor/tinycolor.js"></script>
 <script src="external/spectrum/spectrum.js"></script>
-<script src="external/perlin.js"></script>	
 
-<script src="z42easing.js"></script>	
-<script src="z42color.js"></script>	
-<script src="z42FractalNoise.js"></script>
-<script src="z42plasma.js"></script>
-<script src="z42plasmaGui.js"></script>
+<script src="components/color.js"></script>
 
-<script>
-(function () {
+<script type="module" src="app.js"></script>
 
-	let plasma           = null; 	
-	let context          = null;
-	let contextImageData = null;
-	let contextPixels    = null;	
-
-	//===================================================================================================================
-	// Functions
-	//===================================================================================================================
-
-	// Draw noise image with animated palette in canvas.
-
-	function drawAnimationFrame() 
-	{
-		plasma.drawAnimationFrame( contextPixels );
-	
-		context.putImageData( contextImageData, 0, 0 );	
-		
-		window.requestAnimationFrame( drawAnimationFrame );	
-	}	
-	
-	//-------------------------------------------------------------------------------------------------------------------
-	// Resize the image buffers to the size of the canvas and generate fractal noise image (grayscale).
-
-	function resizeCanvas() 
-	{
-		canvas.width  = window.innerWidth;
-		canvas.height = window.innerHeight;
-		
-		if( canvas.getContext )
-		{
-			context = canvas.getContext('2d');	
-			contextImageData = context.createImageData( canvas.width, canvas.height );
-			contextPixels = new Uint32Array( contextImageData.data.buffer );
-		}	
-
-		plasma.resize( canvas.width, canvas.height );	
-	}
-	
-	//-------------------------------------------------------------------------------------------------------------------
-	
-	function toggleFullscreen()
-	{
-		if( document.documentElement.requestFullscreen )
-		{
-			if( ! document.fullscreenElement )
-				document.documentElement.requestFullscreen();
-			else	
-				document.exitFullscreen();
-		}	
-	}
-
-	//-------------------------------------------------------------------------------------------------------------------
-	
-	function reseedFractal()
-	{
-		noise.seed( Math.random() );
-		plasma.generateNoiseImage();
-	}
-	
-	
-	//===================================================================================================================
-	// Main 
-	//===================================================================================================================
-
-	// Generate initial fractal.
-
-	noise.seed( Math.random() );
-
-	plasma = new z42Plasma();
-
-	resizeCanvas();
-	
-	// On window resize, resize the canvas to fill browser window dynamically.
-	window.addEventListener( 'resize', resizeCanvas, false );
-
-	// On double-click set fullscreen.
-	canvas.addEventListener( 'dblclick', toggleFullscreen, false );
-	
-	// On single-click randomize fractal.
-	canvas.addEventListener( 'click',    reseedFractal, false );
-	
-	// Launch the animation.
-	window.requestAnimationFrame( drawAnimationFrame );
-
-	// Initialize GUI for setting parameters.
-	z42plasmaGui.init( plasma );
-}());
-</script>
 </body>
 </html>
