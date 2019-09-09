@@ -195,7 +195,7 @@ class PaletteOpt extends z42opt.Option {
 				result += " ";
 			result += this.$attrs.posDesc.$serialize( item.pos ) + "_";
 			result += this.$attrs.colorDesc.$serialize( item.color ) + "_";
-			result += this.$attrs.easeDesc.$serialize( item.easeFunction );
+			result += this.$attrs.easeDesc.$serialize( item.easeFun );
 		}
 
 		return result;
@@ -212,9 +212,9 @@ class PaletteOpt extends z42opt.Option {
 			item.pos = Number( itemValues[ 0 ] );
 			item.color = this.$attrs.colorDesc.$deserialize( itemValues[ 1 ] );
 			if( itemValues.length >= 3 )
-				item.easeFunction = this.$attrs.easeDesc.$deserialize( itemValues[ 2 ] );
+				item.easeFun = this.$attrs.easeDesc.$deserialize( itemValues[ 2 ] );
 			else
-				item.easeFunction = this.$attrs.defaultEaseFunction;
+				item.easeFun = this.$attrs.defaultEaseFunction;
 			
 			result.push( item );
 		}

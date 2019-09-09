@@ -169,30 +169,32 @@ const optionsDescriptor = new z42opt.Node( {}, {
 		}),
 		customPalette: new z42opt.PaletteOpt({
 			uniqueShortKey: "cp",
-			title: "Custom palette",
+			//title: "Palette editor",
 			easeFunctions: paletteEaseFunctionNames,
 			defaultEaseFunction: "linear",
 			defaultVal: [
 				{
 					pos: 0,
 					color: { r: 0, g: 0, b: 0 },
-					easeFunction: "InQuad" 
+					easeFun: "InQuad" 
 				},
 				{
 					pos: 0.25,
 					color: { r: 0, g: 191, b: 255 },
-					easeFunction: "OutQuad" 
+					easeFun: "OutQuad" 
 				},
+				/*
 				{
 					pos: 0.5,
 					color: { r: 0, g: 0, b: 0 },
-					easeFunction: "InQuad" 
+					easeFun: "InQuad" 
 				},
 				{
 					pos: 0.75,
 					color: { r: 220, g: 0, b: 0 },
-					easeFunction: "OutQuad" 
+					easeFun: "OutQuad" 
 				},
+				*/
 			],
 			isShown: ( optData ) => optData.palette.isCustom && ! optData.palette.isGrayScale,
 		}),
