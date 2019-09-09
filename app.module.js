@@ -198,7 +198,8 @@ function initGui()
 
 	$(window)
 		// On window resize, resize the canvas to fill browser window dynamically.
-		.on( "resize", resizePlasmaToWindowSize )
+		// Use debounce() to avoid costly calculations while the window size is in flux.
+		.on( "resize", _.debounce( resizePlasmaToWindowSize, 150 ) )
 		// When browser back/forward button gets pressed, reload the state that onOptionsDialogClose() pushed to the history. 
 		.on( "popstate", function()
 		{
