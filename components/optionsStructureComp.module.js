@@ -25,6 +25,7 @@ SOFTWARE.
 //---------------------------------------------------------------------------------------------------
 
 import "./optionsValueComp.module.js"
+import "./optionsPaletteComp.module.js"
 import * as z42opt from "./optionsDescriptor.module.js"
 import * as z42optUtil from "./optionsUtils.module.js"
 

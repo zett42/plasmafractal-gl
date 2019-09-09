@@ -170,6 +170,63 @@ class ColorOpt extends z42opt.Option {
 
 //------------------------------------------------------------------------------------------------
 
+class PaletteOpt extends z42opt.Option {
+	constructor( attrs ){
+		super( attrs );
+
+		this.$attrs.posDesc = new FloatOpt({ 
+			min: 0, max: 1, maxFractionDigits: 2,
+			defaultVal: 0
+		});
+		this.$attrs.colorDesc = new ColorOpt({
+			defaultVal: { r: 0, g: 0, b: 0 }
+		});
+		this.$attrs.easeDesc  = new EnumOpt({	
+			values: this.$attrs.easeFunctions,
+			defaultVal: this.$attrs.defaultEaseFunction
+		});
+	}
+
+	$serialize( value ) {
+		let result = "";
+
+		for( const item of value ){
+			if( result.length > 0 )
+				result += " ";
+			result += this.$attrs.posDesc.$serialize( item.pos ) + "_";
+			result += this.$attrs.colorDesc.$serialize( item.color ) + "_";
+			result += this.$attrs.easeDesc.$serialize( item.easeFunction );
+		}
+
+		return result;
+	}
+
+	$deserialize( value ) {
+		let result = [];
+
+		for( const itemStr of value.split( " " ) ){
+			let item = {};
+			const itemValues = itemStr.split( "_" );
+			if( itemValues.length < 2 )
+				continue;
+			item.pos = Number( itemValues[ 0 ] );
+			item.color = this.$attrs.colorDesc.$deserialize( itemValues[ 1 ] );
+			if( itemValues.length >= 3 )
+				item.easeFunction = this.$attrs.easeDesc.$deserialize( itemValues[ 2 ] );
+			else
+				item.easeFunction = this.$attrs.defaultEaseFunction;
+			
+			result.push( item );
+		}
+
+		return result;			
+	}
+
+	get $defaultComponent() { return "z42opt-palette"; }
+}	
+
+//------------------------------------------------------------------------------------------------
+
 function clampOptional( value, min = null, max = null ) {
 	if( min && value < min ) return min;
 	if( max && value > max ) return max;
@@ -186,4 +243,5 @@ export {
 	BoolOpt,
 	EnumOpt,
 	ColorOpt,
+	PaletteOpt,
 }
