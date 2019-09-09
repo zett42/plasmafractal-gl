@@ -40,7 +40,7 @@ class IntOpt extends z42opt.Option {
 		value = parseInt( value, 10 );
 		if( isNaN( value ) ) {
 			this.$parseError( value );
-			return null;
+			return this.$attrs.defaultVal;
 		}
 		return clampOptional( Math.ceil( value ), this.$attrs.min, this.$attrs.max );
 	}
@@ -57,8 +57,16 @@ class FloatOpt extends z42opt.Option {
 
 	$serialize( value ) { 
 		if( typeof this.$attrs.maxFractionDigits !== "undefined" ) {
-			return Number( value.toFixed( this.$attrs.maxFractionDigits ) );
+			// convert to fixed, then remove trailing zeros
+			value = Number( value.toFixed( this.$attrs.maxFractionDigits ) );
 		}
+		value = value.toString();
+		// remove unneeded leading zero (e. g. "0.5" -> ".5" )
+		if( value.charAt( 0 ) == "0" && value.charAt( 1 ) == "." )
+			return value.substring( 1 );
+		// remove unneeded leading zero after "-" (e. g. "-0.5" -> "-.5" )
+		if( value.charAt( 0 ) == "-" && value.charAt( 1 ) == "0" && value.charAt( 2 ) == "." )
+			return "-" + value.substring( 2 );
 		return value;
 	}
 
@@ -66,7 +74,7 @@ class FloatOpt extends z42opt.Option {
 		value = parseFloat( value );
 		if( isNaN( value ) ) {
 			this.$parseError( value );
-			return null;
+			return this.$attrs.defaultVal;
 		}
 		return clampOptional( value, this.$attrs.min, this.$attrs.max ); 			
 	}
@@ -100,14 +108,37 @@ class EnumOpt extends z42opt.Option {
 		super( attrs );
 	}
 
+	get $values(){
+		return Object.keys( this.$attrs.values );
+	}
+
+	$serialize( value ) {
+		value = String( value ).toLowerCase();
+
+		for( const [ enumVal, shortKey ] of Object.entries( this.$attrs.values ) ) {
+			if( shortKey.toLowerCase() === value ){
+				return shortKey;
+			}
+			if( enumVal.toLowerCase() === value ) {
+				return shortKey;
+			}
+		}
+		return null;
+	}
+
 	$deserialize( value ) {
-		for( const ev of this.$attrs.values ) {
-			if( ev.toLowerCase() === String( value ).toLowerCase() ) {
-				return ev;
+		value = String( value ).toLowerCase();
+
+		for( const [ enumVal, shortKey ] of Object.entries( this.$attrs.values ) ) {
+			if( shortKey.toLowerCase() === value ){
+				return enumVal;
+			}
+			if( enumVal.toLowerCase() === value ) {
+				return enumVal;
 			}
 		}
 		this.$parseError( value );
-		return null;
+		return this.$attrs.defaultVal;
 	}
 
 	get $defaultComponent() { return "z42opt-select"; }
@@ -128,7 +159,7 @@ class ColorOpt extends z42opt.Option {
 		const color = tinycolor( value );
 		if( ! color.isValid() )	{
 			this.$parseError( value );
-			return null;					
+			return this.$attrs.defaultVal;					
 		}
 		
 		return color.toRgb(); // keep it pure data to simplify merging			
