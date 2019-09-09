@@ -110,7 +110,21 @@ const containerComponent = Vue.component( "z42opt-container", {
 		},	
 		resolveValue( path ){
 			return z42optUtil.getMemberByPath( this.value, path );
-		},	
+		},
+		isShown( optDescChild ){
+			if( typeof optDescChild.$attrs.isShown === "undefined" )
+				return true;
+			if( typeof optDescChild.$attrs.isShown === "function" )
+				return optDescChild.$attrs.isShown( this.value, this.optDesc );
+			return Boolean( optDescChild.$attrs.isShown );
+		},
+		isEnabled( optDescChild ){
+			if( typeof optDescChild.$attrs.isEnabled === "undefined" )
+				return true;
+			if( typeof optDescChild.$attrs.isEnabled === "function" )
+				return optDescChild.$attrs.isEnabled( this.value, this.optDesc );
+			return Boolean( optDescChild.$attrs.isEnabled );
+		},
 		onModified( value, path ){
 			const optDescNode = z42optUtil.getMemberByPath( this.optDesc, path ); 
 			if( optDescNode instanceof z42opt.Option ) {
@@ -120,20 +134,23 @@ const containerComponent = Vue.component( "z42opt-container", {
 	},
 	template: /*html*/ `
 		<div>
-			<template v-for="basePath in optView.options">				
-				<!-- Note: 'key' attribute required when using v-for with component (https://vuejs.org/v2/guide/list.html#v-for-with-a-Component) -->
+			<template v-for="basePath in optView.options">
+				<template v-for="opt in resolveOptDesc( basePath )">
+					<!-- Note: 'key' attribute required when using v-for with component (https://vuejs.org/v2/guide/list.html#v-for-with-a-Component) -->
 
-				<component v-for="opt in resolveOptDesc( basePath )"
-					:is="opt.node.$component" 
-					:key="childId( opt.path )"
-					:id="childId( opt.path )"
-					:optDesc="opt.node" 
-					:value="resolveValue( opt.path )"
-					@input="onModified( $event, opt.path )"
-				/>
+					<component v-if="isShown( opt.node )"
+						:is="opt.node.$component" 
+						:key="childId( opt.path )"
+						:id="childId( opt.path )"
+						:optDesc="opt.node" 
+						:value="resolveValue( opt.path )"
+						:disabled="! isEnabled( opt.node )"
+						@input="onModified( $event, opt.path )"
+					/>
+				</template>
 			</template>
 		</div>
-		`
+	`,
 });	
 
 //---------------------------------------------------------------------------------------------------

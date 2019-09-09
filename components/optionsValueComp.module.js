@@ -32,9 +32,10 @@ import "../external/nouislider/nouislider.js"
 const rangeComponent = Vue.component( "z42opt-range", {
 	inheritAttrs: false,
 	props: { 
-		id:      { type: String, required: true },
-		value:   { type: Number, required: true },
-		optDesc: { type: z42opt.Option, required: true }, 
+		id:       { type: String, required: true },
+		value:    { type: Number, required: true },
+		optDesc:  { type: z42opt.Option, required: true }, 
+		disabled: { type: Boolean, required: false, default: false },
 	},
 	data() {
 		return {
@@ -119,10 +120,15 @@ const rangeComponent = Vue.component( "z42opt-range", {
 	template: /*html*/ `
 		<b-form-group
 			:label="optDesc.$attrs.title + ': ' + displayValue"
-			:label-for="id">
-
+			:label-for="id"
+			:disabled="disabled"
+			>
 			<!-- Mounting point for nouislider -->
-			<div :id="id"></div>
+			<div
+				:id="id" 
+				:disabled="disabled"
+				>
+			</div>
 		</b-form-group>
 	`,
 });	
@@ -135,6 +141,7 @@ const selectComponent = Vue.component( "z42opt-select", {
 		id:      { type: String, required: true },
 		value:   { required: true },
 		optDesc: { type: z42opt.Option, required: true }, 
+		disabled: { type: Boolean, required: false, default: false },
 	},
 	created() {
 		//console.log("z42opt-select.optDesc:", this.optDesc);
@@ -142,12 +149,14 @@ const selectComponent = Vue.component( "z42opt-select", {
 	template: /*html*/ `
 		<b-form-group
 			:label="optDesc.$attrs.title + ':'"
-			:label-for="id">
-
+			:label-for="id"
+			:disabled="disabled"
+			>
 			<b-form-select 
 				:id="id"
-				:options="optDesc.$attrs.values"
+				:options="optDesc.$values"
 				:value="value"
+				:disabled="disabled"
 				@input="$emit( 'input', $event )"
 			/>
 		</b-form-group>`
@@ -158,9 +167,10 @@ const selectComponent = Vue.component( "z42opt-select", {
 const checkComponent = Vue.component( "z42opt-check", {
 	inheritAttrs: false,
 	props: { 
-		id:      { type: String, required: true },
-		value:   { required: true },
-		optDesc: { type: z42opt.Option, required: true }, 
+		id:       { type: String, required: true },
+		value:    { required: true },
+		optDesc:  { type: z42opt.Option, required: true }, 
+		disabled: { type: Boolean, required: false, default: false },
 	},
 	created() {
 		//console.log("z42opt-check.optDesc:", this.optDesc);
@@ -170,6 +180,7 @@ const checkComponent = Vue.component( "z42opt-check", {
 			<b-form-checkbox
 				:id="id"
 				:checked="value"
+				:disabled="disabled"
 				@input="$emit( 'input', $event )"
 				>
 				{{ optDesc.$attrs.title }}
@@ -182,9 +193,10 @@ const checkComponent = Vue.component( "z42opt-check", {
 const colorComponent = Vue.component( "z42opt-color", {
 	inheritAttrs: false,
 	props: { 
-		id:      { type: String, required: true },
-		value:   { required: true },
-		optDesc: { type: z42opt.Option, required: true }, 
+		id:       { type: String, required: true },
+		value:    { required: true },
+		optDesc:  { type: z42opt.Option, required: true }, 
+		disabled: { type: Boolean, required: false, default: false },
 	},
 	created() {
 		//console.log("z42opt-color.optDesc:", this.optDesc);
@@ -203,12 +215,18 @@ const colorComponent = Vue.component( "z42opt-color", {
 		<b-form-group class="container px-0">
 			<b-row align-v="center">
 				<b-col>
-					<label :for="id">{{ optDesc.$attrs.title }}: </label>
+					<label 
+						:for="id"
+						:disabled="disabled"
+						>
+						{{ optDesc.$attrs.title }}:
+					</label>
 				</b-col>
 				<b-col>
 					<b-form-input type="color"
 						:id="id"
 						:value="hexValue"
+						:disabled="disabled"
 						@input="onModified( $event )"				
 					/>
 				</b-col>
