@@ -31,21 +31,21 @@ import * as z42opt from "./optionsDescriptor.module.js"
 
 function mergeDefaultsWithUrlParams( optionsDescriptor, urlParams )
 {
-	let result = {};
-	setDefaultOptions( result, optionsDescriptor );
+	let defaults = {};
+	setDefaultOptions( defaults, optionsDescriptor );
 
-	console.log( "Default options:", JSON.parse( JSON.stringify( result ) ) );
+	console.log( "Default options:", JSON.parse( JSON.stringify( defaults ) ) );
 
 	// Deserialize and validate URL parameters.	
-	const par = optionsFromUrlParams( urlParams, optionsDescriptor );
-	if( par )
-	{
-		console.log( "URL params:", JSON.parse( JSON.stringify( par ) ) );
+	let result = optionsFromUrlParams( urlParams, optionsDescriptor );
+	if( ! result )
+		return defaultValues;
 
-		mergeObjectData( result, par );
+	console.log( "URL params:", JSON.parse( JSON.stringify( result ) ) );
 
-		console.log( "Merged options:", JSON.parse( JSON.stringify( result ) ) );
-	}
+	_.defaultsDeep( result, defaults );
+
+	console.log( "Merged options:", JSON.parse( JSON.stringify( result ) ) );
 
 	return result;
 }	
@@ -67,7 +67,7 @@ function setDefaultOptions( result, descriptor, resultPath = null ) {
 				defaultVal = null;
 			}
 			// Set default value by path.
-			setMemberByPath( result, childPath, defaultVal );
+			_.set( result, childPath, defaultVal );
 		}
 		else {
 			// Recurse into child descriptor.
@@ -98,7 +98,7 @@ function optionsFromUrlParams( urlParams, descriptor ) {
 			continue;
 		}
 
-		const childDescriptor = getMemberByPath( descriptor, path );
+		const childDescriptor = _.get( descriptor, path );
 		if( ! ( childDescriptor instanceof z42opt.Option ) ) {
 			console.error( `Internal error: missing or invalid descriptor for URL param '${shortKey}', path: ${path}` );
 			continue;
@@ -106,7 +106,7 @@ function optionsFromUrlParams( urlParams, descriptor ) {
 
 		const parsedValue = childDescriptor.$deserialize( urlValue );
 		if( parsedValue !== null ) {
-			setMemberByPath( result, path, parsedValue );
+			_.set( result, path, parsedValue );
 		}
 	}
 
@@ -129,24 +129,6 @@ function optionsToUrlParams( options, descriptor ) {
 }
 
 //------------------------------------------------------------------------------------------------
-// Get object member value by path.
-
-function getMemberByPath( obj, path, separator = '.' ) {
-	const properties = Array.isArray( path ) ? path : path.split( separator );
-	return properties.reduce( ( prev, curr ) => prev && prev[ curr ], obj );
-}
-
-//------------------------------------------------------------------------------------------------
-// Set object member value by path.
-
-function setMemberByPath( obj, path, value, separator = '.' ) {
-	const properties = Array.isArray( path ) ? path : path.split( separator );
-	properties.reduce( ( o, p, i ) => 
-		o[ p ] = ( path.split('.').length === ++i ? value : o[ p ] || {} ), 
-		obj );
-}
-
-//------------------------------------------------------------------------------------------------
 // Append childPath to basePath with given separator. Separator is not appended if basePath is empty.
 
 function joinPath( basePath, childPath, separator = '.' ) {
@@ -154,29 +136,6 @@ function joinPath( basePath, childPath, separator = '.' ) {
 		return childPath;
 	return basePath + separator + childPath; 
 }
-
-//------------------------------------------------------------------------------------------------
-// Merge individual values of two objects recursively.
-// Values from source will be copied to the same path in target, overwriting any existing value or object.
-
-function mergeObjectData( target, source, targetPath = null ) {
-
-	for( const [ key, value ] of Object.entries( source ) ) {
-
-		const path = joinPath( targetPath, key );
-		
-		if( typeof value === "object" )	{
-			if( value !== null ) {
-				// Recurse into child object.
-				mergeObjectData( target, value, path );
-			}
-		}
-		else {
-			// Merge single value
-			setMemberByPath( target, path, value );
-		}
-	}
-}	
 
 //------------------------------------------------------------------------------------------------
 // Create permalink from options.
@@ -267,7 +226,7 @@ function createUrlParams( urlParams, options, rootDescriptor, path = null ) {
 
 	for( const [ key, value ] of Object.entries( options ) ) {
 		const childPath = joinPath( path, key );
-		const childDescriptor = getMemberByPath( rootDescriptor, childPath );
+		const childDescriptor = _.get( rootDescriptor, childPath );
 		
 		if( childDescriptor instanceof z42opt.Option )	{
 			if( ! childDescriptor.$attrs.uniqueShortKey ) {
@@ -295,9 +254,6 @@ export {
 	setDefaultOptions,
 	optionsFromUrlParams,
 	optionsToUrlParams,
-	getMemberByPath,
-	setMemberByPath,
 	joinPath,
-	mergeObjectData,
 	createPermalink,
 }

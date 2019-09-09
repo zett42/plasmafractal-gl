@@ -66,6 +66,10 @@ This project uses the following open source libraries. Each library comes with i
 - [nouislider](https://refreshless.com/nouislider/)
   - Copyright (c) 2018 Léon Gersen
   
+- [lodash](https://lodash.com/)
+  - Copyright OpenJS Foundation and other contributors <https://openjsf.org/>
+  - Based on Underscore.js, copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors <http://underscorejs.org/>
+  
 ## Special thanks to
 - [stackoverflow](https://stackoverflow.com)
   - So many helpful answers, too many to credit them individually. Kudos to this awesome community!

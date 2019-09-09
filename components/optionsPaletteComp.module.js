@@ -27,9 +27,6 @@ SOFTWARE.
 import * as z42opt from "./optionsDescriptorValues.module.js"
 import "../external/nouislider/nouislider.js"
 
-// Return a deep clone of passed object.
-const cloneDeep = ( obj ) => JSON.parse( JSON.stringify( obj ) );
-
 //---------------------------------------------------------------------------------------------------
 
 const paletteComponent = Vue.component( "z42opt-palette", {
@@ -43,7 +40,7 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 	mounted() {
 		// Make a deep clone so we will be able to differentiate between changes of this.value originating
 		// from the outside and from the inside of this component.
-		this.lastKnownValue = cloneDeep( this.value );
+		this.lastKnownValue = _.cloneDeep( this.value );
 
 		noUiSlider.create( this.sliderElem, this.sliderConfig );
 		
@@ -92,7 +89,7 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 
 			// Make sure we only emit actually changed values. The noUiSlider emits too many events even 
 			// if values haven't changed.
-        	if( this.positions.toString() !== valuesRaw.toString() ) {
+        	if( ! _.isEqual( this.positions, valuesRaw ) ) {
 
 				console.debug("value changed from inside");
 
@@ -103,7 +100,7 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 
 				// Emit changes as "input" event to make the component compatible with v-model.
 				// Make clone so receiver of event can't change this.lastKnownValue.
-				this.$emit( "input", cloneDeep( this.lastKnownValue ) );
+				this.$emit( "input", _.cloneDeep( this.lastKnownValue ) );
 			 }			
 		},
 	},
@@ -116,13 +113,13 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 
 				// To prevent stack overflow or extreme slowdown, make sure to only react on data changes
 				// originating from the outside, instead of changes originating from this component!
-				if( this.positions.toString() !== lastKnownPositions.toString() ) {	
+				if( ! _.isEqual( this.positions, lastKnownPositions ) ) {
 					console.debug("value changed from outside");
 
 					this.sliderElem.noUiSlider.set( this.positions );
 				}
 
-				this.lastKnownValue = cloneDeep( val );
+				this.lastKnownValue = _.cloneDeep( val );
 			},
 		},		
 	},

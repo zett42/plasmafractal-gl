@@ -101,7 +101,7 @@ const containerComponent = Vue.component( "z42opt-container", {
 		},			
 		// Return a flat array of options descriptors from given path.
 		resolveOptDesc( path ){
-			let node = z42optUtil.getMemberByPath( this.optDesc, path );
+			let node = _.get( this.optDesc, path );
 			if( node instanceof z42opt.Option ){
 				return [{ path: path, node: node }];
 			}
@@ -114,7 +114,7 @@ const containerComponent = Vue.component( "z42opt-container", {
 			return res;
 		},	
 		resolveValue( path ){
-			return z42optUtil.getMemberByPath( this.value, path );
+			return _.get( this.value, path );
 		},
 		isShown( optDescChild ){
 			if( typeof optDescChild.$attrs.isShown === "undefined" )
@@ -131,9 +131,9 @@ const containerComponent = Vue.component( "z42opt-container", {
 			return Boolean( optDescChild.$attrs.isEnabled );
 		},
 		onModified( value, path ){
-			const optDescNode = z42optUtil.getMemberByPath( this.optDesc, path ); 
+			const optDescNode = _.get( this.optDesc, path ); 
 			if( optDescNode instanceof z42opt.Option ) {
-				z42optUtil.setMemberByPath( this.value, path, value );
+				_.set( this.value, path, value );
 			}
 		}
 	},
