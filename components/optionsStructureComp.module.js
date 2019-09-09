@@ -35,10 +35,11 @@ import * as z42optUtil from "./optionsUtils.module.js"
 const tabsComponent = Vue.component( "z42opt-tabs", {
 	inheritAttrs: false,		
 	props: {
-		id:      { type: String, required: true },
-		value:   { type: Object, required: true },
-		optDesc: { type: z42opt.Node, required: true }, 
-		optView: { type: Object, required: true },
+		id:       { type: String, required: true },
+		value:    { type: Object, required: true },
+		optDesc:  { type: z42opt.Node, required: true }, 
+		optView:  { type: Object, required: true },
+		tabIndex: { type: Number, required: false, default: 0 },
 	},
 	methods: {
 		childId( key ) { 
@@ -58,8 +59,11 @@ const tabsComponent = Vue.component( "z42opt-tabs", {
 			return 'z42opt-container';
 		},
 	},
-	template: /*html*/ `
-		<b-tabs>
+	template: /*html*/ `	
+		<b-tabs 
+			:value="tabIndex" 
+			@input="$emit( 'update:tabIndex', $event )" 
+			>
 			<!-- Note: 'key' attribute required when using v-for with component (https://vuejs.org/v2/guide/list.html#v-for-with-a-Component) -->
 			
 			<b-tab v-for="( group, key ) in optView.groups"

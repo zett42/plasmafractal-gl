@@ -43,20 +43,24 @@ const optionsDialogComponent = Vue.component( "z42opt-dialog", {
 		optDesc: { type: z42opt.Group, required: true },
 		optView: { type: Object, required: true },
 	},
-	myInitialPermaLinkUrl: null, 
-
+	data() {
+		return {
+			initialPermaLinkUrl: null,
+			tabIndex: 0,  // remembers last active tab
+		}
+	},
 	computed: {
 		permaLinkUrl() {
 			return z42optUtil.createPermalink( this.optData, this.optDesc, window.location.href );
-		}
+		},
 	},
 	methods: {
 		onShow(){
-			this.myInitialPermaLinkUrl = z42optUtil.createPermalink( this.optData, this.optDesc, window.location.href );
+			this.initialPermaLinkUrl = z42optUtil.createPermalink( this.optData, this.optDesc, window.location.href );
 		},
 		onHide(){
 			// When options have changed, make it possible to use the browser back button to revert the current options.
-			if( this.permaLinkUrl !== this.myInitialPermaLinkUrl ){
+			if( this.permaLinkUrl !== this.initialPermaLinkUrl ){
 				window.history.pushState( { action: "optionsDialogClose" }, document.title, this.permaLinkUrl );
 			}
 		}
@@ -82,6 +86,7 @@ const optionsDialogComponent = Vue.component( "z42opt-dialog", {
 				:value="optData" 
 				:optDesc="optDesc" 
 				:optView="optView" 
+				:tabIndex.sync="tabIndex"
 			/>
 		</b-modal>
 		`
