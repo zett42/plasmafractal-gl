@@ -37,3 +37,6 @@ html, body {
 .tab-pane {
 	padding-top: 1em;
 }
+label, .modal-dialog header, .nav-link {
+	user-select: none;
+}
