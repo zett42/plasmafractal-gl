@@ -207,7 +207,6 @@ function initGui()
 		});
 
 	$(document)
-		.on( "dblclick", toggleFullscreen )
 		// Toggle visibility of options button: fullscreen will hide it, mouse interaction will show it again.
 		.on( "fullscreenchange", updateOptionsButtonVisibility )
 		.on( "mousemove", updateOptionsButtonVisibility )
@@ -215,6 +214,9 @@ function initGui()
 		// Handle keyboard shortcuts
 		.on( "keydown", onKeyDown )
 		; 
+
+	$(m_canvasFG)
+		.on( "dblclick", toggleFullscreen );
 
 	return app;
 }

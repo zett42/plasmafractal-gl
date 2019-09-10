@@ -2,9 +2,6 @@
   background: rgba(77, 77, 77, 0.5); 
   border: none;
   box-shadow: none;
-  /* The padding prevents the handle from overlapping the start/end of the track */
-	padding-left: 16px;
-	padding-right: 16px;
 }
 .noUi-connect {
   background: #205B56;

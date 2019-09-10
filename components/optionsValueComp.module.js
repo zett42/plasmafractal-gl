@@ -127,6 +127,7 @@ const rangeComponent = Vue.component( "z42opt-range", {
 			<div
 				:id="id" 
 				:disabled="disabled"
+				class="z42opt-range"
 				>
 			</div>
 		</b-form-group>
@@ -157,7 +158,8 @@ const selectComponent = Vue.component( "z42opt-select", {
 				:options="optDesc.$values"
 				:value="value"
 				:disabled="disabled"
-				@input="$emit( 'input', $event )"
+				class="z42opt-select"
+				@change="$emit( 'input', $event )"
 			/>
 		</b-form-group>`
 });
@@ -181,7 +183,8 @@ const checkComponent = Vue.component( "z42opt-check", {
 				:id="id"
 				:checked="value"
 				:disabled="disabled"
-				@input="$emit( 'input', $event )"
+				class="z42opt-check"
+				@change="$emit( 'input', $event )"
 				>
 				{{ optDesc.$attrs.title }}
 			</b-form-checkbox>
@@ -227,7 +230,8 @@ const colorComponent = Vue.component( "z42opt-color", {
 						:id="id"
 						:value="hexValue"
 						:disabled="disabled"
-						@input="onModified( $event )"				
+						class="z42opt-color"
+						@change="onModified( $event )"				
 					/>
 				</b-col>
 			</b-row>

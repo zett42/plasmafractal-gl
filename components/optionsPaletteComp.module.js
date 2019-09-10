@@ -27,7 +27,15 @@ SOFTWARE.
 import * as z42opt from "./optionsDescriptorValues.module.js"
 import "../external/nouislider/nouislider.js"
 
-//---------------------------------------------------------------------------------------------------
+// Non-module dependencies (include via <script> element):
+// "easing.js"
+// "color.js"
+
+// Pattern for private class members: https://stackoverflow.com/a/33533611/7571258
+const privates = new WeakMap();
+
+//==================================================================================================
+// Public component
 
 const paletteComponent = Vue.component( "z42opt-palette", {
 	inheritAttrs: false,
@@ -38,46 +46,85 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 		disabled: { type: Boolean, required: false, default: false },
 	},
 	mounted() {
-		// Make a deep clone so we will be able to differentiate between changes of this.value originating
+		// Make a deep clone so we will be able to differentiate between changes of palette originating
 		// from the outside and from the inside of this component.
-		this.lastKnownValue = _.cloneDeep( this.value );
 
-		noUiSlider.create( this.sliderElem, this.sliderConfig );
-		
-		// Using arrow function here so onSliderChange() gets 'this' context of component instead
-		// of noUiSlider.
-		this.sliderElem.noUiSlider.on( "slide", ( values, handle, valuesRaw, tap, positions ) => {
-			this.onSlide( values, handle, valuesRaw, tap, positions );
+		const palette = makePaletteValid( this.value );
+	
+		privates.set( this, {
+			palette: palette
 		});
-	},	
+
+		let sliderConfig = {
+			start: palettePositions( palette ),
+			range: { min: 0, max: 1 },
+			behaviour: "unconstrained",
+		};
+
+		if( this.optDesc.$attrs.step != null ){
+			sliderConfig.step = this.optDesc.$attrs.step;
+		}
+
+		this.recreateSlider( sliderConfig );
+
+		this.updatePaletteCanvas();
+	},
+	data() {
+		return {
+			selectedHandleIndex: null,
+			selectedPaletteItem: {
+				color: null,
+				easeFun: null, 
+			},
+			selectedColorDesc: new z42opt.ColorOpt({
+				title: "Selected color",
+			}),
+			selectedEaseFunDesc: new z42opt.EnumOpt({
+				title: "Selected ease function",
+				values: this.optDesc.$attrs.easeFunctions
+			}),
+		}
+	},
 	computed: {
-		sliderElem() {
-			return document.getElementById( this.id );
-		},
-		sliderConfig(){
-			let result = {
-				start: this.positions,
-				range: { min: 0, max: 1 },
-				behaviour: "unconstrained-tap",
-			};
-
-			if( this.optDesc.$attrs.step != null ){
-				result.step = this.optDesc.$attrs.step;
-			}
-
-			return result;
-		},
-		positions() {
-			return this.value.map( ( item ) => item.pos );
-		},
-		label(){
-			return this.optDesc.$attrs.title ? this.optDesc.$attrs.title + ":" : undefined;
-		},
-		labelFor(){
-			return this.optDesc.$attrs.title ? this.id : undefined;
-		},
+		canvasId()          { return this.id + "#canvas"; },
+		selectedColorId()   { return this.id + "#selectedColor"; },
+		selectedEaseFunId() { return this.id + "#selectedEaseFun"; },
+		label()   { return this.optDesc.$attrs.title ? this.optDesc.$attrs.title + ":" : undefined; },
+		labelFor(){	return this.optDesc.$attrs.title ? this.id : undefined; },
 	},
 	methods: {
+		// Get the DOM element of the slider.
+		getSliderElement() {
+			return document.getElementById( this.id );			
+		},
+
+		// (Re-)create slider and (re-) attach event listeners.
+		recreateSlider( options ) {
+			const sliderElem = this.getSliderElement();
+
+			if( sliderElem.noUiSlider ) {
+				sliderElem.noUiSlider.destroy();
+			}
+
+			noUiSlider.create( sliderElem, options );
+	
+			// Using arrow function forwarder so onSlide() gets 'this' context of component instead of noUiSlider.
+			sliderElem.noUiSlider.on( "slide", ( ...args ) => this.onSlide( ...args ) );
+
+			// Hook double-click on the slider bar (adds handle).
+			for( const elem of sliderElem.getElementsByClassName( "noUi-connects" ) ) {
+				elem.addEventListener( "dblclick", event => this.onConnectsDblClick( event ) );
+			}
+		
+			for( const elem of sliderElem.getElementsByClassName( "noUi-handle" ) ) {
+				// Hook shift-click on the handles (removes handle).
+				elem.addEventListener( "click", event => this.onHandleClick( event ) );
+	
+				// Hook focus event to know about "selected" handle.
+				elem.addEventListener( "focus", event => this.onHandleFocus( event ) );
+			}	
+		},
+
 		// Called on slider position changes.
 		//   values:     Current slider values formatted (array of String)
 		//   handle:     Handle that caused the event (Number)
@@ -87,39 +134,206 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 
 		onSlide( values, handle, valuesRaw, tap, handleOffs ) {
 
-			// Make sure we only emit actually changed values. The noUiSlider emits too many events even 
-			// if values haven't changed.
-        	if( ! _.isEqual( this.positions, valuesRaw ) ) {
+			const palette = privates.get( this ).palette;
+			const positions = palettePositions( palette );
 
-				console.debug("value changed from inside");
+			// Make sure we only react to actually changed values. The noUiSlider emits too many events 
+			// even if values haven't changed.
+        	if( ! _.isEqual( positions, valuesRaw ) ) {
 
 				// Update the new positions of the slider handles in the cloned array.
 				for( const i in valuesRaw ){
-					this.lastKnownValue[ i ].pos = valuesRaw[ i ];
+					palette[ i ].pos = valuesRaw[ i ];
 				}
 
-				// Emit changes as "input" event to make the component compatible with v-model.
-				// Make clone so receiver of event can't change this.lastKnownValue.
-				this.$emit( "input", _.cloneDeep( this.lastKnownValue ) );
-			 }			
+				//console.debug("palette changed from inside:", _.cloneDeep( palette ) );
+
+				this.updatePaletteCanvas();
+
+				// According to Vue.js rules, this.value must not be modified directly.
+				// Instead emit changes as "input" event to make the component compatible with v-model.
+				this.emitPaletteInputEvent();
+			 }
 		},
+
+		// Called on double click at slider bar. Adds a new handle at clicked position.
+		onConnectsDblClick( event ) {
+			let palettePos = 0;
+			if( event.target.clientWidth > 0 )
+				palettePos = event.offsetX / event.target.clientWidth;
+			palettePos = _.clamp( palettePos, 0, 1 );  // just for sure
+			
+			// Clone required so setPaletteFromOutside() notices change in handle count.
+			let newPalette = _.cloneDeep( privates.get( this ).palette );
+
+			newPalette.push({
+				pos: palettePos,
+				color:   this.optDesc.$attrs.defaultColor || { r:0, g:0, b:0, a: 1 },
+				easeFun: this.optDesc.$attrs.defaultEaseFunction || "linear"
+			});
+
+			this.setPaletteFromOutside( newPalette );
+			this.emitPaletteInputEvent();
+		},
+
+		// Called on click at a slider handle. If shift key is pressed, remove handle.
+		onHandleClick( event ) {
+			if( event.shiftKey ) {
+				event.preventDefault();
+
+				const handleIndex = this.handleIndexFromElement( event.target );
+				if( handleIndex >= 0 ) {
+					const palette = privates.get( this ).palette;
+					
+					// Slider requires at least one handle.
+					if( palette.length > 1 ) {
+						// Create new palette with handle removed.
+						let newPalette = _.cloneDeep( palette );			
+						newPalette.splice( handleIndex, 1 );
+
+						this.setPaletteFromOutside( newPalette );
+						this.emitPaletteInputEvent();
+					}
+				}
+			}
+		},
+
+		// Called on click at a slider handle. If shift key is pressed, remove handle.
+		onHandleFocus( event ) {
+			const handleIndex = this.handleIndexFromElement( event.target );
+			if( handleIndex >= 0 ) {
+
+				const handleElems = Array.from( this.getSliderElement().getElementsByClassName( "noUi-handle" ) );
+				const focusedHandleElem = handleElems[ handleIndex ];
+				if( focusedHandleElem ){
+					// Highlight handle even if focus is on a non-handle element.
+					focusedHandleElem.classList.add( "z42opt-palette-handle-selected" );
+				}
+				if( this.selectedHandleIndex != null ){
+					const selectedHandleElem = handleElems[ this.selectedHandleIndex ];
+					if( selectedHandleElem ){
+						selectedHandleElem.classList.remove( "z42opt-palette-handle-selected" );
+					}
+				}
+
+				this.selectedHandleIndex = handleIndex;
+
+				const palette = privates.get( this ).palette;
+				this.selectedPaletteItem = _.cloneDeep( palette[ handleIndex ] );
+
+				//console.debug("selectedHandleIndex:", this.selectedHandleIndex,
+				//	          ", selectedPaletteItem:", _.cloneDeep(this.selectedPaletteItem));
+			}
+		},
+
+		// Called when a value in the input fields for the selected handle has changed. 
+		onPaletteAttributeInput( name, value ) {
+			if( this.selectedHandleIndex != null && 
+				! _.isEqual( this.selectedPaletteItem[ name ], value ) ){
+				
+				//console.debug("onPaletteAttributeInput:",name,"=",value);
+
+				this.selectedPaletteItem[ name ] = value;
+
+				const palette = privates.get( this ).palette;
+				palette[ this.selectedHandleIndex ][ name ] = _.cloneDeep( value );
+
+				this.updatePaletteCanvas();
+				this.emitPaletteInputEvent();
+			}
+		},
+
+		// Get handle index from child element of handle.
+		handleIndexFromElement( childElem ){
+			const sliderElem = this.getSliderElement();
+			const elems = Array.from( sliderElem.getElementsByClassName( "noUi-handle" ) );
+			return elems.findIndex( elem => elem.contains( childElem ) );
+		},
+
+		// Set new palette and update slider positions. Recreate slider if handle count changes.
+		setPaletteFromOutside( newPalette ) {
+
+			console.debug("palette changed from outside:", _.cloneDeep( newPalette ) );
+
+			const curPalette = privates.get( this ).palette;
+			const newPositions = palettePositions( newPalette );
+
+			const slider = this.getSliderElement().noUiSlider;
+			
+			if( newPalette.length != curPalette.length ){
+				// Need to destroy and re-create slider to update handle count. 
+				// https://github.com/leongersen/noUiSlider/issues/892
+
+				let options = slider.options;
+				options.start = newPositions;
+
+				this.recreateSlider( options );
+			}
+			else {
+				// Only update existing handle positions.
+				slider.set( newPositions );
+			}
+
+			privates.get( this ).palette = newPalette;
+
+			this.updatePaletteCanvas();
+		},
+
+		// Send "input" event with current palette. Palette will be cloned to prevent receiver
+		// from accidentally modifying the current palette.
+		emitPaletteInputEvent() {
+			const palette = privates.get( this ).palette;
+			this.$emit( "input", _.cloneDeep( palette ) );
+		},
+
+		// Draw the current palette into the canvas.
+		updatePaletteCanvas(){
+			const palette = privates.get( this ).palette;
+			const sortedPalette = sortPaletteClone( palette );
+		
+			const canvasElem = document.getElementById( this.canvasId );
+			const width   = canvasElem.width;
+			const context = canvasElem.getContext( "2d" );
+			const imgData = context.createImageData( width, 1 );
+			const pixels  = new Uint32Array( imgData.data.buffer );
+		
+			// Note: drawing only a single horizontal line, which will be vertically stretched via CSS height
+		
+			for( let i = 0; i < sortedPalette.length; ++i ) {
+				const start = sortedPalette[ i ];
+				const end   = sortedPalette[ ( i + 1 ) % sortedPalette.length ];
+		
+				const startX = Math.trunc( start.pos * width );
+				const endX   = Math.trunc( end.pos   * width );
+				let dist     = endX - startX;
+				if( dist <= 0 )
+					dist = width - startX + endX;  // wrap-around
+
+				const easeFun = z42easing[ "ease" + start.easeFun ];
+		
+				z42color.makePaletteGradientRGBA( pixels, startX, dist, start.color, end.color, easeFun );
+			}
+		
+			context.putImageData( imgData, 0, 0 );	
+		},	
 	},
 	watch: {
 		value: {
 			deep: true,
 			handler: function( val, oldVal ) { 
+				
+				const newPalette = makePaletteValid( val );	
+				const curPalette = privates.get( this ).palette;
 
-				const lastKnownPositions = this.lastKnownValue.map( ( item ) => item.pos );
+				// Sort new and current palettes for comparability.
+				const newPaletteSorted = sortPaletteClone( newPalette );
+				const curPaletteSorted = sortPaletteClone( curPalette );
 
 				// To prevent stack overflow or extreme slowdown, make sure to only react on data changes
 				// originating from the outside, instead of changes originating from this component!
-				if( ! _.isEqual( this.positions, lastKnownPositions ) ) {
-					console.debug("value changed from outside");
-
-					this.sliderElem.noUiSlider.set( this.positions );
+				if( ! _.isEqual( newPaletteSorted, curPaletteSorted ) ) {
+					this.setPaletteFromOutside( newPalette );
 				}
-
-				this.lastKnownValue = _.cloneDeep( val );
 			},
 		},		
 	},
@@ -129,15 +343,94 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 			:label-for="labelFor"
 			:disabled="disabled"
 			>
+			<canvas 
+				:id="canvasId"
+				class="z42opt-palette-canvas"
+				width="1024"
+				height="1"
+				>
+			</canvas>
+
 			<!-- Mounting point for noUiSlider -->
 			<div 
 				:id="id"
 				:disabled="disabled"
+				class="z42opt-palette-slider"
 				>
+			</div>
+
+			<z42opt-color
+				v-if="selectedHandleIndex !== null"
+				:id="selectedColorId"
+				:value="selectedPaletteItem.color"
+				:optDesc="selectedColorDesc"
+				class="z42opt-palette-color"
+				@input="onPaletteAttributeInput( 'color', $event )"
+			/>
+
+			<z42opt-select
+				v-if="selectedHandleIndex !== null"
+				:id="selectedEaseFunId"
+				:value="selectedPaletteItem.easeFun"
+				:optDesc="selectedEaseFunDesc"
+				class="z42opt-palette-easeFun"
+				@input="onPaletteAttributeInput( 'easeFun', $event )"
+			/>
+			
+			<div>
+				<div class="text-info d-inline-block align-top mr-1" style="font-size: x-large" aria-hidden="true" >🛈</div>
+				<div class="text-info d-inline-block align-top">
+					Click handle to edit properties.<br>
+					Double-click to add handle, shift+click to remove handle.
+				</div>
 			</div>
 		</b-form-group>
 	`,
 });	
+
+//==================================================================================================
+// Private functions
+
+function makePaletteValid( palette ) {
+
+	const defaults = {   
+		pos: 0,
+		color: { r: 0, g: 0, b: 0, a: 1 },
+		easeFun: "Linear" 
+	};
+
+	if( ! Array.isArray( palette ) || palette.length === 0 ) {
+		const defaults2 = {   
+			pos: 0.5,
+			color: { r: 255, g: 255, b: 255, a: 1 },
+			easeFun: "Linear" 
+		};
+	
+		return [ defaults, defaults2 ];
+	}
+
+	let result = _.cloneDeep( palette );
+
+	// Set defaults for each array element.
+	for( let i = 0; i < result.length; ++i ){
+		result[ i ] = result[ i ] || {};
+		_.defaultsDeep( result[ i ], defaults );
+	}
+
+	return result;
+}
+
+//---------------------------------------------------------------------------------------------------
+
+function sortPaletteClone( palette ){
+	let result = _.cloneDeep( palette );
+	result.sort( ( a, b ) => a.pos - b.pos );
+	return result;	
+}
+
+function palettePositions( palette ){
+	return palette.map( item => item.pos );
+}
 
 //---------------------------------------------------------------------------------------------------
 
