@@ -173,6 +173,11 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 			});
 
 			this.setPaletteFromOutside( newPalette );
+
+			// Focus newly added handle.
+			const handleElems = this.handleElements();
+			handleElems[ newPalette.length - 1 ].focus();
+
 			this.emitPaletteInputEvent();
 		},
 
@@ -203,7 +208,8 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 			const handleIndex = this.handleIndexFromElement( event.target );
 			if( handleIndex >= 0 ) {
 
-				const handleElems = Array.from( this.getSliderElement().getElementsByClassName( "noUi-handle" ) );
+				const handleElems = this.handleElements();
+
 				const focusedHandleElem = handleElems[ handleIndex ];
 				if( focusedHandleElem ){
 					// Highlight handle even if focus is on a non-handle element.
@@ -243,10 +249,14 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 			}
 		},
 
+		// Get array of handle elements
+		handleElements() {
+			return Array.from( this.getSliderElement().getElementsByClassName( "noUi-handle" ) );
+		},
+
 		// Get handle index from child element of handle.
 		handleIndexFromElement( childElem ){
-			const sliderElem = this.getSliderElement();
-			const elems = Array.from( sliderElem.getElementsByClassName( "noUi-handle" ) );
+			const elems = this.handleElements();
 			return elems.findIndex( elem => elem.contains( childElem ) );
 		},
 
