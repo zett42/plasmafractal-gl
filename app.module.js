@@ -38,28 +38,33 @@ const m_colorSeed = Math.random();
 
 let m_optionsButtonFadeoutTimer = null;
 
-let m_canvasFG = $("#canvas1");
-let m_canvasBG = $("#canvas2");
+// Foreground objects
+let m_fg = {
+	canvas : $("#canvas1")
+}
+// Background objects
+let m_bg = {
+	canvas : $("#canvas2")
+}
 
 // Create threads for rendering plasma.
-let m_plasmaThreadFG = createPlasmaThreadForCanvas( m_canvasFG[ 0 ], false );
-let m_plasmaThreadBG = createPlasmaThreadForCanvas( m_canvasBG[ 0 ], true );
+m_fg.thread = createPlasmaThreadForCanvas( m_fg.canvas[ 0 ], false );
+m_bg.thread = createPlasmaThreadForCanvas( m_bg.canvas[ 0 ], true );
 
 // Set timeout for first canvas fade animation.
 setTimeout( initCanvasAnimation, m_options.noiseAnim.transitionDelay );
 
-let m_app = initGui();
+const m_app = initGui();
 
 //===================================================================================================================
 // Functions
 //===================================================================================================================
 
-function createPlasmaThreadForCanvas( canvas, isPaused )
-{
-	let thread = new Worker( './plasmaThread.js' );
+function createPlasmaThreadForCanvas( canvas, isPaused ) {
+	let thread = new Worker( "./plasmaThread.js" );
 
 	// Set callback to handle messages from worker thread.
-	thread.addEventListener( 'message', onPlasmaThreadMessage );
+	thread.addEventListener( "message", onPlasmaThreadMessage );
 
 	// Create an offscreen canvas, as regular canvas is bound to DOM and cannot be passed to web worker.
 	const offscreenCanvas = canvas.transferControlToOffscreen();
@@ -68,16 +73,16 @@ function createPlasmaThreadForCanvas( canvas, isPaused )
 	// random palette colors.
 	thread.postMessage(
 		{
-			action: "init",
-			isPaused: isPaused,
-			canvas: offscreenCanvas,
-			width: window.innerWidth,
-			height: window.innerHeight,
+			action   : "init",
+			isPaused : isPaused,
+			canvas   : offscreenCanvas,
+			width    : window.innerWidth,
+			height   : window.innerHeight,
 			noiseSeed: Math.random(),
 			colorSeed: m_colorSeed,
-			options: m_options
+			options  : m_options
 		},
-		[offscreenCanvas]   // transfer ownership of offscreenCanvas to thread
+		[ offscreenCanvas ]   // transfer ownership of offscreenCanvas to thread
 	);
 
 	return thread;
@@ -85,73 +90,62 @@ function createPlasmaThreadForCanvas( canvas, isPaused )
 
 //-------------------------------------------------------------------------------------------------------------------
 
-function onPlasmaThreadMessage( ev )
-{
+function onPlasmaThreadMessage( ev ) {
 	m_ndebug || console.debug( "Message from plasmaThread:", ev );
 
-	switch ( ev.data.action )
-	{
-		case "onreseedfinished":
-			{
-				// Transition to newly created fractal.
+	switch ( ev.data.action ) {
+		case "onreseedfinished": {
+			// Transition to newly created fractal.
 
-				setTimeout( startCanvasTransition, m_options.noiseAnim.transitionDelay );
-			}
+			setTimeout( startCanvasTransition, m_options.noiseAnim.transitionDelay );
 			break;
+		}
 	}
 }
+
 //-------------------------------------------------------------------------------------------------------------------
 
-function initCanvasAnimation()
-{
+function initCanvasAnimation() {
 	setCanvasTransitionDuration( m_options.noiseAnim.transitionDuration );
 
 	// Set callback to be notified when CSS transition has ended.
-	m_canvasFG.on( 'transitionend', () =>
-	{
-		m_ndebug || console.debug( 'm_canvasFG transitionend' );
+	m_fg.canvas.on( "transitionend", () => {
+		m_ndebug || console.debug( "m_fg.canvas transitionend" );
 
-		// Swap foreground and background things.
-		[m_canvasFG, m_canvasBG] = [m_canvasBG, m_canvasFG];
-		[m_plasmaThreadFG, m_plasmaThreadBG] = [m_plasmaThreadBG, m_plasmaThreadFG];
+		// Swap foreground and background objects.
+		[ m_fg, m_bg ] = [ m_bg, m_fg ];
 
 		// Pause the animation of the new background thread as its canvas is invisible anyway.
-		m_plasmaThreadBG.postMessage( { action: "pause" } );
+		m_bg.thread.postMessage( { action: "pause" } );
 
 		// Start to calculate new fractal image in background thread.
 		// We will get notified by onPlasmaThreadMessage() when this is done.
-		m_plasmaThreadBG.postMessage( { action: "reseed", noiseSeed: Math.random() } );
-	} );
+		m_bg.thread.postMessage( { action: "reseed", noiseSeed: Math.random() } );
+	});
 
 	startCanvasTransition();
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-function setCanvasTransitionDuration( durationMillis )
-{
+function setCanvasTransitionDuration( durationMillis ) {
 	$( ".plasma" ).css( "transition-duration", durationMillis.toString() + "ms" );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 // Start CSS transition animation (configured through CSS 'transition' attribute).
 
-function startCanvasTransition()
-{
+function startCanvasTransition() {
 	// Wake the background thread up because its canvas will be visible soon.
-	m_plasmaThreadBG.postMessage( { action: "start" } );
+	m_bg.thread.postMessage( { action: "start" } );
 
-	m_canvasFG.css( { opacity: 0.0 } );
-	m_canvasBG.css( { opacity: 1.0 } );
+	m_fg.canvas.css( { opacity: 0.0 } );
+	m_bg.canvas.css( { opacity: 1.0 } );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-function initGui()
-{
-	// To work around blurry popup windows when browser zoom != 100%.
-	Popper.Defaults.modifiers.computeStyle.gpuAcceleration = false;
-
+function initGui() {
 	// Create root Vue instance, which represents the GUI of this application.
 
 	let app = new Vue({
@@ -201,10 +195,7 @@ function initGui()
 		// Use debounce() to avoid costly calculations while the window size is in flux.
 		.on( "resize", _.debounce( resizePlasmaToWindowSize, 150 ) )
 		// When browser back/forward button gets pressed, reload the state that onOptionsDialogClose() pushed to the history. 
-		.on( "popstate", function()
-		{
-			window.location.reload();
-		});
+		.on( "popstate", () => window.location.reload() );
 
 	$(document)
 		// Toggle visibility of options button: fullscreen will hide it, mouse interaction will show it again.
@@ -215,53 +206,50 @@ function initGui()
 		.on( "keydown", onKeyDown )
 		; 
 
-	$(m_canvasFG)
+	$(m_fg.canvas)
 		.on( "dblclick", toggleFullscreen );
+
+	// To work around blurry popup windows when browser zoom != 100%.
+	Popper.Defaults.modifiers.computeStyle.gpuAcceleration = false;
 
 	return app;
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-function resizePlasmaToWindowSize()
-{
-	// TODO: Use timer so thread isn't blocked by handling too many resize requests.
-
-	m_plasmaThreadFG.postMessage( { action: "resize", width: window.innerWidth, height: window.innerHeight } );
-	m_plasmaThreadBG.postMessage( { action: "resize", width: window.innerWidth, height: window.innerHeight } );
+function resizePlasmaToWindowSize(){
+	const msg = { 
+		action: "resize", 
+		width : window.innerWidth, 
+		height: window.innerHeight 
+	};
+	m_fg.thread.postMessage( msg );
+	m_bg.thread.postMessage( msg );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-function setPlasmaOptions( propName, value )
-{
-	m_plasmaThreadFG.postMessage( {
+function setPlasmaOptions( propName, value ){
+	const msg = {
 		action: "setOptions",
 		propName: propName,
 		value: value
-	} );
-
-	m_plasmaThreadBG.postMessage( {
-		action: "setOptions",
-		propName: propName,
-		value: value
-	} );
+	};
+	m_fg.thread.postMessage( msg );
+	m_bg.thread.postMessage( msg );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-function setNoiseAnimOptions( options )
-{
+function setNoiseAnimOptions( options ){
 	setCanvasTransitionDuration( options.transitionDuration );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-function toggleFullscreen()
-{
-	if( document.documentElement.requestFullscreen )
-	{
-		if ( document.fullscreenElement )
+function toggleFullscreen(){
+	if( document.documentElement.requestFullscreen ){
+		if( document.fullscreenElement )
 			document.exitFullscreen();
 		else
 			document.documentElement.requestFullscreen();
@@ -270,17 +258,14 @@ function toggleFullscreen()
 
 //-------------------------------------------------------------------------------------------------------------------
 
-function updateOptionsButtonVisibility()
-{
+function updateOptionsButtonVisibility(){
 	$("#button-options-dialog").css( "opacity", 1 );
 
-	if( m_optionsButtonFadeoutTimer )
-	{
+	if( m_optionsButtonFadeoutTimer ){
 		clearTimeout( m_optionsButtonFadeoutTimer );
 	}
 
-	if( document.fullscreenElement )
-	{
+	if( document.fullscreenElement ){
 		// In fullscreen mode, options button will be hidden after timeout.
 		m_optionsButtonFadeoutTimer = setTimeout( 
 			() => $("#button-options-dialog").css( "opacity", 0 ), 
@@ -291,13 +276,11 @@ function updateOptionsButtonVisibility()
 
 //-------------------------------------------------------------------------------------------------------------------
 
-function onKeyDown( event )
-{
+function onKeyDown( event ){
 	if( event.isComposing ) {
 		return;
 	}
-	switch( event.keyCode )
-	{
+	switch( event.keyCode ){
 		// toggle options dialog
 		case "O".charCodeAt( 0 ): $( "#button-options-dialog" ).click(); break;
 	}
