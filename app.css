@@ -61,6 +61,10 @@ html, body {
 .z42opt-component-transition-leave-to {
 	opacity: 0;
 }
+.z42opt-palette-handle-to-remove {
+	opacity: .25;
+	transition: opacity 125ms ease-out;
+}
 
 /* Show bootstrap modal dialogs without darkening backdrop but still allow to dismiss dialog by clicking outside */
 .modal-backdrop {
@@ -73,6 +77,6 @@ html, body {
 .tab-pane {
 	padding-top: 1em;
 }
-label, .modal-dialog header, .nav-link {
+.modal-content * {
 	user-select: none;
 }

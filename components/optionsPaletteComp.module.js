@@ -34,6 +34,12 @@ import "../external/nouislider/nouislider.js"
 // Pattern for private class members: https://stackoverflow.com/a/33533611/7571258
 const privates = new WeakMap();
 
+// When a slider handle is moved up or down more than this distance, it will be removed.
+const mouseThresholdToRemoveHandle = 60;
+
+const cssClassHandleToRemove = "z42opt-palette-handle-to-remove";
+const cssClassHandleSelected = "z42opt-palette-handle-selected";
+
 //==================================================================================================
 // Public component
 
@@ -44,15 +50,35 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 		value:    { type: Array, required: true },
 		optDesc:  { type: z42opt.PaletteOpt, required: true }, 
 		disabled: { type: Boolean, required: false, default: false },
-	},
+	},	
+	data() {
+		return {
+			selectedHandleIndex: null,
+			selectedPaletteItem: {
+				color: null,
+				easeFun: null, 
+			},
+			selectedColorDesc: new z42opt.ColorOpt({
+				title: "Selected color",
+			}),
+			selectedEaseFunDesc: new z42opt.EnumOpt({
+				title: "Selected ease function",
+				values: this.optDesc.$attrs.easeFunctions
+			}),
+		}
+	},	
 	mounted() {
 		// Make a deep clone so we will be able to differentiate between changes of palette originating
 		// from the outside and from the inside of this component.
 
 		const palette = makePaletteValid( this.value );
 	
+		// Define private variables of this component (non-reactive!)
 		privates.set( this, {
-			palette: palette
+			palette: palette,
+			currentMousePos: null,
+			slideStartMousePos: null,
+			slidingHandleElement: null,
 		});
 
 		let sliderConfig = {
@@ -69,21 +95,9 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 
 		this.updatePaletteCanvas();
 	},
-	data() {
-		return {
-			selectedHandleIndex: null,
-			selectedPaletteItem: {
-				color: null,
-				easeFun: null, 
-			},
-			selectedColorDesc: new z42opt.ColorOpt({
-				title: "Selected color",
-			}),
-			selectedEaseFunDesc: new z42opt.EnumOpt({
-				title: "Selected ease function",
-				values: this.optDesc.$attrs.easeFunctions
-			}),
-		}
+	destroyed() {
+		// Remove global event listener in any case.
+		window.removeEventListener( "mousemove", this.onSlideMouseMove );
 	},
 	computed: {
 		canvasId()          { return this.id + "#canvas"; },
@@ -109,19 +123,21 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 			noUiSlider.create( sliderElem, options );
 	
 			// Using arrow function forwarder so onSlide() gets 'this' context of component instead of noUiSlider.
+			sliderElem.noUiSlider.on( "start", ( ...args ) => this.onSlideStart( ...args ) );
 			sliderElem.noUiSlider.on( "slide", ( ...args ) => this.onSlide( ...args ) );
+			sliderElem.noUiSlider.on( "end"  , ( ...args ) => this.onSlideEnd( ...args ) );
 
 			// Hook double-click on the slider bar (adds handle).
 			for( const elem of sliderElem.getElementsByClassName( "noUi-connects" ) ) {
-				elem.addEventListener( "dblclick", event => this.onConnectsDblClick( event ) );
+				elem.addEventListener( "dblclick", this.onConnectsDblClick );
 			}
 		
 			for( const elem of sliderElem.getElementsByClassName( "noUi-handle" ) ) {
 				// Hook shift-click on the handles (removes handle).
-				elem.addEventListener( "click", event => this.onHandleClick( event ) );
+				elem.addEventListener( "click", this.onHandleClick );
 	
 				// Hook focus event to know about "selected" handle.
-				elem.addEventListener( "focus", event => this.onHandleFocus( event ) );
+				elem.addEventListener( "focus", this.onHandleFocus );
 			}	
 		},
 
@@ -132,7 +148,7 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 		//   tap:        Event was caused by the user tapping the slider (Boolean)
 		//   handleOffs: Left offset of the handles (array of Number)
 
-		onSlide( values, handle, valuesRaw, tap, handleOffs ) {
+		onSlide( values, handleIndex, valuesRaw, tap, handleOffs ) {
 
 			const palette = privates.get( this ).palette;
 			const positions = palettePositions( palette );
@@ -174,9 +190,8 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 
 			this.setPaletteFromOutside( newPalette );
 
-			// Focus newly added handle.
-			const handleElems = this.handleElements();
-			handleElems[ newPalette.length - 1 ].focus();
+			// Select newly added handle.
+			this.setSelectedHandle( newPalette.length - 1 );
 
 			this.emitPaletteInputEvent();
 		},
@@ -188,19 +203,56 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 
 				const handleIndex = this.handleIndexFromElement( event.target );
 				if( handleIndex >= 0 ) {
-					const palette = privates.get( this ).palette;
-					
-					// Slider requires at least one handle.
-					if( palette.length > 1 ) {
-						// Create new palette with handle removed.
-						let newPalette = _.cloneDeep( palette );			
-						newPalette.splice( handleIndex, 1 );
-
-						this.setPaletteFromOutside( newPalette );
-						this.emitPaletteInputEvent();
-					}
+					this.removeHandleAtIndex( handleIndex );
 				}
 			}
+		},
+
+		onSlideStart( values, handleIndex, valuesRaw, tap, handleOffs ){
+			const priv = privates.get( this );
+			priv.slideStartMousePos = null;
+			priv.slidingHandleElement = this.handleElements()[ handleIndex ];
+			
+			// Register global mouse move listener to capture mouse movement even outside of handle element
+			// to detect drag up/down.
+			window.addEventListener( "mousemove", this.onSlideMouseMove );
+		},
+
+		onSlideMouseMove( event ) {
+			const priv = privates.get( this );
+			priv.currentMousePos = { x: event.screenX, y: event.screenY };
+
+			if( ! priv.slideStartMousePos ){
+				priv.slideStartMousePos = { x: event.screenX, y: event.screenY };
+			}
+
+			const distY = Math.abs( priv.currentMousePos.y - priv.slideStartMousePos.y ); 
+			if( distY > mouseThresholdToRemoveHandle && priv.palette.length > 1 ) {
+				// Visually indicate "to be deleted" state of handle.
+				priv.slidingHandleElement.classList.add( cssClassHandleToRemove );				
+			}
+			else {
+				// Removal visual "to be deleted" state of handle.
+				priv.slidingHandleElement.classList.remove( cssClassHandleToRemove );				
+			}
+		},	
+
+		onSlideEnd( values, handleIndex, valuesRaw, tap, handleOffs ){
+			const priv = privates.get( this );
+
+			// Remove CSS class that shows "to be deleted" state of handle.
+			priv.slidingHandleElement.classList.remove( cssClassHandleToRemove );				
+
+			if( priv.slideStartMousePos ){
+				// Remove slider if mouse was moved a certain distance vertically.
+				const distY = Math.abs( priv.currentMousePos.y - priv.slideStartMousePos.y ); 
+				if( distY > mouseThresholdToRemoveHandle ) {
+					this.removeHandleAtIndex( handleIndex );
+				}
+			}
+
+			// Remove global mouse move listener that was registered by onSlideStart().
+			window.removeEventListener( "mousemove", this.onSlideMouseMove );
 		},
 
 		// Called on click at a slider handle. If shift key is pressed, remove handle.
@@ -213,12 +265,12 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 				const focusedHandleElem = handleElems[ handleIndex ];
 				if( focusedHandleElem ){
 					// Highlight handle even if focus is on a non-handle element.
-					focusedHandleElem.classList.add( "z42opt-palette-handle-selected" );
+					focusedHandleElem.classList.add( cssClassHandleSelected );
 				}
 				if( this.selectedHandleIndex != null ){
 					const selectedHandleElem = handleElems[ this.selectedHandleIndex ];
 					if( selectedHandleElem ){
-						selectedHandleElem.classList.remove( "z42opt-palette-handle-selected" );
+						selectedHandleElem.classList.remove( cssClassHandleSelected );
 					}
 				}
 
@@ -287,6 +339,31 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 			privates.get( this ).palette = newPalette;
 
 			this.updatePaletteCanvas();
+		},
+
+		// Remove given slider handle and emit input event.
+		removeHandleAtIndex( handleIndex ) {
+			const palette = privates.get( this ).palette;
+						
+			// Slider requires at least one handle.
+			if( palette.length > 1 ) {
+				// Create new palette with handle removed.
+				let newPalette = _.cloneDeep( palette );			
+				newPalette.splice( handleIndex, 1 );
+
+				this.setPaletteFromOutside( newPalette );
+				
+				// Set focus to next handle
+				this.setSelectedHandle( ( handleIndex + 1 ) % newPalette.length );
+			
+				this.emitPaletteInputEvent();
+			}
+		},
+
+		// Set focus to handle by index.
+		setSelectedHandle( handleIndex ) {
+			const handleElems = this.handleElements();
+			handleElems[ handleIndex ].focus();
 		},
 
 		// Send "input" event with current palette. Palette will be cloned to prevent receiver
@@ -387,13 +464,11 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 				@input="onPaletteAttributeInput( 'easeFun', $event )"
 			/>
 			
-			<div>
-				<div class="text-info d-inline-block align-top mr-1" style="font-size: x-large" aria-hidden="true" >🛈</div>
-				<div class="text-info d-inline-block align-top">
-					Click handle to edit properties.<br>
-					Double-click to add handle, shift+click to remove handle.
-				</div>
-			</div>
+			<p class="text-info">
+				Click handle to <b>edit</b> properties.<br>
+				Double-click to <b>add</b> handle.<br>
+				Drag up/down or shift+click to <b>remove</b> handle.
+			</p>
 		</b-form-group>
 	`,
 });	
