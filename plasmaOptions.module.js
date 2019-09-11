@@ -125,23 +125,23 @@ const optionsDescriptor = new z42opt.Node( {}, {
 		}),
 		isCustom: new z42opt.BoolOpt({
 			uniqueShortKey: "icp",
-			title: "Custom palette",
+			title: "Custom palette (work in progress!)",
 			defaultVal: false,
-			isShown: ( optData ) => ! optData.palette.isGrayScale,
+			isRendered: options => ! options.palette.isGrayScale,
 		}),		
 		easeFunctionBgToFg: new z42opt.EnumOpt({
 			uniqueShortKey: "pbf",
 			title: "Background to foreground easing",
 			values: paletteEaseFunctionNames,
 			defaultVal: "InBounce",
-			isShown: ( optData ) => ! optData.palette.isCustom && ! optData.palette.isGrayScale,
+			isRendered: options => ! options.palette.isCustom && ! options.palette.isGrayScale,
 		}),
 		easeFunctionFgToBg: new z42opt.EnumOpt({
 			uniqueShortKey: "pfb",
 			title: "Foreground to background easing",
 			values: paletteEaseFunctionNames,
 			defaultVal: "OutBounce",
-			isShown: ( optData ) => ! optData.palette.isCustom && ! optData.palette.isGrayScale,
+			isRendered: options => ! options.palette.isCustom && ! options.palette.isGrayScale,
 		}),
 		saturation: new z42opt.FloatOpt({
 			uniqueShortKey: "ps",
@@ -150,7 +150,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			max: 1,
 			maxFractionDigits: 2,
 			defaultVal: 0.5,
-			isShown: ( optData ) => ! optData.palette.isCustom && ! optData.palette.isGrayScale,
+			isRendered: options => ! options.palette.isCustom && ! options.palette.isGrayScale,
 		}),
 		brightness: new z42opt.FloatOpt({
 			uniqueShortKey: "pb",
@@ -159,44 +159,21 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			max: 1,
 			maxFractionDigits: 2,
 			defaultVal: 0.75,
-			isShown: ( optData ) => ! optData.palette.isCustom && ! optData.palette.isGrayScale,
+			isRendered: options => ! options.palette.isCustom && ! options.palette.isGrayScale,
 		}),
 		bgColor: new z42opt.ColorOpt({
 			uniqueShortKey: "pbg",
 			title: "Background color",
 			defaultVal: { r: 0, g: 0, b: 0, a: 1 },
-			isShown: ( optData ) => ! optData.palette.isCustom && ! optData.palette.isGrayScale,
+			isRendered: options => ! options.palette.isCustom && ! options.palette.isGrayScale,
 		}),
 		customPalette: new z42opt.PaletteOpt({
 			uniqueShortKey: "cp",
 			//title: "Palette editor",
 			easeFunctions: paletteEaseFunctionNames,
-			defaultEaseFunction: "linear",
-			defaultVal: [
-				{
-					pos: 0,
-					color: { r: 0, g: 0, b: 0 },
-					easeFun: "InQuad" 
-				},
-				{
-					pos: 0.25,
-					color: { r: 0, g: 191, b: 255 },
-					easeFun: "OutQuad" 
-				},
-				/*
-				{
-					pos: 0.5,
-					color: { r: 0, g: 0, b: 0 },
-					easeFun: "InQuad" 
-				},
-				{
-					pos: 0.75,
-					color: { r: 220, g: 0, b: 0 },
-					easeFun: "OutQuad" 
-				},
-				*/
-			],
-			isShown: ( optData ) => optData.palette.isCustom && ! optData.palette.isGrayScale,
+			defaultEaseFunction: "Linear",
+			defaultVal: [],
+			isRendered: options => options.palette.isCustom && ! options.palette.isGrayScale,
 		}),
 	}),
 	noiseAnim: new z42opt.Node( {}, {

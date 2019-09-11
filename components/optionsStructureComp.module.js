@@ -116,19 +116,13 @@ const containerComponent = Vue.component( "z42opt-container", {
 		resolveValue( path ){
 			return _.get( this.value, path );
 		},
-		isShown( optDescChild ){
-			if( typeof optDescChild.$attrs.isShown === "undefined" )
+		isAttrTrue( optDescChild, attrName ){
+			const attr = optDescChild.$attrs[ attrName ];
+			if( typeof attr === "undefined" )
 				return true;
-			if( typeof optDescChild.$attrs.isShown === "function" )
-				return optDescChild.$attrs.isShown( this.value, this.optDesc );
-			return Boolean( optDescChild.$attrs.isShown );
-		},
-		isEnabled( optDescChild ){
-			if( typeof optDescChild.$attrs.isEnabled === "undefined" )
-				return true;
-			if( typeof optDescChild.$attrs.isEnabled === "function" )
-				return optDescChild.$attrs.isEnabled( this.value, this.optDesc );
-			return Boolean( optDescChild.$attrs.isEnabled );
+			if( typeof attr === "function" )
+				return attr( this.value, this.optDesc );
+			return Boolean( attr );
 		},
 		onModified( value, path ){
 			const optDescNode = _.get( this.optDesc, path ); 
@@ -143,15 +137,18 @@ const containerComponent = Vue.component( "z42opt-container", {
 				<template v-for="opt in resolveOptDesc( basePath )">
 					<!-- Note: 'key' attribute required when using v-for with component (https://vuejs.org/v2/guide/list.html#v-for-with-a-Component) -->
 
-					<component v-if="isShown( opt.node )"
-						:is="opt.node.$component" 
-						:key="childId( opt.path )"
-						:id="childId( opt.path )"
-						:optDesc="opt.node" 
-						:value="resolveValue( opt.path )"
-						:disabled="! isEnabled( opt.node )"
-						@input="onModified( $event, opt.path )"
-					/>
+					<transition name="z42opt-component-transition" mode="out-in">
+						<component :is="opt.node.$component" 
+							v-if="isAttrTrue( opt.node, 'isRendered' )" 
+							v-show="isAttrTrue( opt.node, 'isShown' )"
+							:disabled="! isAttrTrue( opt.node, 'isEnabled' )"
+							:key="childId( opt.path )"
+							:id="childId( opt.path )"
+							:optDesc="opt.node" 
+							:value="resolveValue( opt.path )"
+							@input="onModified( $event, opt.path )"
+						/>
+					</transition>
 				</template>
 			</template>
 		</div>
