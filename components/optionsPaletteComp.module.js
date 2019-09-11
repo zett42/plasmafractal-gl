@@ -98,6 +98,7 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 	destroyed() {
 		// Remove global event listener in any case.
 		window.removeEventListener( "mousemove", this.onSlideMouseMove );
+		window.removeEventListener( "touchmove", this.onSlideTouchMove );
 	},
 	computed: {
 		canvasId()          { return this.id + "#canvas"; },
@@ -213,20 +214,32 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 			priv.slideStartMousePos = null;
 			priv.slidingHandleElement = this.handleElements()[ handleIndex ];
 			
-			// Register global mouse move listener to capture mouse movement even outside of handle element
-			// to detect drag up/down.
+			// Register global mouse/touch move listener to capture movement even outside of handle element
+			// which is needed to detect dragging up/down.
 			window.addEventListener( "mousemove", this.onSlideMouseMove );
+			window.addEventListener( "touchmove", this.onSlideTouchMove );
 		},
 
 		onSlideMouseMove( event ) {
-			const priv = privates.get( this );
-			priv.currentMousePos = { x: event.screenX, y: event.screenY };
+			this.onSlideMouseTouchMove({ x: event.screenX, y: event.screenY });
+		},
+		
+		onSlideTouchMove( event ) {
+			if( event.changedTouches.length > 0 ){
+				this.onSlideMouseTouchMove({ x: event.changedTouches[ 0 ].screenX, y: event.changedTouches[ 0 ].screenY });
+			}
+		},
 
+		onSlideMouseTouchMove( pos ) {
+			const priv = privates.get( this );
+
+			priv.currentMousePos = _.clone( pos );
 			if( ! priv.slideStartMousePos ){
-				priv.slideStartMousePos = { x: event.screenX, y: event.screenY };
+				priv.slideStartMousePos = _.clone( pos );
 			}
 
-			const distY = Math.abs( priv.currentMousePos.y - priv.slideStartMousePos.y ); 
+			const distY = Math.abs( pos.y - priv.slideStartMousePos.y ); 
+
 			if( distY > mouseThresholdToRemoveHandle && priv.palette.length > 1 ) {
 				// Visually indicate "to be deleted" state of handle.
 				priv.slidingHandleElement.classList.add( cssClassHandleToRemove );				
@@ -251,8 +264,9 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 				}
 			}
 
-			// Remove global mouse move listener that was registered by onSlideStart().
+			// Remove global mouse/touch move listener that was registered by onSlideStart().
 			window.removeEventListener( "mousemove", this.onSlideMouseMove );
+			window.removeEventListener( "touchmove", this.onSlideTouchMove );
 		},
 
 		// Called on click at a slider handle. If shift key is pressed, remove handle.
