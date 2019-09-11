@@ -26,6 +26,42 @@ html, body {
 	z-index: 10;
 	transition: all ease-in-out 300ms;
 }
+
+.z42opt-range.noUi-target {
+	/* The padding prevents the handle from overlapping the start/end of the track */
+	padding-left: 16px;
+	padding-right: 16px;
+}
+.z42opt-palette-canvas {
+	height: 40px;
+	margin: 10px 0 8px 0;
+	padding: 0 16px 0 16px;
+	width: 100%;
+}
+.z42opt-palette-slider {
+	margin: 0 16px 30px 16px;
+}
+.noUi-handle {
+	cursor: ew-resize;
+}
+.noUi-handle:focus,
+.z42opt-palette-handle-selected {
+	border: 2px solid #000; /* improve visibility of the default outline */
+	background-color: #2A9FD6;
+}
+
+/* Transition when show state of components is toggled */
+.z42opt-component-transition-enter-active {
+	transition: all .3s ease;
+}
+.z42opt-component-transition-leave-active {
+	transition: all .3s ease;
+}
+.z42opt-component-transition-enter, 
+.z42opt-component-transition-leave-to {
+	opacity: 0;
+}
+
 /* Show bootstrap modal dialogs without darkening backdrop but still allow to dismiss dialog by clicking outside */
 .modal-backdrop {
 	opacity: 0 !important;
