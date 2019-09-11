@@ -32,6 +32,9 @@ html, body {
 	padding-left: 16px;
 	padding-right: 16px;
 }
+.noUi-handle {
+	cursor: ew-resize;
+}
 .z42opt-palette-canvas {
 	height: 40px;
 	margin: 10px 0 8px 0;
@@ -41,8 +44,8 @@ html, body {
 .z42opt-palette-slider {
 	margin: 0 16px 30px 16px;
 }
-.noUi-handle {
-	cursor: ew-resize;
+.z42opt-palette-slider .noUi-handle {
+	border: 1px solid #333;
 }
 .noUi-handle:focus,
 .z42opt-palette-handle-selected {

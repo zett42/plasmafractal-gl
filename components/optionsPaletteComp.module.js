@@ -163,8 +163,6 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 					palette[ i ].pos = valuesRaw[ i ];
 				}
 
-				//console.debug("palette changed from inside:", _.cloneDeep( palette ) );
-
 				this.updatePaletteCanvas();
 
 				// According to Vue.js rules, this.value must not be modified directly.
@@ -292,9 +290,6 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 
 				const palette = privates.get( this ).palette;
 				this.selectedPaletteItem = _.cloneDeep( palette[ handleIndex ] );
-
-				//console.debug("selectedHandleIndex:", this.selectedHandleIndex,
-				//	          ", selectedPaletteItem:", _.cloneDeep(this.selectedPaletteItem));
 			}
 		},
 
@@ -303,8 +298,6 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 			if( this.selectedHandleIndex != null && 
 				! _.isEqual( this.selectedPaletteItem[ name ], value ) ){
 				
-				//console.debug("onPaletteAttributeInput:",name,"=",value);
-
 				this.selectedPaletteItem[ name ] = value;
 
 				const palette = privates.get( this ).palette;
@@ -328,8 +321,6 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 
 		// Set new palette and update slider positions. Recreate slider if handle count changes.
 		setPaletteFromOutside( newPalette ) {
-
-			console.debug("palette changed from outside:", _.cloneDeep( newPalette ) );
 
 			const curPalette = privates.get( this ).palette;
 			const newPositions = palettePositions( newPalette );
