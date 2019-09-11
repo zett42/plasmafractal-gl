@@ -393,12 +393,16 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 				const startX = Math.trunc( start.pos * width );
 				const endX   = Math.trunc( end.pos   * width );
 				let dist     = endX - startX;
-				if( dist <= 0 )
-					dist = width - startX + endX;  // wrap-around
 
-				const easeFun = z42easing[ "ease" + start.easeFun ];
+				if( dist != 0 || sortedPalette.length == 1 ){
+					if( dist <= 0 )
+						dist = width - startX + endX;  // wrap-around
+
+					const easeFun = z42easing[ "ease" + start.easeFun ];
 		
-				z42color.makePaletteGradientRGBA( pixels, startX, dist, start.color, end.color, easeFun );
+					// This function wraps around when index would be >= pixels.length.
+					z42color.makePaletteGradientRGBA( pixels, startX, dist, start.color, end.color, easeFun );
+				}
 			}
 		
 			context.putImageData( imgData, 0, 0 );	
