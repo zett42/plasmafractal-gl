@@ -59,7 +59,7 @@ class z42Plasma {
 		
 		this._isPaletteTransition = false;     // Palette currently transitioning to next palette?
 
-		this._startTime = performance.now();
+		this._startTime = performance.now() / 1000;
 		this._paletteStartTime = this._startTime;  // Start time of current phase (constant or transition).
 
 		this._colorRnd = new MersenneTwister( Math.trunc( params.colorSeed * 0xFFFFFFFF ) );
@@ -103,7 +103,7 @@ class z42Plasma {
 		
 		// We reset the transition animation for simplicity.
 		this._isPaletteTransition = false;
-		this._paletteStartTime = performance.now();		
+		this._paletteStartTime = performance.now() / 1000;		
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------
@@ -121,7 +121,7 @@ class z42Plasma {
 		{
 			// reset plaette transition animation to avoid some issues
 			this._isPaletteTransition = false;  
-			this._paletteStartTime = performance.now();
+			this._paletteStartTime = performance.now() / 1000;
 		}
 		
 		this._options.paletteAnim = opt;
@@ -178,11 +178,10 @@ class z42Plasma {
 
 	_animatePalette()
 	{
-		const curTime         = performance.now();
+		const curTime         = performance.now() / 1000;
 		const totalDuration   = curTime - this._startTime;
 		const paletteDuration = curTime - this._paletteStartTime;		
 		const paletteOffset   = totalDuration / this._options.paletteAnim.rotaDuration * this._startPalette.length;
-							  //+ this._startPalette.length / this._paletteColorCount / 2;
 	
 		let paletteToRotate = null;
 	

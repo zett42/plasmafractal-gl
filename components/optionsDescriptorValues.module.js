@@ -73,6 +73,43 @@ class FloatOpt extends z42opt.Option {
 
 //------------------------------------------------------------------------------------------------
 
+class DurationOpt extends z42opt.Option {
+	constructor( attrs ){
+		super( attrs );
+	}
+
+	$serialize( value ) { 
+		let result = floatToStringCompact( value, this.$attrs.maxDecimals );
+
+		// Make sure there is always a decimal separator to indicate seconds (previously we used ms)
+		if( result.indexOf( "." ) < 0 && value !== 0 )
+			result += "."; 
+
+		return result;
+	}
+
+	$deserialize( value ) {
+		const isSeconds = value.indexOf( "." ) >= 0;
+
+		value = parseFloat( value );
+		if( isNaN( value ) ) {
+			this.$parseError( value );
+			return this.$attrs.defaultVal;
+		}
+
+		if( ! isSeconds ) {
+			// A number without decimal separator is interpreted as milliseconds.
+			value /= 1000;
+		}
+
+		return clampOptional( value, this.$attrs.min, this.$attrs.max ); 			
+	}
+
+	get $defaultComponent() { return "z42opt-range"; }
+}
+
+//------------------------------------------------------------------------------------------------
+
 class BoolOpt extends z42opt.Option {
 	constructor( attrs ){
 		super( attrs );
@@ -188,6 +225,7 @@ export {
 	floatToStringCompact,
 	IntOpt,
 	FloatOpt,
+	DurationOpt,
 	BoolOpt,
 	EnumOpt,
 	ColorOpt,

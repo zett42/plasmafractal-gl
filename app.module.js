@@ -54,7 +54,7 @@ m_fg.thread = createPlasmaThreadForCanvas( m_fg.canvas[ 0 ], false );
 m_bg.thread = createPlasmaThreadForCanvas( m_bg.canvas[ 0 ], true );
 
 // Set timeout for first canvas fade animation.
-setTimeout( initCanvasAnimation, m_options.noiseAnim.transitionDelay );
+setTimeout( initCanvasAnimation, m_options.noiseAnim.transitionDelay * 1000 );
 
 const m_app = initGui();
 
@@ -93,13 +93,14 @@ function createPlasmaThreadForCanvas( canvas, isPaused ) {
 //-------------------------------------------------------------------------------------------------------------------
 
 function onPlasmaThreadMessage( ev ) {
+	
 	m_ndebug || console.debug( "Message from plasmaThread:", ev );
 
 	switch ( ev.data.action ) {
 		case "onreseedfinished": {
 			// Transition to newly created fractal.
 
-			setTimeout( startCanvasTransition, m_options.noiseAnim.transitionDelay );
+			setTimeout( startCanvasTransition, m_options.noiseAnim.transitionDelay * 1000 );
 			break;
 		}
 	}
@@ -108,10 +109,12 @@ function onPlasmaThreadMessage( ev ) {
 //-------------------------------------------------------------------------------------------------------------------
 
 function initCanvasAnimation() {
+
 	setCanvasTransitionDuration( m_options.noiseAnim.transitionDuration );
 
 	// Set callback to be notified when CSS transition has ended.
 	m_fg.canvas.on( "transitionend", () => {
+
 		m_ndebug || console.debug( "m_fg.canvas transitionend" );
 
 		// Swap foreground and background objects.
@@ -130,8 +133,8 @@ function initCanvasAnimation() {
 
 //-------------------------------------------------------------------------------------------------------------------
 
-function setCanvasTransitionDuration( durationMillis ) {
-	$( ".plasma" ).css( "transition-duration", durationMillis.toString() + "ms" );
+function setCanvasTransitionDuration( duration ) {
+	$( ".plasma" ).css( "transition-duration", duration.toString() + "s" );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
