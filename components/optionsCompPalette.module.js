@@ -93,6 +93,11 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 		this.recreateSlider( sliderConfig );
 
 		this.updatePaletteCanvas();
+
+		// If initial palette was not valid, send "fixed" palette back to parent.
+		if( ! _.isEqual( palette, this.value ) ){
+			this.emitPaletteInputEvent();
+		}
 	},
 	destroyed() {
 		// Remove global event listener in any case.
