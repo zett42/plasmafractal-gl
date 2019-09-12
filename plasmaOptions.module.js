@@ -126,7 +126,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 		}),
 		isCustom: new z42opt.BoolOpt({
 			uniqueShortKey: "icp",
-			title: "Custom palette (work in progress!)",
+			title: "Custom palette",
 			defaultVal: false,
 			isRendered: options => ! options.palette.isGrayScale,
 		}),		
@@ -228,6 +228,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			step: 100,
 			isSlow: true,
 			defaultVal: 10 * 1000,
+			isRendered: options => ! options.palette.isCustom,
 		}),
 		transitionDuration: new z42opt.IntOpt({
 			uniqueShortKey: "ptd",
@@ -240,6 +241,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			step: 100,
 			isSlow: true,
 			defaultVal: 5 * 1000,
+			isRendered: options => ! options.palette.isCustom,
 		}),
 	}),
 });

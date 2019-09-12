@@ -73,7 +73,8 @@ SOFTWARE.
 
 	module.makePaletteMultiGradientRGBA = function( outPaletteUint32, count, inputPalette )
 	{
-		let sortedPalette = _.cloneDeep( inputPalette );
+		// shallow clone is sufficient here, as we don't modify properties of array elements
+		let sortedPalette = [ ...inputPalette ];
 		sortedPalette.sort( ( a, b ) => a.pos - b.pos );
 
 		for( let i = 0; i < sortedPalette.length; ++i ) {
