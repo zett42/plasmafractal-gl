@@ -149,11 +149,11 @@ const selectComponent = Vue.component( "z42opt-select", {
 	},
 	computed: {
 		options() {
-			const result = Object.entries( this.optDesc.$attrs.values ).map( entry => ({ 
+			const entries = Object.entries( this.optDesc.$attrs.values );
+			return entries.map( entry => ({ 
 				value: entry[ 0 ], 
-				text : entry[ 1 ].title })
+				text : entry[ 1 ].title || entry[ 0 ] })
 			);
-			return result;
 		}
 	},
 	template: /*html*/ `
