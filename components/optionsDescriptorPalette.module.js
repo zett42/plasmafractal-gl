@@ -26,6 +26,9 @@ SOFTWARE.
 import * as z42opt from "./optionsDescriptor.module.js"
 import * as z42optVal from "./optionsDescriptorValues.module.js"
 
+// Additional dependencies (include via <script> tag):
+// 'easing.js' (zett42 version)
+
 //------------------------------------------------------------------------------------------------
 
 class PaletteOpt extends z42opt.Option {
@@ -85,6 +88,20 @@ class PaletteOpt extends z42opt.Option {
 		}
 
 		return result;			
+	}
+
+	// Resolve ease function name to actual function.
+	$resolveEaseFunction( functionName ) {
+		return z42easing[ functionName ] || z42easing.linear;
+	}
+
+	// Return a cloned palette with ease function names resolved to actual functions.
+	$resolvePaletteEaseFunctions( palette ) {
+		return palette.map( item => ({ 
+			pos     : item.pos, 
+			color   : { ...item.color },
+			easeFun : this.$resolveEaseFunction( item.easeFun )
+		}));				
 	}
 
 	get $defaultComponent() { return "z42opt-palette"; }

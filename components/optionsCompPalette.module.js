@@ -28,8 +28,7 @@ import * as z42opt from "./optionsDescriptorValues.module.js"
 import "../external/nouislider/nouislider.js"
 
 // Non-module dependencies (include via <script> element):
-// "easing.js"
-// "color.js"
+// "color.js" - for drawing palette
 
 // Pattern for private class members: https://stackoverflow.com/a/33533611/7571258
 const privates = new WeakMap();
@@ -389,11 +388,7 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 			const pixels  = new Uint32Array( imgData.data.buffer );
 
 			// Resolve ease function names to actual functions.
-			const paletteResolved = palette.map( item => ({ 
-				pos     : item.pos, 
-				color   : item.color,
-				easeFun : z42easing[ item.easeFun ] || z42easing.linear
-			}));
+			const paletteResolved = this.optDesc.$resolvePaletteEaseFunctions( palette );
 		
 			// Note: drawing only a single horizontal line, which will be vertically stretched via CSS height
 			z42color.makePaletteMultiGradientRGBA( pixels, pixels.length, paletteResolved );
