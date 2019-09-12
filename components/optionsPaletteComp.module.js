@@ -381,35 +381,22 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 		// Draw the current palette into the canvas.
 		updatePaletteCanvas(){
 			const palette = privates.get( this ).palette;
-			const sortedPalette = sortPaletteClone( palette );
 		
 			const canvasElem = document.getElementById( this.canvasId );
 			const width   = canvasElem.width;
 			const context = canvasElem.getContext( "2d" );
 			const imgData = context.createImageData( width, 1 );
 			const pixels  = new Uint32Array( imgData.data.buffer );
+
+			// Resolve ease function names to actual functions.
+			const paletteResolved = palette.map( item => ({ 
+				pos     : item.pos, 
+				color   : item.color,
+				easeFun : z42easing[ item.easeFun ] || z42easing.linear
+			}));
 		
 			// Note: drawing only a single horizontal line, which will be vertically stretched via CSS height
-		
-			for( let i = 0; i < sortedPalette.length; ++i ) {
-				const start = sortedPalette[ i ];
-				const end   = sortedPalette[ ( i + 1 ) % sortedPalette.length ];
-		
-				const startX = Math.trunc( start.pos * width );
-				const endX   = Math.trunc( end.pos   * width );
-				let dist     = endX - startX;
-
-				if( dist != 0 || sortedPalette.length == 1 ){
-					if( dist <= 0 )
-						dist = width - startX + endX;  // wrap-around
-
-					// Fallback to linear, if ease function does not exist.
-					const easeFun = z42easing[ start.easeFun ] || z42easing[ "linear" ];
-						
-					// This function wraps around when index would be >= pixels.length.
-					z42color.makePaletteGradientRGBA( pixels, startX, dist, start.color, end.color, easeFun );
-				}
-			}
+			z42color.makePaletteMultiGradientRGBA( pixels, pixels.length, paletteResolved );
 		
 			context.putImageData( imgData, 0, 0 );	
 		},	

@@ -29,19 +29,20 @@ SOFTWARE.
 	var module = global.z42color = {};
 	
 	//----------------------------------------------------------------------------------------------------------------
-	/// Make a RGBA color gradient for a range of palette entries.
+	/// Fill a one-dimensional RGBA Uint32Array with a single gradient.
+	/// Wraps around in case index is out of range. 
 	/// Returns start + count.
 	
-	module.makePaletteGradientRGBA = function( paletteUint32, start, count, startColor, endColor, easeFunction )
+	module.makePaletteGradientRGBA = function( outPaletteUint32, start, count, startColor, endColor, easeFunction )
 	{		
 		if( count <= 0 ) 
 			return;
-		if( count > paletteUint32.length )
-			count = paletteUint32.length;
+		if( count > outPaletteUint32.length )
+			count = outPaletteUint32.length;
 
 		for( let i = 0; i < count; ++i )
 		{		
-			const pos = module.mod( i + start, paletteUint32.length );
+			const pos = module.mod( i + start, outPaletteUint32.length );
 
 			const r = Math.round( easeFunction( i, startColor.r, endColor.r - startColor.r, count - 1 ) );
 			const g = Math.round( easeFunction( i, startColor.g, endColor.g - startColor.g, count - 1 ) );
@@ -50,10 +51,46 @@ SOFTWARE.
 			// Note: alpha component is in 0..1 range, so we have to multiply with 255.
 			const a = Math.round( easeFunction( i, startColor.a, endColor.a - startColor.a, count - 1 ) * 255 );
 		
-			paletteUint32[ pos ] = r | ( g << 8 ) | ( b << 16 ) | ( a << 24 );
+			outPaletteUint32[ pos ] = r | ( g << 8 ) | ( b << 16 ) | ( a << 24 );
 		}
 
 		return start + count;
+	}
+
+	//----------------------------------------------------------------------------------------------------------------
+	/// Fill a one-dimensional RGBA Uint32Array with multiple consecutive gradients.
+	///
+	/// Wraps around in case index is out of range. 
+	///
+	/// Argument for inputPalette must be an array of objects:
+	/// { 
+	///		pos,      // 0..1
+	///		color,    // { r, g, b, a } where rgb values are in range 0..255 and a is in range 0..1
+	///		easeFun,  // ease function
+	/// }
+	///
+	/// A temporary clone of the inputPalette will be made and the clone be sorted by positions.
+
+	module.makePaletteMultiGradientRGBA = function( outPaletteUint32, count, inputPalette )
+	{
+		let sortedPalette = _.cloneDeep( inputPalette );
+		sortedPalette.sort( ( a, b ) => a.pos - b.pos );
+
+		for( let i = 0; i < sortedPalette.length; ++i ) {
+			const start = sortedPalette[ i ];
+			const end   = sortedPalette[ ( i + 1 ) % sortedPalette.length ];
+
+			const startIndex = Math.trunc( start.pos * count );
+			const endIndex   = Math.trunc( end.pos   * count );
+			let dist         = endIndex - startIndex;
+
+			if( dist != 0 || sortedPalette.length == 1 ){
+				if( dist <= 0 )
+					dist = count - startIndex + endIndex;  // wrap-around
+					
+				z42color.makePaletteGradientRGBA( outPaletteUint32, startIndex, dist, start.color, end.color, start.easeFun );
+			}
+		}	
 	}
 	
 	//----------------------------------------------------------------------------------------------------------------
