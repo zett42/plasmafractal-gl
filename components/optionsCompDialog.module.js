@@ -24,7 +24,7 @@ SOFTWARE.
 */
 //------------------------------------------------------------------------------------------------
 
-import "./optionsStructureComp.module.js"
+import "./optionsCompGroup.module.js"
 import * as z42opt from "./optionsDescriptor.module.js"
 import * as z42optUtil from "./optionsUtils.module.js"
 

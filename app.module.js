@@ -28,7 +28,9 @@ SOFTWARE.
 
 import * as plasmaOpt from "./plasmaOptions.module.js"
 import * as z42optUtil from "./components/optionsUtils.module.js"
-import "./components/optionsDialog.module.js"
+import "./components/optionsCompDialog.module.js"
+import "./components/optionsCompValue.module.js"
+import "./components/optionsCompPalette.module.js"
 
 const m_ndebug = true;
 

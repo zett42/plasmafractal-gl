@@ -24,6 +24,7 @@ SOFTWARE.
 */
 
 import * as z42opt from './components/optionsDescriptorValues.module.js'
+import * as z42pal from './components/optionsDescriptorPalette.module.js'
 
 //------------------------------------------------------------------------------------------------
 // Ease functions from 'z42ease.js' to use (excluded some which doesn't look good).
@@ -167,7 +168,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			defaultVal: { r: 0, g: 0, b: 0, a: 1 },
 			isRendered: options => ! options.palette.isCustom && ! options.palette.isGrayScale,
 		}),
-		customPalette: new z42opt.PaletteOpt({
+		customPalette: new z42pal.PaletteOpt({
 			uniqueShortKey: "cp",
 			//title: "Palette editor",
 			easeFunctions: paletteEaseFunctionNames,
