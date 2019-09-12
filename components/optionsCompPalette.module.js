@@ -83,6 +83,7 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 		let sliderConfig = {
 			start: palettePositions( palette ),
 			range: { min: 0, max: 1 },
+			step: 0.001,
 			behaviour: "unconstrained",
 		};
 

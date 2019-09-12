@@ -35,6 +35,12 @@ html, body {
 .noUi-handle {
 	cursor: ew-resize;
 }
+.noUi-tooltip {
+    display: none;
+}
+.noUi-active .noUi-tooltip {
+    display: block;
+}
 .z42opt-palette-canvas {
 	height: 40px;
 	margin: 10px 0 8px 0;

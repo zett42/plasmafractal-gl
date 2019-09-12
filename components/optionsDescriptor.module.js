@@ -59,6 +59,9 @@ class Option extends Node {
 	// Deserialize from string.
 	$deserialize( value ) { return value; }
 
+	// Format as string for display in UI.
+	$displayValue( value ) { return value.toString(); }
+
 	// Output parse error
 	$parseError( value ) {
 		console.error( "Invalid option value:", value, ", descriptor:", this );

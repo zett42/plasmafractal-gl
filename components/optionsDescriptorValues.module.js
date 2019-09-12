@@ -45,6 +45,18 @@ class IntOpt extends z42opt.Option {
 		return clampOptional( Math.ceil( value ), this.$attrs.min, this.$attrs.max );
 	}
 
+	$displayValue( value ) {
+		if( this.$attrs.displayFactor != null )
+			value *= this.$attrs.displayFactor;
+
+		let result = Math.trunc( value ).toString();
+
+		if( this.$attrs.displayUnit != null )
+			result += " " + this.$attrs.displayUnit;
+
+		return result;
+	}	
+
 	get $defaultComponent() { return "z42opt-range"; }
 }
 
@@ -68,12 +80,27 @@ class FloatOpt extends z42opt.Option {
 		return clampOptional( value, this.$attrs.min, this.$attrs.max ); 			
 	}
 
+	$displayValue( value ) {
+		if( this.$attrs.displayFactor != null )
+			value *= this.$attrs.displayFactor;
+
+		if( this.$attrs.maxDecimals != null )
+			value = Number( value.toFixed( this.$attrs.maxDecimals ) );
+
+		let result = value.toString();
+
+		if( this.$attrs.displayUnit != null )
+			result += " " + this.$attrs.displayUnit;
+
+		return result;
+	}	
+
 	get $defaultComponent() { return "z42opt-range"; }
 }
 
 //------------------------------------------------------------------------------------------------
 
-class DurationOpt extends z42opt.Option {
+class DurationOpt extends FloatOpt {
 	constructor( attrs ){
 		super( attrs );
 	}

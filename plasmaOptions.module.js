@@ -208,8 +208,9 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			min: 2,
 			max: 120,
 			displayUnit: "s",
-			maxDecimals: 1,
-			step: 0.1,
+			maxDecimals: 0,
+			step: 1,
+			isSlow: true,
 			defaultVal: 80,
 		}),
 		transitionDelay: new z42opt.DurationOpt({

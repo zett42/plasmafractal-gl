@@ -69,28 +69,16 @@ const rangeComponent = Vue.component( "z42opt-range", {
 				range[ `${percent}%` ] = 1.0;
 			}
 
+			const tooltipFormatter = { to: val => this.optDesc.$displayValue( val ) };
+
 			return {
 				start: [ this.value ],
 				step: step,
-				range: range
+				range: range,
+				tooltips: this.optDesc.$attrs.isSlow ? tooltipFormatter : false,
 			};
 		},
-		displayValue(){
-			let value = this.value;
-
-			if( this.optDesc.$attrs.displayFactor != null )
-				value *= this.optDesc.$attrs.displayFactor;
-
-			if( this.optDesc.$attrs.maxDecimals != null )
-				value = Number( value.toFixed( this.optDesc.$attrs.maxDecimals ) );
-
-			let result = value.toString();
-
-			if( this.optDesc.$attrs.displayUnit != null )
-				result += " " + this.optDesc.$attrs.displayUnit;
-
-			return result;
-		},
+		displayValue(){ return this.optDesc.$displayValue( this.value ); }
 	},
 	mounted() {
 		noUiSlider.create( this.sliderElem, this.sliderConfig );
