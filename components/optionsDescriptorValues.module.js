@@ -108,19 +108,15 @@ class EnumOpt extends z42opt.Option {
 		super( attrs );
 	}
 
-	get $values(){
-		return Object.keys( this.$attrs.values );
-	}
-
 	$serialize( value ) {
 		value = String( value ).toLowerCase();
 
-		for( const [ enumVal, shortKey ] of Object.entries( this.$attrs.values ) ) {
-			if( shortKey.toLowerCase() === value ){
-				return shortKey;
+		for( const [ enumVal, enumInfo ] of Object.entries( this.$attrs.values ) ) {
+			if( enumInfo.shortKey.toLowerCase() === value ){
+				return enumInfo.shortKey;
 			}
 			if( enumVal.toLowerCase() === value ) {
-				return shortKey;
+				return enumInfo.shortKey;
 			}
 		}
 		return null;
@@ -129,8 +125,8 @@ class EnumOpt extends z42opt.Option {
 	$deserialize( value ) {
 		value = String( value ).toLowerCase();
 
-		for( const [ enumVal, shortKey ] of Object.entries( this.$attrs.values ) ) {
-			if( shortKey.toLowerCase() === value ){
+		for( const [ enumVal, enumInfo ] of Object.entries( this.$attrs.values ) ) {
+			if( enumInfo.shortKey.toLowerCase() === value ){
 				return enumVal;
 			}
 			if( enumVal.toLowerCase() === value ) {

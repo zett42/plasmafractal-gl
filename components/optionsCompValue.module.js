@@ -139,13 +139,22 @@ const rangeComponent = Vue.component( "z42opt-range", {
 const selectComponent = Vue.component( "z42opt-select", {
 	inheritAttrs: false,
 	props: { 
-		id:      { type: String, required: true },
-		value:   { required: true },
-		optDesc: { type: z42opt.Option, required: true }, 
+		id:       { type: String, required: true },
+		value:    { required: true },
+		optDesc:  { type: z42opt.Option, required: true }, 
 		disabled: { type: Boolean, required: false, default: false },
 	},
 	created() {
 		//console.log("z42opt-select.optDesc:", this.optDesc);
+	},
+	computed: {
+		options() {
+			const result = Object.entries( this.optDesc.$attrs.values ).map( entry => ({ 
+				value: entry[ 0 ], 
+				text : entry[ 1 ].title })
+			);
+			return result;
+		}
 	},
 	template: /*html*/ `
 		<b-form-group
@@ -155,7 +164,7 @@ const selectComponent = Vue.component( "z42opt-select", {
 			>
 			<b-form-select 
 				:id="id"
-				:options="optDesc.$values"
+				:options="options"
 				:value="value"
 				:disabled="disabled"
 				class="z42opt-select"
