@@ -56,18 +56,7 @@ class FloatOpt extends z42opt.Option {
 	}
 
 	$serialize( value ) { 
-		if( typeof this.$attrs.maxFractionDigits !== "undefined" ) {
-			// convert to fixed, then remove trailing zeros
-			value = Number( value.toFixed( this.$attrs.maxFractionDigits ) );
-		}
-		value = value.toString();
-		// remove unneeded leading zero (e. g. "0.5" -> ".5" )
-		if( value.charAt( 0 ) == "0" && value.charAt( 1 ) == "." )
-			return value.substring( 1 );
-		// remove unneeded leading zero after "-" (e. g. "-0.5" -> "-.5" )
-		if( value.charAt( 0 ) == "-" && value.charAt( 1 ) == "0" && value.charAt( 2 ) == "." )
-			return "-" + value.substring( 2 );
-		return value;
+		return floatToStringCompact( value, this.$attrs.maxDecimals );
 	}
 
 	$deserialize( value ) {
@@ -164,7 +153,8 @@ class ColorOpt extends z42opt.Option {
 	get $defaultComponent() { return "z42opt-color"; }
 }	
 
-//------------------------------------------------------------------------------------------------
+//================================================================================================
+// Utility functions
 
 function clampOptional( value, min = null, max = null ) {
 	if( min && value < min ) return min;
@@ -174,9 +164,28 @@ function clampOptional( value, min = null, max = null ) {
 
 //------------------------------------------------------------------------------------------------
 
+function floatToStringCompact( value, maxDecimals = null ) {
+	if( maxDecimals != null ) {
+		// convert to fixed, then remove trailing zeros by converting back to Number
+		value = Number( value.toFixed( maxDecimals ) );
+	}
+	value = value.toString();
+	// remove unneeded leading zero (e. g. "0.5" -> ".5" )
+	if( value.charAt( 0 ) == "0" && value.charAt( 1 ) == "." )
+		return value.substring( 1 );
+	// remove unneeded leading zero after "-" (e. g. "-0.5" -> "-.5" )
+	if( value.charAt( 0 ) == "-" && value.charAt( 1 ) == "0" && value.charAt( 2 ) == "." )
+		return "-" + value.substring( 2 );
+	return value;
+}
+
+//------------------------------------------------------------------------------------------------
+
 export { Node, Option } from "./optionsDescriptor.module.js"
 
 export { 
+	clampOptional,
+	floatToStringCompact,
 	IntOpt,
 	FloatOpt,
 	BoolOpt,

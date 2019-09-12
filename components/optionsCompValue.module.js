@@ -51,8 +51,8 @@ const rangeComponent = Vue.component( "z42opt-range", {
 			if( this.optDesc.$attrs.step != null ){
 				step = this.optDesc.$attrs.step;
 			}
-			else if( this.optDesc.$attrs.maxFractionDigits != null ){
-				step = 1 / ( Math.pow( 10, this.optDesc.$attrs.maxFractionDigits ) );
+			else if( this.optDesc.$attrs.maxDecimals != null ){
+				step = 1 / ( Math.pow( 10, this.optDesc.$attrs.maxDecimals ) );
 			}
 
 			let range = {
@@ -81,8 +81,8 @@ const rangeComponent = Vue.component( "z42opt-range", {
 			if( this.optDesc.$attrs.displayFactor != null )
 				value *= this.optDesc.$attrs.displayFactor;
 
-			if( this.optDesc.$attrs.maxFractionDigits != null )
-				value = Number( value.toFixed( this.optDesc.$attrs.maxFractionDigits ) );
+			if( this.optDesc.$attrs.maxDecimals != null )
+				value = Number( value.toFixed( this.optDesc.$attrs.maxDecimals ) );
 
 			let result = value.toString();
 
