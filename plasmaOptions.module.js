@@ -72,7 +72,7 @@ const paletteEaseFunctions = {
 const optionsDescriptor = new z42opt.Node( {}, {
 	noise: new z42opt.Node( {}, {
 		frequency: new z42opt.FloatOpt({ 
-			uniqueShortKey: "f",
+			shortKey: "f",
 			title: "Frequency",
 			min: 0.01,
 			max: 15,
@@ -83,7 +83,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			defaultVal: 1.5,
 		}),
 		octaves: new z42opt.IntOpt({
-			uniqueShortKey: "o",
+			shortKey: "o",
 			title: "Octaves",
 			min: 1,
 			max: 15,
@@ -91,7 +91,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			defaultVal: 5,
 		}),
 		gain: new z42opt.FloatOpt({
-			uniqueShortKey: "g",
+			shortKey: "g",
 			title: "Gain",
 			min: 0.1,
 			max: 1.0,
@@ -100,7 +100,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			defaultVal: 0.5,
 		}),
 		lacunarity: new z42opt.FloatOpt({
-			uniqueShortKey: "l",
+			shortKey: "l",
 			title: "Lacunarity",
 			min: 1,
 			max: 10,
@@ -109,7 +109,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			defaultVal: 2,
 		}),
 		amplitude: new z42opt.FloatOpt({
-			uniqueShortKey: "a",
+			shortKey: "a",
 			title: "Amplitude",
 			min: 1,
 			max: 100,
@@ -120,32 +120,32 @@ const optionsDescriptor = new z42opt.Node( {}, {
 	}),
 	palette: new z42opt.Node( {}, {
 		isGrayScale: new z42opt.BoolOpt({
-			uniqueShortKey: "pg",
+			shortKey: "pg",
 			title: "Show original grayscale image",
 			defaultVal: false,
 		}),
 		isCustom: new z42opt.BoolOpt({
-			uniqueShortKey: "icp",
+			shortKey: "icp",
 			title: "Custom palette",
 			defaultVal: false,
 			isRendered: options => ! options.palette.isGrayScale,
 		}),		
 		easeFunctionBgToFg: new z42opt.EnumOpt({
-			uniqueShortKey: "pbf",
+			shortKey: "pbf",
 			title: "Background to foreground easing",
 			values: paletteEaseFunctions,
 			defaultVal: "inBounce",
 			isRendered: options => ! options.palette.isCustom && ! options.palette.isGrayScale,
 		}),
 		easeFunctionFgToBg: new z42opt.EnumOpt({
-			uniqueShortKey: "pfb",
+			shortKey: "pfb",
 			title: "Foreground to background easing",
 			values: paletteEaseFunctions,
 			defaultVal: "outBounce",
 			isRendered: options => ! options.palette.isCustom && ! options.palette.isGrayScale,
 		}),
 		saturation: new z42opt.FloatOpt({
-			uniqueShortKey: "ps",
+			shortKey: "ps",
 			title: "Saturation",
 			min: 0,
 			max: 1,
@@ -154,7 +154,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			isRendered: options => ! options.palette.isCustom && ! options.palette.isGrayScale,
 		}),
 		brightness: new z42opt.FloatOpt({
-			uniqueShortKey: "pb",
+			shortKey: "pb",
 			title: "Brightness",
 			min: 0,
 			max: 1,
@@ -163,13 +163,13 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			isRendered: options => ! options.palette.isCustom && ! options.palette.isGrayScale,
 		}),
 		bgColor: new z42opt.ColorOpt({
-			uniqueShortKey: "pbg",
+			shortKey: "pbg",
 			title: "Background color",
 			defaultVal: { r: 0, g: 0, b: 0, a: 1 },
 			isRendered: options => ! options.palette.isCustom && ! options.palette.isGrayScale,
 		}),
 		customPalette: new z42pal.PaletteOpt({
-			uniqueShortKey: "cp",
+			shortKey: "cp",
 			easeFunctions: paletteEaseFunctions,
 			defaultEaseFunction: "linear",
 			defaultVal: [],
@@ -179,7 +179,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 	noiseAnim: new z42opt.Node( {}, {
 		// TODO: these should be FloatOpt instead		
 		transitionDelay: new z42opt.IntOpt({
-			uniqueShortKey: "ntde",
+			shortKey: "ntde",
 			title: "Noise transition delay",
 			min: 0,
 			max: 30000,
@@ -191,7 +191,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			defaultVal: 3 * 1000,
 		}),
 		transitionDuration: new z42opt.IntOpt({
-			uniqueShortKey: "ntd",
+			shortKey: "ntd",
 			title: "Noise transition duration",
 			min: 100,
 			max: 30000,
@@ -206,7 +206,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 	paletteAnim: new z42opt.Node( {}, {
 		// TODO: these should be FloatOpt instead		
 		rotaDuration: new z42opt.IntOpt({
-			uniqueShortKey: "prd",
+			shortKey: "prd",
 			title: "Palette rotation duration",
 			min: 2 * 1000,
 			max: 120 * 1000,
@@ -217,7 +217,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			defaultVal: 80 * 1000,
 		}),
 		transitionDelay: new z42opt.IntOpt({
-			uniqueShortKey: "ptde",
+			shortKey: "ptde",
 			title: "Palette transition delay",
 			min: 0,
 			max: 30 * 1000,
@@ -230,7 +230,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			isRendered: options => ! options.palette.isCustom,
 		}),
 		transitionDuration: new z42opt.IntOpt({
-			uniqueShortKey: "ptd",
+			shortKey: "ptd",
 			title: "Palette transition duration",
 			min: 100,
 			max: 30 * 1000,

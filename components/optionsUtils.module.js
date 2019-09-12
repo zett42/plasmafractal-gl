@@ -154,8 +154,8 @@ function createPermalink( optionsData, optionsDescriptor, url ) {
 // Private functions
 //================================================================================================
 
-// Validate uniqueShortKey attribute of options descriptor and log any errors to console.
-// - all Option descriptors must have a uniqueShortKey attribute
+// Validate shortKey attribute of options descriptor and log any errors to console.
+// - all Option descriptors must have a shortKey attribute
 // - no duplicates
 // - short key is all lowercase
 
@@ -165,7 +165,7 @@ function validateUniqueShortKeys( descriptor ) {
 	
 	for( const [ key, value ] of shortKeyMap.entries() ){
 		if( value.length > 1 ){
-			console.error( `Duplicate value '${key}' of attribute 'uniqueShortKey' detected for the following options:`, value );
+			console.error( `Duplicate value '${key}' of attribute 'shortKey' detected for the following options:`, value );
 		}
 	}
 }
@@ -178,14 +178,14 @@ function validateShortKeysRecursively( result, descriptor, path = null ) {
 		const childPath = joinPath( path, key );
 
 		if( childDescriptor instanceof z42opt.Option ){
-			const shortKey = childDescriptor.$attrs.uniqueShortKey;
+			const shortKey = childDescriptor.$attrs.shortKey;
 			if( ! shortKey ){
-				console.error( "Missing attribute 'uniqueShortKey' for option:", childPath );
+				console.error( "Missing attribute 'shortKey' for option:", childPath );
 				continue;
 			}
 			const shortKeyLCase = shortKey.toLowerCase();
 			if( shortKeyLCase !== shortKey ){
-				console.error( "Attribute 'uniqueShortKey' is not all lowercase for option:", childPath );
+				console.error( "Attribute 'shortKey' is not all lowercase for option:", childPath );
 				continue;
 			}
 			// To detect dupes.
@@ -211,7 +211,7 @@ function createShortKeyToPathMap( result, descriptor, path = null ) {
 		const childPath = joinPath( path, key );
 
 		if( childDescriptor instanceof z42opt.Option ){
-			result[ childDescriptor.$attrs.uniqueShortKey ] = childPath;
+			result[ childDescriptor.$attrs.shortKey ] = childPath;
 		}
 		else {
 			// Recurse into child descriptor.
@@ -229,12 +229,12 @@ function createUrlParams( urlParams, options, rootDescriptor, path = null ) {
 		const childDescriptor = _.get( rootDescriptor, childPath );
 		
 		if( childDescriptor instanceof z42opt.Option )	{
-			if( ! childDescriptor.$attrs.uniqueShortKey ) {
-				console.error( "Missing attribute uniqueShortKey for option:", childPath );
+			if( ! childDescriptor.$attrs.shortKey ) {
+				console.error( "Missing attribute shortKey for option:", childPath );
 				continue;
 			}
 			const urlValue = childDescriptor.$serialize( value ); 
-			urlParams.append( childDescriptor.$attrs.uniqueShortKey, urlValue );
+			urlParams.append( childDescriptor.$attrs.shortKey, urlValue );
 		}
 		else if( typeof value === "object" ) {			
 			// Recurse
