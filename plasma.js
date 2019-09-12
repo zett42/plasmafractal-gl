@@ -66,7 +66,7 @@ class z42Plasma {
 
 		// Generate initial palette.
 		this._generatePalette( this._startPalette, this._colorRnd.random() * 360 ); 
-		z42color.makePaletteGradientRGBA( this._grayScalePalette, 0, this._grayScalePalette.length, {r:0,g:0,b:0,a:1.0}, {r:255,g:255,b:255,a:1.0}, z42easing.easeLinear );
+		z42color.makePaletteGradientRGBA( this._grayScalePalette, 0, this._grayScalePalette.length, {r:0,g:0,b:0,a:1.0}, {r:255,g:255,b:255,a:1.0}, z42easing.linear );
 	}
 
 	//===================================================================================================================
@@ -241,8 +241,8 @@ class z42Plasma {
 			a : 1  // alpha
 		};
 
-		const bgToFgFunction = z42easing[ "ease" + this._options.palette.easeFunctionBgToFg ];
-		const fgToBgFunction = z42easing[ "ease" + this._options.palette.easeFunctionFgToBg ];
+		const bgToFgFunction = z42easing[ this._options.palette.easeFunctionBgToFg ];
+		const fgToBgFunction = z42easing[ this._options.palette.easeFunctionFgToBg ];
 		
 		let palIndex = 0;
 		const palRange = palette.length / this._paletteColorCount / 2;

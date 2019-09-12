@@ -403,8 +403,9 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 					if( dist <= 0 )
 						dist = width - startX + endX;  // wrap-around
 
-					const easeFun = z42easing[ "ease" + start.easeFun ];
-		
+					// Fallback to linear, if ease function does not exist.
+					const easeFun = z42easing[ start.easeFun ] || z42easing[ "linear" ];
+						
 					// This function wraps around when index would be >= pixels.length.
 					z42color.makePaletteGradientRGBA( pixels, startX, dist, start.color, end.color, easeFun );
 				}
@@ -490,14 +491,14 @@ function makePaletteValid( palette ) {
 	const defaults = {   
 		pos: 0,
 		color: { r: 0, g: 0, b: 0, a: 1 },
-		easeFun: "Linear" 
+		easeFun: "linear" 
 	};
 
 	if( ! Array.isArray( palette ) || palette.length === 0 ) {
 		const defaults2 = {   
 			pos: 0.5,
 			color: { r: 255, g: 255, b: 255, a: 1 },
-			easeFun: "Linear" 
+			easeFun: "linear" 
 		};
 	
 		return [ defaults, defaults2 ];
