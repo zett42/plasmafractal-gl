@@ -75,12 +75,12 @@ class z42Plasma {
 	//-------------------------------------------------------------------------------------------------------------------
 	// Get / set noise options.
 
-	get noiseOptions()
+	get options$noise()
 	{
 		return this._options.noise;
 	}
 
-	set noiseOptions( opt )
+	set options$noise( opt )
 	{
 		this._options.noise = opt;
 		this.generateNoiseImage();
@@ -89,12 +89,12 @@ class z42Plasma {
 	//-------------------------------------------------------------------------------------------------------------------
 	// Get / set palette options.
 
-	get paletteOptions()
+	get options$palette()
 	{
 		return this._options.palette;
 	}
 
-	set paletteOptions( opt )
+	set options$palette( opt )
 	{
 		this._options.palette = opt;
 
@@ -109,12 +109,12 @@ class z42Plasma {
 	//-------------------------------------------------------------------------------------------------------------------
 	// Get / set animation options.
 
-	get paletteAnimOptions()
+	get options$paletteAnim()
 	{
 		return this._options.paletteAnim;
 	}
 
-	set paletteAnimOptions( opt )
+	set options$paletteAnim( opt )
 	{
 		if( opt.transitionDelay != this._options.paletteAnim.transitionDelay ||
 		    opt.transitionDuration != this._options.paletteAnim.transitionDuration )

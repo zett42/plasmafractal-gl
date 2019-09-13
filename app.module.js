@@ -155,7 +155,8 @@ function initGui() {
 
 	let app = new Vue({
 		el: "#app",
-		data: function() { 
+		data: function() {
+			// The data to provide to z42opt-dialog component.
 			return {
 				optData: m_options,
 				optDesc: plasmaOpt.optionsDescriptor,
@@ -163,16 +164,21 @@ function initGui() {
 			};
 		},			
 		methods: {
+			// Called when an option has been changed in the UI.
 			onModified( event ) {
 				//console.debug("app.onModified:", event );
 				_.set( m_options, event.path, event.value );
 
-				const groupKey = event.path.split( "." )[ 0 ];
-				switch( groupKey){
-					case "noise"      : setPlasmaOptions( "noiseOptions",       m_options[ groupKey ] ); break;
-					case "palette"    : setPlasmaOptions( "paletteOptions",     m_options[ groupKey ] ); break;
-					case "paletteAnim": setPlasmaOptions( "paletteAnimOptions", m_options[ groupKey ] ); break;
-					case "noiseAnim"  : setNoiseAnimOptions( m_options[ groupKey ] );
+				const groupName = event.path.split( "." )[ 0 ];		
+				switch( groupName ){
+					case "noise": 
+					case "palette": 
+					case "paletteAnim": 
+						setPlasmaOptions( groupName, m_options[ groupName ] ); 
+						break;
+					case "noiseAnim": 
+						setNoiseAnimOptions( m_options[ groupName ] );
+						break;
 				}
 			},
 		},
@@ -236,10 +242,10 @@ function resizePlasmaToWindowSize(){
 
 //-------------------------------------------------------------------------------------------------------------------
 
-function setPlasmaOptions( propName, value ){
+function setPlasmaOptions( groupName, value ){
 	const msg = {
 		action: "setOptions",
-		propName: propName,
+		groupName: groupName,
 		value: value
 	};
 	m_fg.thread.postMessage( msg );

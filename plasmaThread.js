@@ -67,7 +67,7 @@ self.onmessage = function( ev )
 		case "reseed": reseed( ev.data.noiseSeed );
 		break;
 		
-		case "setOptions": m_plasma[ ev.data.propName ] = ev.data.value;
+		case "setOptions": m_plasma[ "options$" + ev.data.groupName ] = ev.data.value;
 		break;
 	}
 };
