@@ -69,6 +69,9 @@ const tabsComponent = Vue.component( "z42opt-tabs", {
 				:id="childId( key )"
 				:title="group.title"
 				>
+				<!-- Component to display the content of the tab.
+					Instead of modifying optData directly the component just forwards opt-modified event 
+				    to parent to give parent full control. -->
 				<component
 					:is="contentComponentName( group )"
 					:id="childId( key )" 
@@ -76,6 +79,7 @@ const tabsComponent = Vue.component( "z42opt-tabs", {
 					:optDesc="optDesc"
 					:optView="group"
 					class="container px-0"
+					@opt-modified="$emit( 'opt-modified', $event )"
 				/>
 			</b-tab>
 		</b-tabs>
@@ -122,10 +126,12 @@ const containerComponent = Vue.component( "z42opt-container", {
 				return attr( this.value, this.optDesc );
 			return Boolean( attr );
 		},
-		onModified( value, path ){
+		onModified( path, value ){
 			const optDescNode = _.get( this.optDesc, path ); 
 			if( optDescNode instanceof z42opt.Option ) {
-				_.set( this.value, path, value );
+				// Send new option value to parent component, instead of modifying this.value directly.
+				// This way parent component has more control about changes.
+				this.$emit( "opt-modified", { path: path, value: value } );
 			}
 		}
 	},
@@ -144,7 +150,7 @@ const containerComponent = Vue.component( "z42opt-container", {
 							:id="childId( opt.path )"
 							:optDesc="opt.node" 
 							:value="resolveValue( opt.path )"
-							@input="onModified( $event, opt.path )"
+							@input="onModified( opt.path, $event )"
 						/>
 					</transition>
 				</template>

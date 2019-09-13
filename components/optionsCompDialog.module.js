@@ -79,7 +79,9 @@ const optionsDialogComponent = Vue.component( "z42opt-dialog", {
 				<a :href="permaLinkUrl" style="float: right">Permalink</a>
 			</p>
 
-			<!-- Component for the root of the options tree (typically z42opt-tabs) -->
+			<!-- Component for the root of the options tree (typically z42opt-tabs) 
+				Instead of modifying optData directly the component just forwards opt-modified event 
+				to parent to give parent full control. -->
 			<component 
 				:is="optView.component || 'z42opt-tabs'" 
 				:id="id" 
@@ -87,6 +89,7 @@ const optionsDialogComponent = Vue.component( "z42opt-dialog", {
 				:optDesc="optDesc" 
 				:optView="optView" 
 				:tabIndex.sync="tabIndex"
+				@opt-modified="$emit( 'opt-modified', $event )"
 			/>
 		</b-modal>
 		`

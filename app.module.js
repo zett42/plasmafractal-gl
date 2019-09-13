@@ -162,33 +162,35 @@ function initGui() {
 				optView: plasmaOpt.optionsView,
 			};
 		},			
-		watch: {
-			"optData.noise": {
-				deep: true,   // watch child elements too
-				handler: ( val, oldVal ) => setPlasmaOptions( 'noiseOptions', val )
+		methods: {
+			onModified( event ) {
+				//console.debug("app.onModified:", event );
+				_.set( m_options, event.path, event.value );
+
+				const groupKey = event.path.split( "." )[ 0 ];
+				switch( groupKey){
+					case "noise"      : setPlasmaOptions( "noiseOptions",       m_options[ groupKey ] ); break;
+					case "palette"    : setPlasmaOptions( "paletteOptions",     m_options[ groupKey ] ); break;
+					case "paletteAnim": setPlasmaOptions( "paletteAnimOptions", m_options[ groupKey ] ); break;
+					case "noiseAnim"  : setNoiseAnimOptions( m_options[ groupKey ] );
+				}
 			},
-			"optData.palette": {
-				deep: true,   // watch child elements too
-				handler: ( val, oldVal ) => setPlasmaOptions( 'paletteOptions', val )
-			},
-			"optData.paletteAnim": {
-				deep: true,   // watch child elements too
-				handler: ( val, oldVal ) => setPlasmaOptions( 'paletteAnimOptions', val )
-			},
-			"optData.noiseAnim": {
-				deep: true,   // watch child elements too
-				handler: ( val, oldVal ) => setNoiseAnimOptions( val )
-			}
 		},
 		// TIP: Install VSCode "Comment tagged templates" extensions for syntax highlighting of template.
 		template: /*html*/ `
 			<div>
-				<b-button id="button-options-dialog" 
+				<b-button 
+					id="button-options-dialog" 
 					v-b-modal.z42opt-dialog 
 					title="Plasma Options (Key 'o')">⚙</b-button>
 				
-				<z42opt-dialog id="z42opt-dialog" 
-					:optData="optData" :optDesc="optDesc" :optView="optView" />
+				<z42opt-dialog 
+					id="z42opt-dialog" 
+					:optData="optData" 
+					:optDesc="optDesc" 
+					:optView="optView" 
+					@opt-modified="onModified( $event )"
+				/>
 			</div>
 		`
 	});	
