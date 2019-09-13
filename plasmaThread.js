@@ -67,7 +67,7 @@ self.onmessage = function( ev )
 		case "reseed": reseed( ev.data.noiseSeed );
 		break;
 		
-		case "setOptions": m_plasma[ "options$" + ev.data.groupName ] = ev.data.value;
+		case "setOptions": setOptions( ev.data.groupName, ev.data.value ); 
 		break;
 	}
 };
@@ -135,4 +135,10 @@ function reseed( noiseSeed )
 	
 	// Notify main thread that we are done.
 	self.postMessage({ action: "onreseedfinished" }); 
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+function setOptions( groupName, value ) {
+	m_plasma[ "options$" + groupName ] = value;
 }

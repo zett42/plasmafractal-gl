@@ -32,8 +32,6 @@ import "./components/optionsCompDialog.module.js"
 import "./components/optionsCompValue.module.js"
 import "./components/optionsCompPalette.module.js"
 
-const m_ndebug = true;
-
 const m_options = z42optUtil.mergeDefaultsWithUrlParams( plasmaOpt.optionsDescriptor, window.location.search );
 
 const m_colorSeed = Math.random();
@@ -94,12 +92,11 @@ function createPlasmaThreadForCanvas( canvas, isPaused ) {
 
 function onPlasmaThreadMessage( ev ) {
 	
-	m_ndebug || console.debug( "Message from plasmaThread:", ev );
+	//console.debug( "Message from plasmaThread:", ev );
 
 	switch ( ev.data.action ) {
 		case "onreseedfinished": {
 			// Transition to newly created fractal.
-
 			setTimeout( startCanvasTransition, m_options.noiseAnim.transitionDelay * 1000 );
 			break;
 		}
@@ -115,7 +112,7 @@ function initCanvasAnimation() {
 	// Set callback to be notified when CSS transition has ended.
 	m_fg.canvas.on( "transitionend", () => {
 
-		m_ndebug || console.debug( "m_fg.canvas transitionend" );
+		//console.debug( "m_fg.canvas transitionend" );
 
 		// Swap foreground and background objects.
 		[ m_fg, m_bg ] = [ m_bg, m_fg ];
@@ -151,8 +148,8 @@ function startCanvasTransition() {
 //-------------------------------------------------------------------------------------------------------------------
 
 function initGui() {
-	// Create root Vue instance, which represents the GUI of this application.
 
+	// Create root Vue instance, which represents the GUI of this application.
 	let app = new Vue({
 		el: "#app",
 		data: function() {
@@ -247,6 +244,8 @@ function resizePlasmaToWindowSize(){
 //-------------------------------------------------------------------------------------------------------------------
 
 function setPlasmaOptions( groupName, value ){
+	//console.debug("setPlasmaOpt");
+
 	const msg = {
 		action: "setOptions",
 		groupName: groupName,
