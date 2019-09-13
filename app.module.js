@@ -171,7 +171,11 @@ function initGui() {
 
 				const groupName = event.path.split( "." )[ 0 ];		
 				switch( groupName ){
-					case "noise": 
+					case "noise":
+						// Changing noise options is computation-heavy. Using debounced function we make sure 
+						// they are not modified too frequently, which would block the threads. 
+						setPlasmaOptionsDebounced( groupName, m_options[ groupName ] );
+						break;
 					case "palette": 
 					case "paletteAnim": 
 						setPlasmaOptions( groupName, m_options[ groupName ] ); 
@@ -251,6 +255,8 @@ function setPlasmaOptions( groupName, value ){
 	m_fg.thread.postMessage( msg );
 	m_bg.thread.postMessage( msg );
 }
+
+const setPlasmaOptionsDebounced = _.debounce( setPlasmaOptions, 150 ); //, { leading: true, trailing: false } );
 
 //-------------------------------------------------------------------------------------------------------------------
 
