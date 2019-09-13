@@ -27,6 +27,9 @@ SOFTWARE.
 import * as z42opt from "./optionsDescriptor.module.js"
 import "../external/nouislider/nouislider.js"
 
+// Pattern for private class members: https://stackoverflow.com/a/33533611/7571258
+const privates = new WeakMap();
+
 //---------------------------------------------------------------------------------------------------
 
 const rangeComponent = Vue.component( "z42opt-range", {
@@ -37,16 +40,29 @@ const rangeComponent = Vue.component( "z42opt-range", {
 		optDesc:  { type: z42opt.Option, required: true }, 
 		disabled: { type: Boolean, required: false, default: false },
 	},
-	data() {
-		return {
-		  	initialized: false,
-		}
+	mounted() {
+		// Define private variables of this component (non-reactive!)
+		privates.set( this, {
+			sliderValue: this.value
+		});
+
+		const sliderElem = this.getSliderElement();
+		noUiSlider.create( sliderElem, this.createSliderConfig() );
+
+		const eventName = this.optDesc.$attrs.isSlow ? "change" : "slide";
+
+		// Using arrow function forwarder so onSlide() gets 'this' context of component instead of noUiSlider.
+		sliderElem.noUiSlider.on( eventName, ( ...args ) => this.onSlide( ...args ) );
 	},
 	computed: {
-		sliderElem() {
+		displayValue(){ return this.optDesc.$displayValue( this.value ); }
+	},
+	methods: {
+		getSliderElement() {
 			return document.getElementById( this.id );
 		},
-		sliderConfig(){
+		
+		createSliderConfig(){
 			let step = 1;
 			if( this.optDesc.$attrs.step != null ){
 				step = this.optDesc.$attrs.step;
@@ -78,30 +94,31 @@ const rangeComponent = Vue.component( "z42opt-range", {
 				tooltips: this.optDesc.$attrs.isSlow ? tooltipFormatter : false,
 			};
 		},
-		displayValue(){ return this.optDesc.$displayValue( this.value ); }
-	},
-	mounted() {
-		noUiSlider.create( this.sliderElem, this.sliderConfig );
 
-		const eventName = this.optDesc.$attrs.isSlow ? "change" : "slide";
+		onSlide( values, handleIndex, valuesRaw, tap, handleOffs ){
+			const priv = privates.get( this );
+			const newValue = valuesRaw[ 0 ];
 
-		this.sliderElem.noUiSlider.on( eventName, ( values, handle ) => {
-			const newValue = Number( values[ 0 ] );
-			if( newValue !== this.value ){
+			if( priv.sliderValue !== newValue ){
+				// Store the raw slider value which is the only way to obtain it.
+				priv.sliderValue = newValue;  
+
 				// emit as "input" event to make it compatible with v-model
 				this.$emit( "input", newValue );
 			}
-		});
+		}
 	},
 	watch: {
-		value( newValue ) {
-			if( ! this.initialized ){
-				this.initialized = true;
-				return;
-			}
-			const curValue = Number( this.sliderElem.noUiSlider.get() );
-			if( curValue !== newValue ) {
-				this.sliderElem.noUiSlider.set([ newValue ]);
+		value( newValue, oldValue ) {
+			const priv = privates.get( this );
+
+			// Make sure the change actually originated from the outside instead from the inside of 
+			// this component (i. e. when slider was moved by user).
+			if( priv.sliderValue !== newValue ) {
+				priv.sliderValue = newValue;
+
+				const sliderElem = this.getSliderElement();
+				sliderElem.noUiSlider.set([ newValue ]);
 			}
 		}
 	},
