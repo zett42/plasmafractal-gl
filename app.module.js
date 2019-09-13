@@ -39,17 +39,13 @@ const m_colorSeed = Math.random();
 let m_optionsButtonFadeoutTimer = null;
 
 // Foreground objects
-let m_fg = {
-	canvas : $("#canvas1")
-}
+let m_fg = { canvas : document.getElementById( "canvas1" ) };
 // Background objects
-let m_bg = {
-	canvas : $("#canvas2")
-}
+let m_bg = { canvas : document.getElementById( "canvas2" ) };
 
 // Create threads for rendering plasma.
-m_fg.thread = createPlasmaThreadForCanvas( m_fg.canvas[ 0 ], false );
-m_bg.thread = createPlasmaThreadForCanvas( m_bg.canvas[ 0 ], true );
+m_fg.thread = createPlasmaThreadForCanvas( m_fg.canvas, false );
+m_bg.thread = createPlasmaThreadForCanvas( m_bg.canvas, true );
 
 // Set timeout for first canvas fade animation.
 setTimeout( initCanvasAnimation, m_options.noiseAnim.transitionDelay * 1000 );
@@ -110,9 +106,7 @@ function initCanvasAnimation() {
 	setCanvasTransitionDuration( m_options.noiseAnim.transitionDuration );
 
 	// Set callback to be notified when CSS transition has ended.
-	m_fg.canvas.on( "transitionend", () => {
-
-		//console.debug( "m_fg.canvas transitionend" );
+	m_fg.canvas.addEventListener( "transitionend", () => {
 
 		// Swap foreground and background objects.
 		[ m_fg, m_bg ] = [ m_bg, m_fg ];
@@ -131,7 +125,8 @@ function initCanvasAnimation() {
 //-------------------------------------------------------------------------------------------------------------------
 
 function setCanvasTransitionDuration( duration ) {
-	$( ".plasma" ).css( "transition-duration", duration.toString() + "s" );
+	m_bg.canvas.style.transitionDuration = duration.toString() + "s";
+	m_fg.canvas.style.transitionDuration = duration.toString() + "s";
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -141,8 +136,8 @@ function startCanvasTransition() {
 	// Wake the background thread up because its canvas will be visible soon.
 	m_bg.thread.postMessage( { action: "start" } );
 
-	m_fg.canvas.css( { opacity: 0.0 } );
-	m_bg.canvas.css( { opacity: 1.0 } );
+	m_fg.canvas.style.opacity = 0;
+	m_bg.canvas.style.opacity = 1.0;
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -155,15 +150,14 @@ function initGui() {
 		data: function() {
 			// The data to provide to z42opt-dialog component.
 			return {
-				optData: m_options,
-				optDesc: plasmaOpt.optionsDescriptor,
-				optView: plasmaOpt.optionsView,
+				optData: m_options,                      // Option values (variable).
+				optDesc: plasmaOpt.optionsDescriptor,    // Options meta data (constant).
+				optView: plasmaOpt.optionsView,          // Overall GUI structure (constant).
 			};
 		},			
 		methods: {
 			// Called when an option has been changed in the UI.
 			onModified( event ) {
-				//console.debug("app.onModified:", event );
 				_.set( m_options, event.path, event.value );
 
 				const groupName = event.path.split( "." )[ 0 ];		
@@ -204,26 +198,25 @@ function initGui() {
 
 	// Wire up global events.
 
-	$(window)
-		// On window resize, resize the canvas to fill browser window dynamically.
-		// Use debounce() to avoid costly calculations while the window size is in flux.
-		.on( "resize", _.debounce( resizePlasmaToWindowSize, 150 ) )
-		// When browser back/forward button gets pressed, reload the state that onOptionsDialogClose() pushed to the history. 
-		.on( "popstate", () => window.location.reload() );
+	// On window resize, resize the canvas to fill browser window dynamically.
+	// Use debounce() to avoid costly calculations while the window size is in flux.
+	window.addEventListener( "resize", _.debounce( resizePlasmaToWindowSize, 150 ) );
 
-	$(document)
-		// Toggle visibility of options button: fullscreen will hide it, mouse interaction will show it again.
-		.on( "fullscreenchange", updateOptionsButtonVisibility )
-		.on( "mousemove", updateOptionsButtonVisibility )
-		.on( "click", updateOptionsButtonVisibility )
-		// Handle keyboard shortcuts
-		.on( "keydown", onKeyDown )
-		; 
+	// When browser back/forward button gets pressed, reload the state that onOptionsDialogClose() pushed to the history. 
+	window.addEventListener( "popstate", () => window.location.reload() );
 
-	$(m_fg.canvas)
-		.on( "dblclick", toggleFullscreen );
+	// Toggle visibility of options button: fullscreen will hide it, mouse interaction will show it again.
+	document.addEventListener( "fullscreenchange", updateOptionsButtonVisibility );
+	document.addEventListener( "mousemove", updateOptionsButtonVisibility );
+	document.addEventListener( "click", updateOptionsButtonVisibility );
 
-	// To work around blurry popup windows when browser zoom != 100%.
+	// Handle keyboard shortcuts
+	document.addEventListener( "keydown", onKeyDown );
+
+	// Toggle fullscreen by double-click on canvas.
+	m_fg.canvas.addEventListener( "dblclick", toggleFullscreen );
+
+	// To work around blurry popup windows when browser zoom != 100%. Popper is used by Bootstrap.
 	Popper.Defaults.modifiers.computeStyle.gpuAcceleration = false;
 
 	return app;
@@ -277,7 +270,7 @@ function toggleFullscreen(){
 //-------------------------------------------------------------------------------------------------------------------
 
 function updateOptionsButtonVisibility(){
-	$("#button-options-dialog").css( "opacity", 1 );
+	document.getElementById( "button-options-dialog").style.opacity = 1.0;
 
 	if( m_optionsButtonFadeoutTimer ){
 		clearTimeout( m_optionsButtonFadeoutTimer );
@@ -286,7 +279,7 @@ function updateOptionsButtonVisibility(){
 	if( document.fullscreenElement ){
 		// In fullscreen mode, options button will be hidden after timeout.
 		m_optionsButtonFadeoutTimer = setTimeout( 
-			() => $("#button-options-dialog").css( "opacity", 0 ), 
+			() => document.getElementById( "button-options-dialog" ).style.opacity = 0, 
 			2000 
 		);
 	}
@@ -295,11 +288,12 @@ function updateOptionsButtonVisibility(){
 //-------------------------------------------------------------------------------------------------------------------
 
 function onKeyDown( event ){
-	if( event.isComposing ) {
-		return;
-	}
-	switch( event.keyCode ){
-		// toggle options dialog
-		case "O".charCodeAt( 0 ): $( "#button-options-dialog" ).click(); break;
+	if( ! event.isComposing ) {
+		switch( event.keyCode ){
+			case "O".charCodeAt( 0 ): 
+				// toggle options dialog
+				document.getElementById( "button-options-dialog" ).click(); 
+				break;
+		}
 	}
 }
