@@ -170,6 +170,12 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			defaultVal: [],
 			isRendered: options => options.palette.isCustom && ! options.palette.isGrayScale,
 		}),
+		isCustomPaletteAnimated: new z42opt.BoolOpt({
+			shortKey: "acp",
+			title: "Animate custom palette (random hue offset)",
+			defaultVal: false,
+			isRendered: options => options.palette.isCustom && ! options.palette.isGrayScale,
+		}),		
 	}),
 	noiseAnim: new z42opt.Node( {}, {
 		transitionDelay: new z42opt.DurationOpt({
@@ -213,7 +219,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			maxDecimals: 1,
 			isSlow: true,
 			defaultVal: 10,
-			isRendered: options => ! options.palette.isCustom,
+			isRendered: options => ! options.palette.isCustom || options.palette.isCustomPaletteAnimated,
 		}),
 		transitionDuration: new z42opt.DurationOpt({
 			shortKey: "ptd",
@@ -224,7 +230,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			maxDecimals: 1,
 			isSlow: true,
 			defaultVal: 5,
-			isRendered: options => ! options.palette.isCustom,
+			isRendered: options => ! options.palette.isCustom || options.palette.isCustomPaletteAnimated,
 		}),
 	}),
 });

@@ -229,21 +229,31 @@ class z42Plasma {
 
 	_generatePalette( palette, firstHue )
 	{
+		this._paletteCurrentFirstHue = firstHue;
+
 		if( this._options.palette.isCustom )
-			this._generatePaletteCustom( palette );
+			this._generatePaletteCustom( palette, firstHue );
 		else
 			this._generatePaletteRandom( palette, firstHue );
 	}
 
 	// Render a custom palette.
 
-	_generatePaletteCustom( palette )	{
+	_generatePaletteCustom( palette, firstHue )	{
 		// Create a cloned palette with ease function names resolved to actual functions.
-		const paletteResolved = this._options.palette.customPalette.map( item => ({ 
+		let paletteResolved = this._options.palette.customPalette.map( item => ({ 
 			pos     : item.pos, 
 			color   : item.color,
 			easeFun : z42easing[ item.easeFun ] || z42easing.linear
 		}));
+
+		if( this._options.palette.isCustomPaletteAnimated ) {
+			for( let item of paletteResolved ){
+				let hsv = tinycolor( item.color ).toHsv();
+				hsv.h = ( hsv.h + firstHue ) % 360;
+				item.color = tinycolor( hsv ).toRgb();
+			}
+		}
 	
 		z42color.makePaletteMultiGradientRGBA( palette, palette.length, paletteResolved );
 	}
@@ -252,8 +262,6 @@ class z42Plasma {
 	// golden ratio to hue value, which creates nices contrasts.
 	
 	_generatePaletteRandom( palette, firstHue )	{
-		this._paletteCurrentFirstHue = firstHue;
-
 		let colorHsv = { 
 			h : firstHue,   
 			s : this._options.palette.saturation, 
