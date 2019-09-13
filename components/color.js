@@ -23,10 +23,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. 
 */
 
-(function(global){
+(function(){
 	'use strict';
-	
-	var module = global.z42color = {};
+
+	// For compatibility with WebWorkers, where 'window' is not available, use 'self' instead.
+	// Also module import from WebWorkers isn't widely supported yet, so we keep this an "old-school" module. 
+	const module = self.z42color = {};
 	
 	//----------------------------------------------------------------------------------------------------------------
 	/// Fill a one-dimensional RGBA Uint32Array with a single gradient.
@@ -208,4 +210,4 @@ SOFTWARE.
 		return x;
 	}
 	
-})(this);
+})();

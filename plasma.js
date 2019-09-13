@@ -30,7 +30,7 @@ SOFTWARE.
 //   z42color.js
 //   z42FractalNoise.js
 //
-// NOTE: This can't be a module because it is included by a web worker, which still have limited module support.
+// NOTE: This can't be a native module because it is included by a web worker, which still have limited module support.
 
 //===================================================================================================================
 // This is the class for generating and animating a plasma. 
@@ -165,7 +165,7 @@ class z42Plasma {
 	{
 		const fracStartTime = performance.now();
 
-		z42fractal.generateFractalNoiseImageUint16( this._plasmaPixels, this._width, this._height, this._currentPalette.length, this._options.noise ); 
+		z42fractalNoise.generateFractalNoiseImageUint16( this._plasmaPixels, this._width, this._height, this._currentPalette.length, this._options.noise ); 
 
 		//console.debug( "Fractal generation took %d ms", performance.now() - fracStartTime );
 	}	

@@ -1,0 +1,41 @@
+import "./easing.js"
+
+// Forward exports from "old-school" module.
+export const linear        = z42easing.linear;
+export const inQuad        = z42easing.inQuad;
+export const outQuad       = z42easing.outQuad;
+export const inOutQuad     = z42easing.inOutQuad;
+export const inCubic       = z42easing.inCubic;
+export const outCubic      = z42easing.outCubic;
+export const inOutCubic    = z42easing.inOutCubic;
+export const inQuart       = z42easing.inQuart;
+export const outQuart      = z42easing.outQuart;
+export const inOutQuart    = z42easing.inOutQuart;
+export const inQuint       = z42easing.inQuint;
+export const outQuint      = z42easing.outQuint;
+export const inOutQuint    = z42easing.inOutQuint;
+export const inSine        = z42easing.inSine;
+export const outSine       = z42easing.outSine;
+export const inOutSine     = z42easing.inOutSine;
+export const inOutSine2_3  = z42easing.inOutSine2_3;
+export const inOutSine2_5  = z42easing.inOutSine2_5;
+export const inOutSine2_9  = z42easing.inOutSine2_9;
+export const inOutSine2_13 = z42easing.inOutSine2_13;
+export const inExpo        = z42easing.inExpo;
+export const outExpo       = z42easing.outExpo;
+export const inOutExpo     = z42easing.inOutExpo;
+export const inExpo2       = z42easing.inExpo2;
+export const outExpo2      = z42easing.outExpo2;
+export const inOutExpo2    = z42easing.inOutExpo2;
+export const inCirc        = z42easing.inCirc;
+export const outCirc       = z42easing.outCirc;
+export const inOutCirc     = z42easing.inOutCirc;
+export const inElastic     = z42easing.inElastic;
+export const outElastic    = z42easing.outElastic;
+export const inOutElastic  = z42easing.inOutElastic;
+export const inBack        = z42easing.inBack;
+export const outBack       = z42easing.outBack;
+export const inOutBack     = z42easing.inOutBack;
+export const inBounce      = z42easing.inBounce;
+export const outBounce     = z42easing.outBounce;
+export const inOutBounce   = z42easing.inOutBounce;

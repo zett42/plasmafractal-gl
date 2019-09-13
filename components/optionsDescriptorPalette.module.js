@@ -23,8 +23,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. 
 */
 
-import * as z42opt from "./optionsDescriptor.module.js"
+import * as z42opt    from "./optionsDescriptor.module.js"
 import * as z42optVal from "./optionsDescriptorValues.module.js"
+import * as z42easing from "./easing.module.js"
 
 // Additional dependencies (include via <script> tag):
 // 'easing.js' (zett42 version)

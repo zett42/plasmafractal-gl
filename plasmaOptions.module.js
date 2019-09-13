@@ -201,7 +201,6 @@ const optionsDescriptor = new z42opt.Node( {}, {
 		}),
 	}),
 	paletteAnim: new z42opt.Node( {}, {
-		// TODO: these should be FloatOpt instead	
 		rotaDuration: new z42opt.DurationOpt({
 			shortKey: "prd",
 			title: "Palette rotation duration",

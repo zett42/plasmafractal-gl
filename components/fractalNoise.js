@@ -23,10 +23,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. 
 */
 
-(function(global){
+(function(){
 	'use strict';
 	
-	var module = global.z42fractal = {};
+	// For compatibility with WebWorkers, where 'window' is not available, use 'self' instead.
+	// Also module import from WebWorkers isn't widely supported yet, so we keep this an "old-school" module. 
+	var module = self.z42fractalNoise = {};
 	
 	//----------------------------------------------------------------------------------------------------------------
 	/// Generate a grayscale fractal noise image.
@@ -115,4 +117,4 @@ SOFTWARE.
 		return a - ( n * Math.floor( a / n ) );
 	}
 
-})(this);
+})();

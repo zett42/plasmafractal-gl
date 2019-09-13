@@ -44,10 +44,12 @@
  *
 */
 
-(function(global){
+(function(){
 	'use strict';
 	
-	var module = global.z42easing = {};
+	// For compatibility with WebWorkers, where 'window' is not available, use 'self' instead.
+	// Also module import from WebWorkers isn't widely supported yet, so we keep this an "old-school" module. 
+	const module = self.z42easing = {};
 	
 	// Function parameters:
 	// t: current time, b: begInnIng value, c: change In value, d: duration
@@ -203,4 +205,4 @@
 		if (t < d/2) return module.inBounce (t*2, 0, c, d) * .5 + b;
 		return module.outBounce (t*2-d, 0, c, d) * .5 + c*.5 + b;
 	}	
-})(this);
+})();

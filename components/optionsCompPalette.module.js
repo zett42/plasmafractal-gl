@@ -25,6 +25,7 @@ SOFTWARE.
 //---------------------------------------------------------------------------------------------------
 
 import * as z42opt from "./optionsDescriptorValues.module.js"
+import * as z42color from "./color.module.js"
 import "../external/nouislider/nouislider.js"
 
 // Non-module dependencies (include via <script> element):
