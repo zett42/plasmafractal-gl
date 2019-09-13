@@ -34,7 +34,7 @@ const tabsComponent = Vue.component( "z42opt-tabs", {
 	inheritAttrs: false,		
 	props: {
 		id:       { type: String, required: true },
-		value:    { type: Object, required: true },
+		optData:  { type: Object, required: true },
 		optDesc:  { type: z42opt.Node, required: true }, 
 		optView:  { type: Object, required: true },
 		tabIndex: { type: Number, required: false, default: 0 },
@@ -75,7 +75,7 @@ const tabsComponent = Vue.component( "z42opt-tabs", {
 				<component
 					:is="contentComponentName( group )"
 					:id="childId( key )" 
-					:value="value"
+					:optData="optData"
 					:optDesc="optDesc"
 					:optView="group"
 					class="container px-0"
@@ -93,7 +93,7 @@ const containerComponent = Vue.component( "z42opt-container", {
 	inheritAttrs: false,
 	props: {
 		id:      { type: String, required: true },
-		value:   { type: Object, required: true },
+		optData: { type: Object, required: true },
 		optDesc: { type: z42opt.Node, required: true }, 
 		optView: { type: Object, required: true },
 	},
@@ -116,14 +116,14 @@ const containerComponent = Vue.component( "z42opt-container", {
 			return res;
 		},	
 		resolveValue( path ){
-			return _.get( this.value, path );
+			return _.get( this.optData, path );
 		},
 		isAttrTrue( optDescChild, attrName ){
 			const attr = optDescChild.$attrs[ attrName ];
 			if( typeof attr === "undefined" )
 				return true;
 			if( typeof attr === "function" )
-				return attr( this.value, this.optDesc );
+				return attr( this.optData, this.optDesc );
 			return Boolean( attr );
 		},
 		onModified( path, value ){
@@ -139,9 +139,11 @@ const containerComponent = Vue.component( "z42opt-container", {
 		<div>
 			<template v-for="basePath in optView.options">
 				<template v-for="opt in resolveOptDesc( basePath )">
-					<!-- Note: 'key' attribute required when using v-for with component (https://vuejs.org/v2/guide/list.html#v-for-with-a-Component) -->
-
+					
+					<!-- Transition when an options isRendered/isShown state changes.  -->
 					<transition name="z42opt-component-transition" mode="out-in">
+
+						<!-- Component for manipulating a single option value -->
 						<component :is="opt.node.$component" 
 							v-if="isAttrTrue( opt.node, 'isRendered' )" 
 							v-show="isAttrTrue( opt.node, 'isShown' )"

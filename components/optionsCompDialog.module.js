@@ -85,7 +85,7 @@ const optionsDialogComponent = Vue.component( "z42opt-dialog", {
 			<component 
 				:is="optView.component || 'z42opt-tabs'" 
 				:id="id" 
-				:value="optData" 
+				:optData="optData" 
 				:optDesc="optDesc" 
 				:optView="optView" 
 				:tabIndex.sync="tabIndex"
