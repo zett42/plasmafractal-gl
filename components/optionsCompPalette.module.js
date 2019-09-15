@@ -452,11 +452,11 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 			ctx.strokeStyle = "rgb( 255, 255, 255 )";
 			ctx.lineWidth   = window.devicePixelRatio;
 
+			ctx.clearRect( 0, 0, canvasElem.width, canvasElem.height );
+			ctx.fillRect( 0, 0, canvasElem.width, canvasElem.height );
+
 			const width      = canvasElem.width;
 			const height     = canvasElem.height - ctx.lineWidth * 2;
-
-			ctx.clearRect( 0, 0, width, height );
-			ctx.fillRect( 0, 0, width, height );
 
 			ctx.beginPath();
 
@@ -586,13 +586,18 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 				@input="onPaletteAttributeInput( 'easeFun', $event )"
 			/>
 			
-			<p  v-if="selectedHandleIndex === null"
+			<div  v-if="selectedHandleIndex === null"
 				class="text-info"
 				>
-				Click handle to <b>edit</b> properties.<br>
-				Double-click to <b>add</b> handle.<br>
-				Drag up/down or shift+click to <b>remove</b> handle.
-			</p>
+				<p>
+					Click handle to <b>edit</b> properties.<br>
+					Curve displays luminance. Change ease functions to modify curve shape.
+				</p>
+				<p>
+					Double-click to <b>add</b> handle.<br>
+					Drag up/down or shift+click to <b>remove</b> handle.
+				</p>
+			</div>
 		</b-form-group>
 	`,
 });	
