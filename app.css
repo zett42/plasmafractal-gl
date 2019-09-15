@@ -95,9 +95,20 @@ html, body {
 /* Align options dialog to left instead of center */
 #z42opt-dialog .modal-dialog {
 	margin-left: 10px;
-	margin-right: 0;
+	margin-right: 10px;
 	margin-top: 50px;
 }
+@media screen and (max-width: 768px) {
+	/* adjustments for more screen real-estate on mobile */
+	#z42opt-dialog .modal-dialog {
+		margin: 0;
+	}
+	#z42opt-dialog .modal-header,
+	#z42opt-dialog .modal-body {
+		padding: 8px;
+	}
+}
+
 .tab-pane {
 	padding-top: 1em;
 }
