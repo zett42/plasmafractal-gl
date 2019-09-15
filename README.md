@@ -57,7 +57,7 @@ Click an image to open PlasmaFractal preset.
   <img src="/screenshots/thumbs/PurpleWhiteSine2.jpg" alt="Purple/White Sine2" title="Purple/White Sine2" width="150">
 </a>
 <a href="https://zett42.github.io/PlasmaFractal2/?f=.2&o=10&g=.53&l=1.79&a=28&pg=0&icp=1&pbf=ios213&pfb=oc&ps=.5&pb=.75&pbg=000000&cp=0_ffffff_i2+.46_ffffff_io2+.51_808000_o3+.97_ffffff_l+.79_af9e23_ios&acp=1&ntde=10.&ntd=10.&prd=50.&ptde=6.5&ptd=13.5">
-  <img src="/screenshots/thumbs/ink.jpg" alt="Ink" title="Ink" width="150">
+  <img src="/screenshots/thumbs/Ink.jpg" alt="Ink" title="Ink" width="150">
 </a>
 <a href="https://zett42.github.io/PlasmaFractal2/?f=.25&o=12&g=.53&l=1.79&a=4.8&pg=0&icp=1&pbf=ios213&pfb=oc&ps=.5&pb=.75&pbg=000000&cp=0_ffffff_i2+.41_ffffff_io2+.43_3c0000_o3+.84_710000_l+.57_2e1701_ios&acp=0&ntde=10.&ntd=10.&prd=60.&ptde=10.&ptd=5.">
   <img src="/screenshots/thumbs/Dexter.jpg" alt="Dexter" title="Dexter" width="150">
