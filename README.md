@@ -135,6 +135,9 @@ This project uses the following open source libraries. Each library comes with i
   - Copyright OpenJS Foundation and other contributors <https://openjsf.org/>
   - Based on Underscore.js, copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors <http://underscorejs.org/>
   
+- [ResizeObserver polyfill](https://github.com/que-etc/resize-observer-polyfill)
+  - Copyright (c) 2016 Denis Rul
+  
 ## Special thanks to
 - [stackoverflow](https://stackoverflow.com)
   - So many helpful answers, too many to credit them individually. Kudos to this awesome community!
