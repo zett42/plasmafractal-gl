@@ -98,7 +98,7 @@ html, body {
 	margin-right: 10px;
 	margin-top: 50px;
 }
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 1024px) {
 	/* adjustments for more screen real-estate on mobile */
 	#z42opt-dialog .modal-dialog {
 		margin: 0;
