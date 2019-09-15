@@ -83,6 +83,12 @@ html, body {
 .modal-content {
 	background-color: rgba( 0, 0, 0, 0.7) !important;
 }
+/* Align options dialog to left instead of center */
+#z42opt-dialog .modal-dialog {
+	margin-left: 10px;
+	margin-right: 0;
+	margin-top: 50px;
+}
 .tab-pane {
 	padding-top: 1em;
 }
