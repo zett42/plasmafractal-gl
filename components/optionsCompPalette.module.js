@@ -27,6 +27,7 @@ SOFTWARE.
 import * as z42opt from "./optionsDescriptorValues.module.js"
 import * as z42color from "./color.module.js"
 import "../external/nouislider/nouislider.js"
+import '../external/ResizeObserver/ResizeObserver.js'
 
 // Non-module dependencies (include via <script> element):
 // "color.js" - for drawing palette
@@ -72,13 +73,16 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 		// from the outside and from the inside of this component.
 
 		const palette = makePaletteValid( this.value );
-	
+
+		const resizeObserver = new ResizeObserverPonyfill( this.onCanvasResize );
+		
 		// Define private variables of this component (non-reactive!)
 		privates.set( this, {
 			palette: palette,
 			currentMousePos: null,
 			slideStartMousePos: null,
 			slidingHandleElement: null,
+			resizeObserver: resizeObserver,
 		});
 
 		let sliderConfig = {
@@ -94,29 +98,47 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 
 		this.recreateSlider( sliderConfig );
 
-		this.updatePaletteCanvas();
+		this.updateCanvas();
+
+		resizeObserver.observe( document.getElementById( this.gradientCanvasId ) );
+		resizeObserver.observe( document.getElementById( this.easeFunCanvasId ) );
 
 		// If initial palette was not valid, send "fixed" palette back to parent.
 		if( ! _.isEqual( palette, this.value ) ){
 			this.emitPaletteInputEvent();
 		}
 	},
-	destroyed() {
+	beforeDestroy() {
+		const priv = privates.get( this );
+
 		// Remove global event listener in any case.
 		window.removeEventListener( "mousemove", this.onSlideMouseMove );
 		window.removeEventListener( "touchmove", this.onSlideTouchMove );
+
+		priv.resizeObserver.disconnect();
 	},
 	computed: {
-		canvasId()          { return this.id + "#canvas"; },
-		selectedColorId()   { return this.id + "#selectedColor"; },
-		selectedEaseFunId() { return this.id + "#selectedEaseFun"; },
-		label()   { return this.optDesc.$attrs.title ? this.optDesc.$attrs.title + ":" : undefined; },
-		labelFor(){	return this.optDesc.$attrs.title ? this.id : undefined; },
+		easeFunCanvasId()     { return this.id + "#easeFunCanvas"; },
+		gradientCanvasId()    { return this.id + "#gradientCanvas"; },
+		selectedColorId()     { return this.id + "#selectedColor"; },
+		selectedEaseFunId()   { return this.id + "#selectedEaseFun"; },
+		label()               { return this.optDesc.$attrs.title ? this.optDesc.$attrs.title + ":" : undefined; },
+		labelFor()            { return this.optDesc.$attrs.title ? this.id : undefined; },
 	},
 	methods: {
 		// Get the DOM element of the slider.
 		getSliderElement() {
 			return document.getElementById( this.id );			
+		},
+
+		getSliderWidth() {
+			console.debug("getSliderWidth:", getSliderElement().offsetWidth);
+			return getSliderElement().offsetWidth;
+		},
+
+		getEaseFunCanvasHeight() { 
+			console.debug("getEaseFunCanvasHeight:", document.getElementById( this.easeFunCanvasId ).offsetHeight);
+			return document.getElementById( this.easeFunCanvasId ).offsetHeight;
 		},
 
 		// (Re-)create slider and (re-) attach event listeners.
@@ -169,7 +191,7 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 					palette[ i ].pos = valuesRaw[ i ];
 				}
 
-				this.updatePaletteCanvas();
+				this.updateCanvas();
 
 				// According to Vue.js rules, this.value must not be modified directly.
 				// Instead emit changes as "input" event to make the component compatible with v-model.
@@ -309,10 +331,29 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 				const palette = privates.get( this ).palette;
 				palette[ this.selectedHandleIndex ][ name ] = _.cloneDeep( value );
 
-				this.updatePaletteCanvas();
+				this.updateCanvas();
 				this.emitPaletteInputEvent();
 			}
 		},
+
+		// Resize canvas internal size to actual display size of HTML element to avoid stretching of canvas image.
+		onCanvasResize( entries ) {
+			for( const entry of entries ) {
+				const rect = entry.contentRect;
+				if( entry.width !== rect.width || entry.height !== rect.height )
+				{
+					// Canvas uses physical coordinates, while rect is given in CSS coordinates. 
+					// Multiply with DPR to adjust for High-DPI devices and browser zoom.
+					entry.target.width  = rect.width  * window.devicePixelRatio;
+					entry.target.height = rect.height * window.devicePixelRatio;
+
+					this.updateCanvas({ 
+						isEaseFunCanvas : entry.target.id == this.easeFunCanvasId, 
+						isGradientCanvas: entry.target.id == this.gradientCanvasId, 
+					});
+				}
+			}
+		},	
 
 		// Get array of handle elements
 		handleElements() {
@@ -349,7 +390,7 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 
 			privates.get( this ).palette = newPalette;
 
-			this.updatePaletteCanvas();
+			this.updateCanvas();
 		},
 
 		// Remove given slider handle and emit input event.
@@ -384,24 +425,103 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 			this.$emit( "input", _.cloneDeep( palette ) );
 		},
 
-		// Draw the current palette into the canvas.
-		updatePaletteCanvas(){
+		// Update easeFunCanvas and/or gradientCanvas.
+		updateCanvas( update = { isEaseFunCanvas: true, isGradientCanvas: true } ){
 			const palette = privates.get( this ).palette;
-		
-			const canvasElem = document.getElementById( this.canvasId );
-			const width   = canvasElem.width;
-			const context = canvasElem.getContext( "2d" );
-			const imgData = context.createImageData( width, 1 );
-			const pixels  = new Uint32Array( imgData.data.buffer );
 
 			// Resolve ease function names to actual functions.
 			const paletteResolved = this.optDesc.$resolvePaletteEaseFunctions( palette );
+
+			if( update.isEaseFunCanvas )
+				this.updateEaseFunCanvas( paletteResolved );
+			if( update.isGradientCanvas )
+				this.updateGradientCanvas( paletteResolved );
+		},
+
+		// Draw a diagram of the palette ease functions into the canvas.
+		updateEaseFunCanvas( palette ){
+
+			// shallow clone is sufficient here, as we don't modify properties of array elements
+			const paletteSorted = [ ...palette ];
+			paletteSorted.sort( ( a, b ) => a.pos - b.pos );
+
+			const canvasElem = document.getElementById( this.easeFunCanvasId );
+			const ctx        = canvasElem.getContext( "2d" );
+
+			ctx.fillStyle   = "rgba( 0, 0, 0, 0.3 )";
+			ctx.strokeStyle = "rgb( 255, 255, 255 )";
+			ctx.lineWidth   = window.devicePixelRatio;
+
+			const width      = canvasElem.width;
+			const height     = canvasElem.height - ctx.lineWidth * 2;
+
+			ctx.clearRect( 0, 0, width, height );
+			ctx.fillRect( 0, 0, width, height );
+
+			ctx.beginPath();
+
+			const first = paletteSorted[ 0 ];
+			const last  = paletteSorted[ paletteSorted.length - 1 ];
+
+			const firstX = first.pos * width;
+			const lastX  = last.pos * width;
+
+			const distRight = width - lastX;
+
+			const firstY = height - luminance( first.color ) * height + ctx.lineWidth;
+			const lastY  = height - luminance( last.color )  * height + ctx.lineWidth;
+
+			if( firstX > 0 ){
+				// Draw clipped segment from left border to first handle.
+				drawEaseFunction( ctx, -distRight, firstX, 0, firstX, lastY, firstY, last.easeFun );
+			}
+
+			for( let i = 0; i < paletteSorted.length - 1; ++i ) {
+				const start = paletteSorted[ i ];
+				const end   = paletteSorted[ i + 1 ];
+
+				const startX = Math.trunc( start.pos * width );
+				const endX   = Math.trunc( end.pos   * width );
+
+				const startY = height - luminance( start.color ) * height + ctx.lineWidth;
+				const endY   = height - luminance( end.color )   * height + ctx.lineWidth;
+
+				// Draw full segment.
+				if( endX != startX ) {
+					drawEaseFunction( ctx, startX, endX, startX, endX, startY, endY, start.easeFun );
+				}
+				else {					
+					ctx.moveTo( startX, startY );
+					ctx.lineTo( startX, endY );
+				}
+			}
+
+			if( distRight > 0 ){
+				// Draw clipped segment from last handle to right border.
+				drawEaseFunction( ctx, lastX, lastX + firstX + distRight, lastX, width, lastY, firstY, last.easeFun );
+			}
+
+			ctx.stroke();
+		},
+
+		// Draw the current palette into the canvas.
+		updateGradientCanvas( palette ){
+	
+			const canvasElem = document.getElementById( this.gradientCanvasId );
+			const width   = canvasElem.width;
+			const height  = canvasElem.height;
+			const context = canvasElem.getContext( "2d" );
+			const imgData = context.createImageData( width, 1 );
+			const pixels  = new Uint32Array( imgData.data.buffer );
+			
+			// Fill buffer with a single line.
+			z42color.makePaletteMultiGradientRGBA( pixels, pixels.length, palette );
 		
-			// Note: drawing only a single horizontal line, which will be vertically stretched via CSS height
-			z42color.makePaletteMultiGradientRGBA( pixels, pixels.length, paletteResolved );
-		
-			context.putImageData( imgData, 0, 0 );	
-		},	
+			// Draw repeatedly to stretch vertically.
+			for( let y = 0; y < height; ++y ) {
+				context.putImageData( imgData, 0, y );
+			}
+		},
 	},
 	watch: {
 		value: {
@@ -430,10 +550,13 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 			:disabled="disabled"
 			>
 			<canvas 
-				:id="canvasId"
-				class="z42opt-palette-canvas"
-				width="1024"
-				height="1"
+				:id="easeFunCanvasId"
+				class="z42opt-palette-easefun-canvas"
+				>
+			</canvas>
+			<canvas 
+				:id="gradientCanvasId"
+				class="z42opt-palette-gradient-canvas"
 				>
 			</canvas>
 
@@ -516,6 +639,47 @@ function sortPaletteClone( palette ){
 
 function palettePositions( palette ){
 	return palette.map( item => item.pos );
+}
+
+//---------------------------------------------------------------------------------------------------
+
+function luminance( color ){
+	return ( 0.299 * color.r + 0.587 * color.g + 0.114 * color.b ) / 255;
+} 	
+
+//---------------------------------------------------------------------------------------------------
+
+function drawEaseFunction( ctx, xStart, xEnd, xClipMin, xClipMax, yStart, yEnd, easeFun ) {
+
+	xStart = Math.trunc( xStart );
+	xEnd   = Math.trunc( xEnd );
+	xClipMin = Math.trunc( xClipMin );
+	xClipMax = Math.trunc( xClipMax );
+
+	const iMax  = xClipMax - xClipMin;
+	const xOffs = xClipMin - xStart;
+
+	let x1 = xClipMin;
+	let y1 = easeFun( xOffs, yStart, yEnd - yStart, xEnd - xStart )
+	ctx.moveTo( x1, y1 );
+
+	for( let i = 1; i <= iMax; ++i ) {
+		const x2 = i + xClipMin;
+		const y2 = easeFun( i + xOffs, yStart, yEnd - yStart, xEnd - xStart );
+	
+		// To avoid aliasing in horizontal direction, draw curve segments only when Y changes or curve ends.
+		if( y2 != y1 || i >= iMax ) {
+			// Draw horizontal line for any x values we previously skipped.
+			if( x2 - x1 > 1 ) {
+				ctx.lineTo( x2 - 1, y1 );
+			}
+
+			// Draw possibly pitched line.
+			ctx.lineTo( x2, y2 );
+			x1 = x2;
+			y1 = y2;
+		}
+	}
 }
 
 //---------------------------------------------------------------------------------------------------

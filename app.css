@@ -41,11 +41,19 @@ html, body {
 .noUi-active .noUi-tooltip {
     display: block;
 }
-.z42opt-palette-canvas {
-	height: 40px;
-	margin: 10px 0 8px 0;
-	padding: 0 16px 0 16px;
+.z42opt-palette-easefun-canvas,
+.z42opt-palette-gradient-canvas {
+	padding-left:  16px;
+	padding-right: 16px;
 	width: 100%;
+}
+.z42opt-palette-easefun-canvas {
+	height:        60px;
+	margin-bottom: 5px;
+}
+.z42opt-palette-gradient-canvas {
+	height:        30px;
+	margin-bottom: 8px;
 }
 .z42opt-palette-slider {
 	margin: 0 16px 30px 16px;
@@ -57,6 +65,10 @@ html, body {
 .z42opt-palette-handle-selected {
 	border: 2px solid #000; /* improve visibility of the default outline */
 	background-color: #2A9FD6;
+}
+.z42opt-palette-handle-to-remove {
+	opacity: .25;
+	transition: opacity 125ms ease-out;
 }
 
 /* Transition when show state of components is toggled */
@@ -70,10 +82,7 @@ html, body {
 .z42opt-component-transition-leave-to {
 	opacity: 0;
 }
-.z42opt-palette-handle-to-remove {
-	opacity: .25;
-	transition: opacity 125ms ease-out;
-}
+
 
 /* Show bootstrap modal dialogs without darkening backdrop but still allow to dismiss dialog by clicking outside */
 .modal-backdrop {
