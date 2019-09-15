@@ -35,7 +35,7 @@ Click an image to open PlasmaFractal preset.
 <a href="https://zett42.github.io/PlasmaFractal2/?f=.14&o=11&g=.42&l=2.7&a=26.4&pbf=ioe2&pfb=ioe2&ps=.76&pb=1&pbg=000000&pg=0&icp=0&cp=&acp=0&prd=40.&ptde=15.&ptd=5.&ntde=5.&ntd=15.">
    <img src="/screenshots/thumbs/AbstractPaintings.jpg" alt="Abstract Paintings" title="Abstract Paintings" width="150" />
 </a>
-<a href="https://zett42.github.io/PlasmaFractal2/?f=.57&o=15&g=.5&l=2.25&a=4.19&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=0_1c008c_io2+.49_ff930f_io2+.55_000000_l+.43_fb0000_l+.31_000000_l&ntde=20.&ntd=10.&prd=40.&ptde=10.&ptd=5.">
+<a href="https://zett42.github.io/PlasmaFractal2/?f=.09&o=12&g=.57&l=2.13&a=5.5&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.14_000000_io2+.7_8a0000_l+.84_f0c000_l+.62_000000_l+.99_8a0000_ios+.77_ff0000_ios+.92_f90000_l&acp=0&ntde=10.&ntd=10.&prd=16.&ptde=10.&ptd=10">
    <img src="/screenshots/thumbs/Fiery.jpg" alt="Fiery" title="Fiery" width="150">
 </a>
 <a href="https://zett42.github.io/PlasmaFractal2/?f=1.5&o=4&g=.5&l=2&a=5&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.51_55f7ff_o3+.42_004548_i3+.6_004548_ios+.26_000000_ios+.76_000000_l&acp=1&ntde=10.&ntd=10.&prd=41.&ptde=10.&ptd=10.">
@@ -55,6 +55,36 @@ Click an image to open PlasmaFractal preset.
 </a>
 <a href="https://zett42.github.io/PlasmaFractal2/?f=.55&o=6&g=.46&l=2&a=5.56&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.77_ffffff_ios29+1_000000_io2+.47_8000ff_io2&ntde=3000&ntd=10000&prd=80000&ptde=10000&ptd=5000">
   <img src="/screenshots/thumbs/PurpleWhiteSine2.jpg" alt="Purple/White Sine2" title="Purple/White Sine2" width="150">
+</a>
+<a href="https://zett42.github.io/PlasmaFractal2/?f=.2&o=10&g=.53&l=1.79&a=28&pg=0&icp=1&pbf=ios213&pfb=oc&ps=.5&pb=.75&pbg=000000&cp=0_ffffff_i2+.46_ffffff_io2+.51_808000_o3+.97_ffffff_l+.79_af9e23_ios&acp=1&ntde=10.&ntd=10.&prd=50.&ptde=6.5&ptd=13.5">
+  <img src="/screenshots/thumbs/ink.jpg" alt="Ink" title="Ink" width="150">
+</a>
+<a href="https://zett42.github.io/PlasmaFractal2/?f=.25&o=12&g=.53&l=1.79&a=4.8&pg=0&icp=1&pbf=ios213&pfb=oc&ps=.5&pb=.75&pbg=000000&cp=0_ffffff_i2+.41_ffffff_io2+.43_3c0000_o3+.84_710000_l+.57_2e1701_ios&acp=0&ntde=10.&ntd=10.&prd=60.&ptde=10.&ptd=5.">
+  <img src="/screenshots/thumbs/Dexter.jpg" alt="Dexter" title="Dexter" width="150">
+</a>
+<a href="https://zett42.github.io/PlasmaFractal2/?f=.21&o=11&g=.5&l=2&a=5.1&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.47_000000_l+.48_b9faff_l+.48_000000_l&acp=1&ntde=1.&ntd=1.5&prd=3.&ptde=1.&ptd=1.5">
+  <img src="/screenshots/thumbs/Elektro.jpg" alt="Elektro" title="Elektro" width="150">
+</a>
+<a href="https://zett42.github.io/PlasmaFractal2/?f=.49&o=11&g=.5&l=2&a=7.4&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.47_000000_l+.48_b9faff_l+.48_000000_l+.56_dd2ff0_ios25+.87_000000_l+.05_000000_l+.07_1ab4ce_l+.09_000000_l&acp=1&ntde=3.&ntd=10.&prd=21.&ptde=10.&ptd=5.">
+  <img src="/screenshots/thumbs/Lines-n-clouds.jpg" alt="Lines and Clouds" title="Lines and Clouds" width="150">
+</a>
+<a href="https://zett42.github.io/PlasmaFractal2/?f=15&o=1&g=.4&l=2&a=3.3&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.47_000000_l+.5_77e0ff_l+.57_000000_l&acp=1&ntde=5.&ntd=10.&prd=30.&ptde=5.&ptd=10.">
+  <img src="/screenshots/thumbs/Maze.jpg" alt="The Maze" title="The Maze" width="150">
+</a>
+<a href="https://zett42.github.io/PlasmaFractal2/?f=.81&o=1&g=.44&l=1.96&a=9&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.5_000000_l+.5_86f0f0_l+.65_000000_o2+.65_24bfec_l&acp=1&ntde=10.&ntd=10.&prd=25.&ptde=10.&ptd=10.">
+  <img src="/screenshots/thumbs/Tapes.jpg" alt="Tapes" title="Tapes" width="150">
+</a>
+<a href="https://zett42.github.io/PlasmaFractal2/?f=.16&o=3&g=.5&l=6.11&a=4.4&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.2_6d0b86_ios213+.1_ffffff_io2+.62_ba0c9f_o2+.49_faa3f8_i2&acp=1&ntde=10.&ntd=10.&prd=30.&ptde=10.&ptd=10.">
+  <img src="/screenshots/thumbs/DirtyContrastOnWhite.jpg" alt="Dirty Contrast on White" title="Dirty Contrast on White" width="150">
+</a>
+<a href="https://zett42.github.io/PlasmaFractal2/?f=.47&o=7&g=.5&l=2.31&a=4.4&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.2_6d0b86_ios213+.1_ffffff_io2+.62_ba0c9f_o2+.49_faa3f8_i2&acp=1&ntde=10.&ntd=10.&prd=30.&ptde=10.&ptd=10.">
+  <img src="/screenshots/thumbs/SeethingOnWhite.jpg" alt="Seething Colors on White" title="Seething Colors on White" width="150">
+</a>
+<a href="https://zett42.github.io/PlasmaFractal2/?f=.55&o=15&g=.79&l=2&a=1.1&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.29_005662_l+0_000000_l+.69_ffae55_l+.76_000000_l+.63_000000_l&acp=0&ntde=0&ntd=10.&prd=120.&ptde=10.&ptd=5">
+  <img src="/screenshots/thumbs/GoldIslands.jpg" alt="Gold Islands" title="Gold Islands" width="150">
+</a>
+<a href="https://zett42.github.io/PlasmaFractal2/?f=.73&o=10&g=.68&l=1.86&a=1&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.23_000000_ioc+.13_ffffff_ios25+.42_cc092b_iob+.9_000000_l&acp=0&ntde=10.&ntd=10.&prd=30.&ptde=10.&ptd=10.">
+  <img src="/screenshots/thumbs/BlackWhiteRed.jpg" alt="Black/White/Red" title="Black/White/Red" width="150">
 </a>
 
 ## Credits
