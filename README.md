@@ -71,7 +71,7 @@ Click an image to open PlasmaFractal preset.
 <a href="https://zett42.github.io/PlasmaFractal2/?f=15&o=1&g=.4&l=2&a=3.3&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.47_000000_l+.5_77e0ff_l+.57_000000_l&acp=1&ntde=5.&ntd=10.&prd=30.&ptde=5.&ptd=10.">
   <img src="/screenshots/thumbs/Maze.jpg" alt="The Maze" title="The Maze" width="150">
 </a>
-<a href="https://zett42.github.io/PlasmaFractal2/?f=.81&o=1&g=.44&l=1.96&a=9&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.5_000000_l+.5_86f0f0_l+.65_000000_o2+.65_24bfec_l&acp=1&ntde=10.&ntd=10.&prd=25.&ptde=10.&ptd=10.">
+<a href="https://zett42.github.io/PlasmaFractal2/?f=.81&o=1&g=.44&l=1.96&a=9&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.5_000000_l+.5_86f0f0_l+.65_fdffff_o2+.65_000000_l&acp=1&ntde=10.&ntd=10.&prd=25.&ptde=10.&ptd=10.">
   <img src="/screenshots/thumbs/Tapes.jpg" alt="Tapes" title="Tapes" width="150">
 </a>
 <a href="https://zett42.github.io/PlasmaFractal2/?f=.16&o=3&g=.5&l=6.11&a=4.4&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.2_6d0b86_ios213+.1_ffffff_io2+.62_ba0c9f_o2+.49_faa3f8_i2&acp=1&ntde=10.&ntd=10.&prd=30.&ptde=10.&ptd=10.">
