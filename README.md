@@ -26,6 +26,12 @@ Multithreading:
 <p>
 Click an image to open PlasmaFractal preset.
 </p>
+<a href="https://zett42.github.io/PlasmaFractal2/?f=3.03&o=8&g=.4&l=2&a=2&pg=0&icp=0&pbf=i3&pfb=o3&ps=.5&pb=.75&pbg=000000&cp=&acp=0&ntde=3.&ntd=10.&prd=80.&ptde=10.&ptd=5.">
+   <img src="/screenshots/thumbs/freq2_oct8_gain0.4.jpg" alt="Classic Octaves 8" title="Classic Octaves 8" width="150" />
+</a>
+<a href="https://zett42.github.io/PlasmaFractal2/?f=10.01&o=1&g=.4&l=2&a=1.5&pg=0&icp=1&pbf=i3&pfb=o3&ps=.5&pb=.75&pbg=000000&cp=0_000000_i3+.5_77e6ee_o3&acp=1&ntde=3.&ntd=10.&prd=80.&ptde=10.&ptd=5.">
+   <img src="/screenshots/thumbs/freq10_oct1_gain0.4.jpg" alt="Classic Octaves 1" title="Classic Octaves 1" width="150" />
+</a>
 <a href="https://zett42.github.io/PlasmaFractal2/?f=.14&o=11&g=.42&l=2.7&a=26.4&pbf=ioe2&pfb=ioe2&ps=.76&pb=1&pbg=000000&pg=0&icp=0&cp=&acp=0&prd=40.&ptde=15.&ptd=5.&ntde=5.&ntd=15.">
    <img src="/screenshots/thumbs/AbstractPaintings.jpg" alt="Abstract Paintings" title="Abstract Paintings" width="150" />
 </a>
