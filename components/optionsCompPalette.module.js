@@ -463,7 +463,9 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 				@input="onPaletteAttributeInput( 'easeFun', $event )"
 			/>
 			
-			<p class="text-info">
+			<p  v-if="selectedHandleIndex === null"
+				class="text-info"
+				>
 				Click handle to <b>edit</b> properties.<br>
 				Double-click to <b>add</b> handle.<br>
 				Drag up/down or shift+click to <b>remove</b> handle.
