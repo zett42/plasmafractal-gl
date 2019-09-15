@@ -1,10 +1,25 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+// This version of the ResizeObserver has been slightly modified by zett42 so it can be imported 
+// in the browser as a native module.
+//
+// import './ResizeObserver.js'
+// let observer = new ResizeObserverPonyfill();
+//
+// Original code Copyright (c) 2016 Denis Rul
+// https://github.com/que-etc/resize-observer-polyfill
+//
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
     typeof define === 'function' && define.amd ? define(factory) :
-    (global.ResizeObserver = factory());
-}(this, (function () { 'use strict';
+    (global.ResizeObserverPonyfill = factory());
+}(typeof this !== 'undefined' ? this : self, (function () { 'use strict';
 
     /**
+	 *
      * A collection of shims that provide minimal functionality of the ES6 collections.
      *
      * These implementations are not meant to be used outside of the ResizeObserver
