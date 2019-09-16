@@ -103,9 +103,9 @@ html, body {
 	#z42opt-dialog .modal-dialog {
 		margin: 0;
 	}
-	#z42opt-dialog .modal-header,
-	#z42opt-dialog .modal-body {
-		padding: 8px;
+	#z42opt-dialog .modal-header {
+		padding-top: 8px;
+		padding-bottom: 8px;
 	}
 }
 
