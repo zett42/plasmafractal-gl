@@ -147,7 +147,9 @@ function createPermalink( optionsData, optionsDescriptor, url ) {
 	// Remove sub string after "#" and "?", if exists.
 	const baseUrl = url.split( "#" )[ 0 ].split( "?" )[ 0 ];
 
-	return baseUrl + "?" + urlParams;
+	// Append '#' because otherwise URL might end with '.' (because of the way how durations are serialized).
+	// '.' breaks the URL when pasted in some mail programs though.
+	return baseUrl + "?" + urlParams + "#";
 }	
 
 //================================================================================================
