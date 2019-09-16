@@ -95,6 +95,9 @@ Click an image to open PlasmaFractal preset.
 <a href="https://zett42.github.io/PlasmaFractal2/?f=.71&o=4&g=.5&l=2&a=5&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.6_62f8ff_l+.29_000000_i2+.69_000000_l+.55_62f8ff_l+.54_00bcc6_l+.61_00bcc6_o2&acp=1&ntde=10.&ntd=10.&prd=40.&ptde=10.&ptd=10.">
   <img src="/screenshots/thumbs/NeonTapes.jpg" alt="Neon Tapes" title="Neon Tapes" width="150">
 </a>
+<a href="https://zett42.github.io/PlasmaFractal2/?f=.55&o=15&g=.65&l=2&a=1.1&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.69_ffae55_l+.697_481700_o2+.68_481700_l+.226_00485e_l+.233_9bf5ff_l+.241_00485e_o2+.456_000000_i2+.896_000000_i2&acp=0&ntde=3.&ntd=7.&prd=85.&ptde=10.&ptd=5.#">
+  <img src="/screenshots/thumbs/CosmicEnergy.jpg" alt="Cosmic Energy" title="Cosmic Energy" width="150">
+</a>
 
 ## Credits
 This project uses the following open source libraries. Each library comes with its own license terms, which can be found in the source code included in this project.
