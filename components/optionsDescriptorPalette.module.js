@@ -39,7 +39,7 @@ class PaletteOpt extends z42opt.Option {
 		// Assign default descriptors for palette item data
 		if( ! attrs.posDesc ) {
 			this.$attrs.posDesc = new z42optVal.FloatOpt({ 
-				min: 0, max: 1, maxDecimals: 2,
+				min: 0, max: 1, maxDecimals: 3,
 				defaultVal: 0
 			});
 		}
