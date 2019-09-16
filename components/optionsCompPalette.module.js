@@ -36,7 +36,7 @@ import '../external/ResizeObserver/ResizeObserver.js'
 const privates = new WeakMap();
 
 // When a slider handle is moved up or down more than this distance, it will be removed.
-const mouseThresholdToRemoveHandle = 60;
+const mouseThresholdToRemoveHandle = 50;
 
 const cssClassHandleToRemove = "z42opt-palette-handle-to-remove";
 const cssClassHandleSelected = "z42opt-palette-handle-selected";
