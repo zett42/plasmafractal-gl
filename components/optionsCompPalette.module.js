@@ -340,12 +340,15 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 		onCanvasResize( entries ) {
 			for( const entry of entries ) {
 				const rect = entry.contentRect;
-				if( entry.width !== rect.width || entry.height !== rect.height )
-				{
-					// Canvas uses physical coordinates, while rect is given in CSS coordinates. 
-					// Multiply with DPR to adjust for High-DPI devices and browser zoom.
-					entry.target.width  = rect.width  * window.devicePixelRatio;
-					entry.target.height = rect.height * window.devicePixelRatio;
+
+				// Canvas uses physical coordinates, while rect is given in CSS coordinates. 
+				// Multiply with DPR to adjust for High-DPI devices and browser zoom.
+				const scaledWidth  = rect.width  * window.devicePixelRatio;
+				const scaledHeight = rect.height * window.devicePixelRatio;
+
+				if( entry.target.width !== scaledWidth || entry.target.height !== scaledHeight ){
+					entry.target.width  = scaledWidth;
+					entry.target.height = scaledHeight;
 
 					this.updateCanvas({ 
 						isEaseFunCanvas : entry.target.id == this.easeFunCanvasId, 
