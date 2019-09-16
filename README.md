@@ -92,6 +92,9 @@ Click an image to open PlasmaFractal preset.
 <a href="https://zett42.github.io/PlasmaFractal2/?f=.6&o=14&g=.75&l=1.3&a=3.2&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.39_ffffff_ios+.54_ffffff_ios+.16_ffcc00_ios+.3_ff8000_ios+.04_ff8000_ios+.21_fddd2b_ios&acp=0&ntde=3.&ntd=9.9&prd=60.&ptde=10.&ptd=5">
   <img src="/screenshots/thumbs/EggYolkFluid.jpg" alt="Egg Yolk Fluid - by Nickelartist" title="Egg Yolk Fluid - by Nickelartist" width="150">
 </a>
+<a href="https://zett42.github.io/PlasmaFractal2/?f=.71&o=4&g=.5&l=2&a=5&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.6_62f8ff_l+.29_000000_i2+.69_000000_l+.55_62f8ff_l+.54_00bcc6_l+.61_00bcc6_o2&acp=1&ntde=10.&ntd=10.&prd=40.&ptde=10.&ptd=10.">
+  <img src="/screenshots/thumbs/NeonTapes.jpg" alt="Neon Tapes" title="Neon Tapes" width="150">
+</a>
 
 ## Credits
 This project uses the following open source libraries. Each library comes with its own license terms, which can be found in the source code included in this project.
