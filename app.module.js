@@ -72,8 +72,8 @@ function createPlasmaThreadForCanvas( canvas, isPaused ) {
 			action   : "init",
 			isPaused : isPaused,
 			canvas   : offscreenCanvas,
-			width    : window.innerWidth,
-			height   : window.innerHeight,
+			width    : Math.round( window.innerWidth  * window.devicePixelRatio ),
+			height   : Math.round( window.innerHeight * window.devicePixelRatio ),
 			noiseSeed: Math.random(),
 			colorSeed: m_colorSeed,
 			options  : m_options
@@ -227,8 +227,8 @@ function initGui() {
 function resizePlasmaToWindowSize(){
 	const msg = { 
 		action: "resize", 
-		width : window.innerWidth, 
-		height: window.innerHeight 
+		width : Math.round( window.innerWidth  * window.devicePixelRatio ), 
+		height: Math.round( window.innerHeight * window.devicePixelRatio ),
 	};
 	m_fg.thread.postMessage( msg );
 	m_bg.thread.postMessage( msg );
