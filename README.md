@@ -154,5 +154,5 @@ This project uses the following open source libraries. Each library comes with i
 - [stackoverflow](https://stackoverflow.com)
   - So many helpful answers, too many to credit them individually. Kudos to this awesome community!
   
-- [Nickelartist](http://nickelartist.de/)
+- [Nickelartist](http://nickelartist.com/)
   - For many inspirations and some awesome presets.
