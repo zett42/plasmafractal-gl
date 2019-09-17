@@ -32,8 +32,10 @@ SOFTWARE.
 	
 	//----------------------------------------------------------------------------------------------------------------
 	/// Generate a grayscale fractal noise image.
+	/// noiseGenerators must be an array of NoiseGen instances for each octave.
 	
-	module.generateFractalNoiseImageUint16 = function( destPixelsUint16, width, height, outputRange, params )
+	module.generateFractalNoiseImageUint16 = function( 
+		destPixelsUint16, width, height, outputRange, params, noiseGenerators )
 	{
 		if( destPixelsUint16.length < width * height )
 		{
@@ -41,9 +43,9 @@ SOFTWARE.
 			return;
 		}
 		
-		const period = 1.0 / ( width > height ? width : height );
-		const scale = period * params.frequency;
-		const amp   = params.amplitude * outputRange;
+		const period    = 1.0 / ( width > height ? width : height );
+		const scale     = period * params.frequency;
+		const amplitude = params.amplitude * outputRange * 0.5;
 	
 		let i = 0;
 		for( let y = 0; y < height; ++y )
@@ -54,58 +56,34 @@ SOFTWARE.
 			{
 				const xn = x * scale;
 					
-				const value = module.fractalNoiseHighContrast( xn, yn, 0, params.octaves, params.gain, params.lacunarity );
+				const value = module.fractalNoise2d( 
+					xn, yn, params.octaves, params.gain, params.lacunarity, amplitude, noiseGenerators );
 				
-				destPixelsUint16[ i ] = module.mod( value * amp, outputRange );
+				destPixelsUint16[ i ] = module.mod( value, outputRange );
 			}
 		}
 	}	
 	
 	//----------------------------------------------------------------------------------------------------------------
-	/// Return fractal noise value in range of 0..1.
-
-	module.fractalNoise = function( x, y, z, octaves, gain, lacunarity ) 
+	/// Get fractal noise value at given coordinates. Result will be in range of -amplitude to amplitude (approx.)
+	/// noiseGenerators must be an array of NoiseGen instances for each octave.
+	
+	module.fractalNoise2d = function( x, y, octaves, gain, lacunarity, amplitude, noiseGenerators ) 
 	{
 		let res  = 0;  // result
 		let f    = 1;  // frequency  
-		let a    = 1;  // amplitude
-		let aSum = 0;  // amplitude sum
-
-		for( let i = 0; i < octaves; i++ )
-		{
-			// All noise functions return values in the range of -1 to 1. Normalize to 0..1.
-			let n = 0.5 + noise.perlin2( x * f, y * f ) * 0.5;
-			res += n * a;			
-			aSum += a;
-			a *= gain;
-			f *= lacunarity;
-		}
-		
-		return res / aSum;  // rescale back to 0..1
-	}	
-	
-	//----------------------------------------------------------------------------------------------------------------
-	/// Return fractal noise value in range of 0..1.
-	/// This function generates higher contrast output than fractalNoise() but values may occassionally 
-	/// be outside of 0..1 range!
-	
-	module.fractalNoiseHighContrast = function( x, y, z, octaves, gain, lacunarity ) 
-	{
-		let res  = 0;  // result
-		let f    = 1;  // frequency  
-		let a    = 1;  // amplitude
+		let a    = amplitude;  // amplitude
 
 		for( let i = 0; i < octaves; i++ )
 		{
 			// All noise functions return values in the range of -1 to 1.
-			let n = noise.perlin2( x * f, y * f );
+			let n = noiseGenerators[ i ].perlin2( x * f, y * f );
 			res += n * a;			
 			a *= gain;
 			f *= lacunarity;
 		}
 		
-		// scale to 0..1 (approx.)
-		return ( res + 1 ) * 0.5;  
+		return res;  
 	}	
 	
 	//----------------------------------------------------------------------------------------------------------------

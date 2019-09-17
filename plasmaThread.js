@@ -24,11 +24,12 @@ SOFTWARE.
 */
 
 self.importScripts( 
-	'external/perlin.js',
 	'external/mersennetwister/MersenneTwister.js',
 	'external/tinycolor/tinycolor.js',
+	'external/lodash/lodash.min.js',
 	'components/color.js', 
 	'components/easing.js', 
+	'components/noiseGen.js', 
 	'components/fractalNoise.js', 
 	'plasma.js' 
 );
@@ -76,11 +77,10 @@ self.onmessage = function( ev )
 
 function init( params )
 {
-	noise.seed( params.noiseSeed );
-
 	m_plasma = new z42Plasma({ 
 		colorSeed: params.colorSeed,
-		options  : params.options
+		noiseSeed: params.noiseSeed,
+		options  : params.options,
 	});
 	
 	m_canvas = params.canvas;
@@ -129,9 +129,7 @@ function animate()
 
 function reseed( noiseSeed )
 {
-	noise.seed( noiseSeed );
-	
-	m_plasma.generateNoiseImage();
+	m_plasma.reseed( noiseSeed );
 	
 	// Notify main thread that we are done.
 	self.postMessage({ action: "onreseedfinished" }); 

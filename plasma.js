@@ -64,6 +64,10 @@ class z42Plasma {
 
 		this._colorRnd = new MersenneTwister( Math.trunc( params.colorSeed * 0xFFFFFFFF ) );
 
+		this._noiseGenes = [];
+		this._noiseSeed = params.noiseSeed;
+		this._recreateNoiseGenerators();
+
 		// Generate initial palette.
 		this._generatePalette( this._startPalette, this._colorRnd.random() * 360 ); 
 		z42color.makePaletteGradientRGBA( this._grayScalePalette, 0, this._grayScalePalette.length, {r:0,g:0,b:0,a:1.0}, {r:255,g:255,b:255,a:1.0}, z42easing.linear );
@@ -77,12 +81,19 @@ class z42Plasma {
 
 	get options$noise()
 	{
-		return this._options.noise;
+		return _.cloneDeep( this._options.noise );
 	}
 
 	set options$noise( opt )
 	{
-		this._options.noise = opt;
+		const hasOctavesIncremented = this._options.noise.octaves < opt.octaves;
+
+		this._options.noise = _.cloneDeep( opt );
+
+		if( hasOctavesIncremented ){
+			this._recreateNoiseGenerators();
+		}
+
 		this.generateNoiseImage();
 	}
 
@@ -91,12 +102,12 @@ class z42Plasma {
 
 	get options$palette()
 	{
-		return this._options.palette;
+		return _.cloneDeep( this._options.palette );
 	}
 
 	set options$palette( opt )
 	{
-		this._options.palette = opt;
+		this._options.palette = _.cloneDeep( opt );
 
 		// (Re-)generate the palette without changing the current hue.
 		this._generatePalette( this._startPalette, this._paletteCurrentFirstHue );
@@ -111,7 +122,7 @@ class z42Plasma {
 
 	get options$paletteAnim()
 	{
-		return this._options.paletteAnim;
+		return _.cloneDeep( this._options.paletteAnim );
 	}
 
 	set options$paletteAnim( opt )
@@ -124,8 +135,17 @@ class z42Plasma {
 			this._paletteStartTime = performance.now() / 1000;
 		}
 		
-		this._options.paletteAnim = opt;
+		this._options.paletteAnim = _.cloneDeep( opt );
 		// Values will be used when drawing next animation frame.
+	}
+
+	//-------------------------------------------------------------------------------------------------------------------
+	// Recreate noise image with new seed.
+
+	reseed( seed ) {
+		this._noiseSeed = seed;
+		this._recreateNoiseGenerators();
+		this.generateNoiseImage();
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------
@@ -133,12 +153,14 @@ class z42Plasma {
 
 	resize( width, height )
 	{
-		this._width  = width;
-		this._height = height;
-		
-		this._plasmaPixels = new Uint16Array( new ArrayBuffer( this._width * this._height * Uint16Array.BYTES_PER_ELEMENT ) );
+		if( width !== this._width || height !== this._height ) {
+			this._width  = width;
+			this._height = height;
 
-		this.generateNoiseImage();
+			this._plasmaPixels = new Uint16Array( new ArrayBuffer( this._width * this._height * Uint16Array.BYTES_PER_ELEMENT ) );
+
+			this.generateNoiseImage();
+		}
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------
@@ -165,14 +187,35 @@ class z42Plasma {
 	{
 		const fracStartTime = performance.now();
 
-		z42fractalNoise.generateFractalNoiseImageUint16( this._plasmaPixels, this._width, this._height, this._currentPalette.length, this._options.noise ); 
+		z42fractalNoise.generateFractalNoiseImageUint16( 
+			this._plasmaPixels, this._width, this._height, this._currentPalette.length, 
+			this._options.noise, this._noiseGenes );
 
-		//console.debug( "Fractal generation took %d ms", performance.now() - fracStartTime );
+		console.debug( "Fractal generation took %d ms", performance.now() - fracStartTime );
 	}	
+
 
 	//===================================================================================================================
 	// Private methods
 	
+	// Create a number of differently seeded noise generators equal to the current number of octaves.
+	_recreateNoiseGenerators() {
+
+		const rnd = new MersenneTwister( Math.trunc( this._noiseSeed * 0xFFFFFFFF ) );	
+
+		for( let i = 0; i < this._options.noise.octaves; ++i ){
+			const derivedSeed = rnd.random();
+
+			const gen = this._noiseGenes[ i ];
+			if( gen ){
+				gen.seed = derivedSeed;
+			}
+			else {
+				this._noiseGenes[ i ] = new noise.NoiseGen( derivedSeed );
+			}
+		}
+	}
+
 	//-------------------------------------------------------------------------------------------------------------------
 	// Rotate and cross-fade the palette.
 
