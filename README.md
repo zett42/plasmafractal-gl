@@ -40,7 +40,7 @@ Animation
 <a href="https://zett42.github.io/PlasmaFractalGL/?f=.49&o=11&g=.5&l=2&a=7.4&n=p3&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.47_000000_l+.48_b9faff_l+.48_000000_l+.56_dd2ff0_ios25+.87_000000_l+.05_000000_l+.07_1ab4ce_l+.09_000000_l&acp=1&ntu=2&inm=1&ns=.02&ptde=10.&ptd=5.&ipr=0&prs=.1#">
   <img src="/screenshots/thumbs/Lines-n-clouds.jpg" alt="Lines and Clouds - by Nickelartist" title="Lines and Clouds - by Nickelartist" width="150">
 </a>
-<a href="https://zett42.github.io/PlasmaFractalGL/?f=.15&o=7&g=.55&l=2&a=8.1&n=p3&pg=0&icp=0&pbf=ios&pfb=ob&ps=.69&pb=1&pbg=000000&cp=0_000000_i2+.25_00bfff_o2+.5_000000_i2+.75_dc0000_o2&acp=0&ntu=1&inm=1&ns=.01&ptde=10.&ptd=10.&ipr=0&prs=.1#">
+<a href="https://zett42.github.io/PlasmaFractalGL/?f=.15&o=7&g=.55&l=2&a=5.6&n=p3&pg=0&icp=0&pbf=ios&pfb=ob&ps=.69&pb=1&pbg=000000&cp=0_000000_i2+.25_00bfff_o2+.5_000000_i2+.75_dc0000_o2&acp=0&ntu=1&inm=1&ns=.01&ptde=10.&ptd=10.&ipr=1&prs=.05#">
   <img src="/screenshots/thumbs/LavaLamp.jpg" alt="Lava Lamp" title="Lava Lamp" width="150">
 </a>
 
