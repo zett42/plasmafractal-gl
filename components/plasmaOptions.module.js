@@ -203,6 +203,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			maxDecimals: 2,
 			isSlow: true,
 			defaultVal: 0.05,
+			isRendered: options => options.noiseAnim.isNoiseMutation
 		}),
 		turbulence: new z42opt.FloatOpt({
 			shortKey: "ntu",
@@ -212,6 +213,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			maxDecimals: 2,
 			isSlow: true,
 			defaultVal: 1.85,
+			isRendered: options => options.noiseAnim.isNoiseMutation
 		}),
 	}),
 	paletteAnim: new z42opt.Node( {}, {

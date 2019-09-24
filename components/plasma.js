@@ -269,9 +269,16 @@ class z42Plasma {
 		gl.uniform1f( u_frequency, this._options.noise.frequency / 2.5 );         
 		gl.uniform1f( u_amplitude, this._options.noise.amplitude );         
 		gl.uniform1f( u_gain, this._options.noise.gain );              
-		gl.uniform1f( u_lacunarity, this._options.noise.lacunarity );        
-		gl.uniform1f( u_noiseSpeed, this._options.noiseAnim.noiseSpeed / 3 );        
-		gl.uniform1f( u_turbulence, this._options.noiseAnim.turbulence );
+		gl.uniform1f( u_lacunarity, this._options.noise.lacunarity );     
+		
+		if( this._options.noiseAnim.isNoiseMutation ) {
+			gl.uniform1f( u_noiseSpeed, this._options.noiseAnim.noiseSpeed / 3 );        
+			gl.uniform1f( u_turbulence, this._options.noiseAnim.turbulence );
+		}
+		else {
+			gl.uniform1f( u_noiseSpeed, 0 );        
+			gl.uniform1f( u_turbulence, 1.0 );
+		}
 		
 		if( this._options.paletteAnim.isRotaEnabled ) {
 			const sizeFactor = this._paletteTextureSize / 4096;
