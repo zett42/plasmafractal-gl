@@ -28,7 +28,10 @@ Animation
   - Note that the [old version of the PlasmaFractal](https://zett42.github.io/PlasmaFractal/) still works with Firefox!
   
 ### Preset Links
-stay tuned
+<a href="https://zett42.github.io/PlasmaFractalGL/?f=.09&o=12&g=.57&l=2.13&a=5.5&n=p3&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.149_000000_l+.7_8a0000_l+.845_f0c000_ios+.514_000000_i2+.99_8a0000_o2+.77_ff0000_ios+.92_f90000_l&acp=0&ntu=1.69&inm=1&ns=.03&ptde=10.&ptd=.1&ipr=0&prs=.1#">
+   <img src="/screenshots/thumbs/Fiery.jpg" alt="Fiery" title="Fiery" width="150">
+</a>
+
 
 ## Credits
 This project uses the following open source libraries. Each library comes with its own license terms, which can be found in the source code included in this project.
