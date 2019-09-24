@@ -260,7 +260,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 
 const optionsView = {
 	title: "PlasmaFractal Options",
-	moreInfoLinkUrl: "https://github.com/zett42/PlasmaFractal2",
+	moreInfoLinkUrl: "https://github.com/zett42/PlasmaFractalGL",
 	moreInfoLinkText: "GitHub Project",
 	
 	//Group components can be customized, this is the default:
