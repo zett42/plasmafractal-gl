@@ -1,4 +1,7 @@
 # PlasmaFractal
+
+<img src="/screenshots/thumbs/SeethingOnWhite.jpg" alt="Screenshot" title="Screenshot" width="150">
+
 Oldschool PlasmaFractal revival with Perlin Noise and WebGL.
 Fully customizable via dynamic VueJS based UI. 
 
