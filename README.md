@@ -46,7 +46,7 @@ Animation
 <a href="https://zett42.github.io/PlasmaFractalGL/?f=5.43&o=2&g=.55&l=3.7&a=3.8&n=v3&pg=0&icp=1&pbf=ios&pfb=ob&ps=.69&pb=1&pbg=000000&cp=0_000000_io2+.34_123538_io2+.715_000000_io4+.75_ffce5b_io2+.777_000000_l&acp=0&ntu=1&inm=1&ns=.09&ptde=10.&ptd=10.&ipr=0&prs=.1#">
   <img src="/screenshots/thumbs/GoldenLines.jpg" alt="Golden Lines" title="Golden Lines" width="150">
 </a>
-<a href="?f=.14&o=5&g=.55&l=3.7&a=4.9&n=c3&pg=0&icp=1&pbf=ios&pfb=ob&ps=.69&pb=1&pbg=000000&cp=0_000000_io2+.34_2e1746_io2+.715_000000_io4+.75_ffce5b_io2+.777_000000_l&acp=0&ntd=6.&ntu=1.83&prd=120.&ptde=10.&ptd=10.#">
+<a href="https://zett42.github.io/PlasmaFractalGL/?f=.14&o=5&g=.55&l=3.7&a=4.9&n=c3&pg=0&icp=1&pbf=ios&pfb=ob&ps=.69&pb=1&pbg=000000&cp=0_000000_io2+.34_2e1746_io2+.715_000000_io4+.75_ffce5b_io2+.777_000000_l&acp=0&ntd=6.&ntu=1.83&prd=120.&ptde=10.&ptd=10.#">
   <img src="/screenshots/thumbs/GoldenCircles.jpg" alt="Golden Circles" title="Golden Circles" width="150">
 </a>
 
