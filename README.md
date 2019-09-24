@@ -31,7 +31,18 @@ Animation
 <a href="https://zett42.github.io/PlasmaFractalGL/?f=.09&o=12&g=.57&l=2.13&a=5.5&n=p3&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.149_000000_l+.7_8a0000_l+.845_f0c000_ios+.514_000000_i2+.99_8a0000_o2+.77_ff0000_ios+.92_f90000_l&acp=0&ntu=1.69&inm=1&ns=.03&ptde=10.&ptd=.1&ipr=0&prs=.1#">
    <img src="/screenshots/thumbs/Fiery.jpg" alt="Fiery" title="Fiery" width="150">
 </a>
-
+<a href="https://zett42.github.io/PlasmaFractalGL/?f=.47&o=7&g=.5&l=2.31&a=4.4&n=p3&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.2_6d0b86_ios213+.1_ffffff_io2+.62_ba0c9f_o2+.49_faa3f8_i2&acp=1&ntu=2.23&inm=1&ns=.03&ptde=10.&ptd=10.&ipr=0&prs=.1#">
+  <img src="/screenshots/thumbs/DirtyContrastOnWhite.jpg" alt="Dirty Contrast on White - by Nickelartist" title="Dirty Contrast on White - by Nickelartist" width="150">
+</a>
+<a href="https://zett42.github.io/PlasmaFractalGL/?f=.94&o=4&g=.58&l=2&a=3.2&n=p3&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.6_62f8ff_l+.29_000000_i2+.835_000000_l+.55_62f8ff_l+.54_00bcc6_l+.61_00bcc6_o2&acp=1&ntd=5.4&ntu=2.22&prd=120.&ptde=10.&ptd=10.#">
+  <img src="/screenshots/thumbs/NeonTapes.jpg" alt="Neon Tapes" title="Neon Tapes" width="150">
+</a>
+<a href="https://zett42.github.io/PlasmaFractalGL/?f=.49&o=11&g=.5&l=2&a=7.4&n=p3&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.47_000000_l+.48_b9faff_l+.48_000000_l+.56_dd2ff0_ios25+.87_000000_l+.05_000000_l+.07_1ab4ce_l+.09_000000_l&acp=1&ntu=2&inm=1&ns=.02&ptde=10.&ptd=5.&ipr=0&prs=.1#">
+  <img src="/screenshots/thumbs/Lines-n-clouds.jpg" alt="Lines and Clouds - by Nickelartist" title="Lines and Clouds - by Nickelartist" width="150">
+</a>
+<a href="https://zett42.github.io/PlasmaFractalGL/?f=.15&o=7&g=.55&l=2&a=8.1&n=p3&pg=0&icp=0&pbf=ios&pfb=ob&ps=.69&pb=1&pbg=000000&cp=0_000000_i2+.25_00bfff_o2+.5_000000_i2+.75_dc0000_o2&acp=0&ntu=1&inm=1&ns=.01&ptde=10.&ptd=10.&ipr=0&prs=.1#">
+  <img src="/screenshots/thumbs/LavaLamp.jpg" alt="Lava Lamp" title="Lava Lamp" width="150">
+</a>
 
 ## Credits
 This project uses the following open source libraries. Each library comes with its own license terms, which can be found in the source code included in this project.
