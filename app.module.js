@@ -26,7 +26,7 @@ SOFTWARE.
 // Main entry point
 //===================================================================================================================
 
-import * as plasmaOpt from "./plasmaOptions.module.js"
+import * as plasmaOpt from "./components/plasmaOptions.module.js"
 import * as z42optUtil from "./components/optionsUtils.module.js"
 import "./components/optionsCompDialog.module.js"
 import "./components/optionsCompValue.module.js"
@@ -34,21 +34,10 @@ import "./components/optionsCompPalette.module.js"
 
 const m_options = z42optUtil.mergeDefaultsWithUrlParams( plasmaOpt.optionsDescriptor, window.location.search );
 
-const m_colorSeed = Math.random();
+const m_canvas = document.getElementById( "plasmaCanvas" );
+const m_thread = createPlasmaThreadForCanvas( m_canvas );
 
 let m_optionsButtonFadeoutTimer = null;
-
-// Foreground objects
-let m_fg = { canvas : document.getElementById( "canvas1" ) };
-// Background objects
-let m_bg = { canvas : document.getElementById( "canvas2" ) };
-
-// Create threads for rendering plasma.
-m_fg.thread = createPlasmaThreadForCanvas( m_fg.canvas, false );
-m_bg.thread = createPlasmaThreadForCanvas( m_bg.canvas, true );
-
-// Set timeout for first canvas fade animation.
-setTimeout( initCanvasAnimation, m_options.noiseAnim.transitionDelay * 1000 );
 
 const m_app = initGui();
 
@@ -56,11 +45,8 @@ const m_app = initGui();
 // Functions
 //===================================================================================================================
 
-function createPlasmaThreadForCanvas( canvas, isPaused ) {
-	let thread = new Worker( "./plasmaThread.js" );
-
-	// Set callback to handle messages from worker thread.
-	thread.addEventListener( "message", onPlasmaThreadMessage );
+function createPlasmaThreadForCanvas( canvas ) {
+	let thread = new Worker( "./components/plasmaThread.js" );
 
 	// Create an offscreen canvas, as regular canvas is bound to DOM and cannot be passed to web worker.
 	const offscreenCanvas = canvas.transferControlToOffscreen();
@@ -70,74 +56,18 @@ function createPlasmaThreadForCanvas( canvas, isPaused ) {
 	thread.postMessage(
 		{
 			action   : "init",
-			isPaused : isPaused,
+			isPaused : false,
 			canvas   : offscreenCanvas,
 			width    : Math.round( window.innerWidth  * window.devicePixelRatio ),
 			height   : Math.round( window.innerHeight * window.devicePixelRatio ),
 			noiseSeed: Math.random(),
-			colorSeed: m_colorSeed,
+			colorSeed: Math.random(),
 			options  : m_options
 		},
 		[ offscreenCanvas ]   // transfer ownership of offscreenCanvas to thread
 	);
 
 	return thread;
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
-function onPlasmaThreadMessage( ev ) {
-	
-	//console.debug( "Message from plasmaThread:", ev );
-
-	switch ( ev.data.action ) {
-		case "onreseedfinished": {
-			// Transition to newly created fractal.
-			setTimeout( startCanvasTransition, m_options.noiseAnim.transitionDelay * 1000 );
-			break;
-		}
-	}
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
-function initCanvasAnimation() {
-
-	setCanvasTransitionDuration( m_options.noiseAnim.transitionDuration );
-
-	// Set callback to be notified when CSS transition has ended.
-	m_fg.canvas.addEventListener( "transitionend", () => {
-
-		// Swap foreground and background objects.
-		[ m_fg, m_bg ] = [ m_bg, m_fg ];
-
-		// Pause the animation of the new background thread as its canvas is invisible anyway.
-		m_bg.thread.postMessage( { action: "pause" } );
-
-		// Start to calculate new fractal image in background thread.
-		// We will get notified by onPlasmaThreadMessage() when this is done.
-		m_bg.thread.postMessage( { action: "reseed", noiseSeed: Math.random() } );
-	});
-
-	startCanvasTransition();
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
-function setCanvasTransitionDuration( duration ) {
-	m_bg.canvas.style.transitionDuration = duration.toString() + "s";
-	m_fg.canvas.style.transitionDuration = duration.toString() + "s";
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-// Start CSS transition animation (configured through CSS 'transition' attribute).
-
-function startCanvasTransition() {
-	// Wake the background thread up because its canvas will be visible soon.
-	m_bg.thread.postMessage( { action: "start" } );
-
-	m_fg.canvas.style.opacity = 0;
-	m_bg.canvas.style.opacity = 1.0;
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -160,21 +90,8 @@ function initGui() {
 			onModified( event ) {
 				_.set( m_options, event.path, event.value );
 
-				const groupName = event.path.split( "." )[ 0 ];		
-				switch( groupName ){
-					case "noise":
-						// Changing noise options is computation-heavy. Using debounced function we make sure 
-						// they are not modified too frequently, which would block the threads. 
-						setPlasmaOptionsDebounced( groupName, m_options[ groupName ] );
-						break;
-					case "palette": 
-					case "paletteAnim": 
-						setPlasmaOptions( groupName, m_options[ groupName ] ); 
-						break;
-					case "noiseAnim": 
-						setNoiseAnimOptions( m_options[ groupName ] );
-						break;
-				}
+				const groupName = event.path.split( "." )[ 0 ];
+				setPlasmaOptions( groupName, m_options[ groupName ] ); 
 			},
 		},
 		// TIP: Install VSCode "Comment tagged templates" extensions for syntax highlighting of template.
@@ -214,7 +131,7 @@ function initGui() {
 	document.addEventListener( "keydown", onKeyDown );
 
 	// Toggle fullscreen by double-click on canvas.
-	m_fg.canvas.addEventListener( "dblclick", toggleFullscreen );
+	m_canvas.addEventListener( "dblclick", toggleFullscreen );
 
 	// To work around blurry popup windows when browser zoom != 100%. Popper is used by Bootstrap.
 	Popper.Defaults.modifiers.computeStyle.gpuAcceleration = false;
@@ -225,36 +142,24 @@ function initGui() {
 //-------------------------------------------------------------------------------------------------------------------
 
 function resizePlasmaToWindowSize(){
-	const msg = { 
+	m_thread.postMessage({ 
 		action: "resize", 
 		width : Math.round( window.innerWidth  * window.devicePixelRatio ), 
 		height: Math.round( window.innerHeight * window.devicePixelRatio ),
-	};
-	m_fg.thread.postMessage( msg );
-	m_bg.thread.postMessage( msg );
+	});
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
 function setPlasmaOptions( groupName, value ){
-	//console.debug("setPlasmaOpt");
-
-	const msg = {
+	m_thread.postMessage({
 		action: "setOptions",
 		groupName: groupName,
 		value: value
-	};
-	m_fg.thread.postMessage( msg );
-	m_bg.thread.postMessage( msg );
+	});
 }
 
 const setPlasmaOptionsDebounced = _.debounce( setPlasmaOptions, 150 ); //, { leading: true, trailing: false } );
-
-//-------------------------------------------------------------------------------------------------------------------
-
-function setNoiseAnimOptions( options ){
-	setCanvasTransitionDuration( options.transitionDuration );
-}
 
 //-------------------------------------------------------------------------------------------------------------------
 

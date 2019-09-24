@@ -23,8 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. 
 */
 
-import * as z42opt from './components/optionsDescriptorValues.module.js'
-import * as z42pal from './components/optionsDescriptorPalette.module.js'
+import * as z42opt from './optionsDescriptorValues.module.js'
+import * as z42pal from './optionsDescriptorPalette.module.js'
 
 //------------------------------------------------------------------------------------------------
 // Ease functions from 'z42ease.js' to use (excluded some which doesn't look good).
@@ -65,12 +65,24 @@ const paletteEaseFunctions = {
 	inOutBounce  : { shortKey: "iob"   , title: "Bounce [in/out]"               },
 };
 
+const noiseFunctions = {
+	perlin3D   : { shortKey: "p3", title: "Perlin 3D" },
+	value3D    : { shortKey: "v3", title: "Value 3D" },
+	cellular3D : { shortKey: "c3", title: "Cellular 3D" },
+};
+
 //------------------------------------------------------------------------------------------------
 // Describes all available options, e. g. default values, constraints, mapping to URL params, etc.
 // It does NOT store actual option values!
 
 const optionsDescriptor = new z42opt.Node( {}, {
 	noise: new z42opt.Node( {}, {
+		noiseFunction: new z42opt.EnumOpt({
+			shortKey: "n",
+			title: "Noise function",
+			values: noiseFunctions,
+			defaultVal: "perlin3D",
+		}),
 		frequency: new z42opt.FloatOpt({ 
 			shortKey: "f",
 			title: "Frequency",
@@ -86,7 +98,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			title: "Octaves",
 			min: 1,
 			max: 15,
-			defaultVal: 5,
+			defaultVal: 10,
 		}),
 		gain: new z42opt.FloatOpt({
 			shortKey: "g",
@@ -154,7 +166,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			min: 0,
 			max: 1,
 			maxDecimals: 2,
-			defaultVal: 0.75,
+			defaultVal: 1.0,
 			isRendered: options => ! options.palette.isCustom && ! options.palette.isGrayScale,
 		}),
 		bgColor: new z42opt.ColorOpt({
@@ -178,37 +190,45 @@ const optionsDescriptor = new z42opt.Node( {}, {
 		}),		
 	}),
 	noiseAnim: new z42opt.Node( {}, {
-		transitionDelay: new z42opt.DurationOpt({
-			shortKey: "ntde",
-			title: "Noise transition delay",
-			min: 0,
-			max: 30,
-			displayUnit: "s",
-			maxDecimals: 1,
-			isSlow: true,
-			defaultVal: 3,
+		isNoiseMutation: new z42opt.BoolOpt({
+			shortKey: "inm",
+			title: "Mutate noise",
+			defaultVal: true,
 		}),
-		transitionDuration: new z42opt.DurationOpt({
-			shortKey: "ntd",
-			title: "Noise transition duration",
-			min: 0.1,
-			max: 30,
-			displayUnit: "s",
-			maxDecimals: 1,
+		noiseSpeed: new z42opt.FloatOpt({
+			shortKey: "ns",
+			title: "Noise mutation speed",
+			min: 0,
+			max: 1,
+			maxDecimals: 2,
 			isSlow: true,
-			defaultVal: 10,
+			defaultVal: 0.05,
+		}),
+		turbulence: new z42opt.FloatOpt({
+			shortKey: "ntu",
+			title: "Noise turbulence",
+			min: 1.0,
+			max: 2.5,
+			maxDecimals: 2,
+			isSlow: true,
+			defaultVal: 1.85,
 		}),
 	}),
 	paletteAnim: new z42opt.Node( {}, {
-		rotaDuration: new z42opt.DurationOpt({
-			shortKey: "prd",
-			title: "Palette rotation duration",
-			min: 2,
-			max: 120,
-			displayUnit: "s",
-			maxDecimals: 0,
+		isRotaEnabled: new z42opt.BoolOpt({
+			shortKey: "ipr",
+			title: "Rotate palette",
+			defaultVal: false,
+		}),		
+		rotaSpeed: new z42opt.FloatOpt({
+			shortKey: "prs",
+			title: "Palette rotation speed",
+			min: 0,
+			max: 1,
+			maxDecimals: 2,
 			isSlow: true,
-			defaultVal: 80,
+			defaultVal: 0.1,
+			isRendered: options => options.paletteAnim.isRotaEnabled,
 		}),
 		transitionDelay: new z42opt.DurationOpt({
 			shortKey: "ptde",
@@ -259,7 +279,7 @@ const optionsView = {
 			title: "Animation",
 
 			// This creates a flat view of the palette and noise anim options:
-			options: [ "paletteAnim", "noiseAnim" ],
+			options: [ "noiseAnim", "paletteAnim" ],
 
 			/* This would create nested tabs instead:
 			groups: {

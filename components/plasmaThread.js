@@ -24,31 +24,28 @@ SOFTWARE.
 */
 
 self.importScripts( 
-	'external/mersennetwister/MersenneTwister.js',
-	'external/tinycolor/tinycolor.js',
-	'external/lodash/lodash.min.js',
-	'components/color.js', 
-	'components/easing.js', 
-	'components/noiseGen.js', 
-	'components/fractalNoise.js', 
+	'../external/mersennetwister/MersenneTwister.js',
+	'../external/tinycolor/tinycolor.js',
+	'../external/lodash/lodash.min.js',
+	'color.js', 
+	'easing.js', 
+	'noiseGen.js', 
+	'fractalNoise.js', 
+	'glUtils.js', 
+	'glNoise.js', 
+	'glFractalNoise.js', 
 	'plasma.js' 
 );
 
 let m_plasma = null;
-
 let m_canvas = null;
-let m_context = null;
-let m_contextImageData = null;
-let m_contextPixels = null;
-
 let m_isPaused = false;
 
 const m_ndebug = true;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-self.onmessage = function( ev ) 
-{
+self.onmessage = function( ev ) {
 	m_ndebug || console.debug( "z42plasmaThread: Message received: ", ev );
 
 	switch( ev.data.action )
@@ -75,60 +72,47 @@ self.onmessage = function( ev )
 
 //-------------------------------------------------------------------------------------------------------------------
 
-function init( params )
-{
+function init( params ) {
+	m_canvas = params.canvas;
+
 	m_plasma = new z42Plasma({ 
+		canvas   : m_canvas,
 		colorSeed: params.colorSeed,
 		noiseSeed: params.noiseSeed,
 		options  : params.options,
+		width    : params.width,
+		height   : params.height,
 	});
 	
-	m_canvas = params.canvas;
-	m_context = m_canvas.getContext('2d');
-
-	resize( params.width, params.height );
-	
 	m_isPaused = params.isPaused;
-	if( ! m_isPaused )
-	{
+	if( ! m_isPaused ) {
 		animate();
 	}
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-function resize( width, height ) 
-{
+function resize( width, height ) {
 	if( width == m_canvas.width && height == m_canvas.height )
 		return;
-	
-	m_canvas.width  = width;
-	m_canvas.height = height;			
-
-	m_contextImageData = m_context.createImageData( width, height );
-	m_contextPixels = new Uint32Array( m_contextImageData.data.buffer );
 	
 	m_plasma.resize( width, height );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-function animate() 
-{
+function animate() {
 	if( m_isPaused )
 		return;
 	
-	m_plasma.drawAnimationFrame( m_contextPixels );
+	m_plasma.drawAnimationFrame();
 
-	m_context.putImageData( m_contextImageData, 0, 0 );	
-	
 	self.requestAnimationFrame( animate );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-function reseed( noiseSeed )
-{
+function reseed( noiseSeed ) {
 	m_plasma.reseed( noiseSeed );
 	
 	// Notify main thread that we are done.

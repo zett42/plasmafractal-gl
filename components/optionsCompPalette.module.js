@@ -132,12 +132,10 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 		},
 
 		getSliderWidth() {
-			console.debug("getSliderWidth:", getSliderElement().offsetWidth);
 			return getSliderElement().offsetWidth;
 		},
 
 		getEaseFunCanvasHeight() { 
-			console.debug("getEaseFunCanvasHeight:", document.getElementById( this.easeFunCanvasId ).offsetHeight);
 			return document.getElementById( this.easeFunCanvasId ).offsetHeight;
 		},
 

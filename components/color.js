@@ -135,10 +135,47 @@ SOFTWARE.
 		{
 			outPaletteUint32[ i ] = module.blendColorRGBA_Uint32( inFirstPaletteUint32[ i ], inSecondPaletteUint32[ i ], alphaFloat );
 		}		
-	}		
+	}
+
+	//----------------------------------------------------------------------------------------------------------------
+	/// Blend two palettes definitions (inFirstPalette, inSecondPalette) and store the result in another 
+	/// palette def (outPalette). 
+	/// Alpha must be in the 0..1 range.
+
+	module.blendPaletteDef = function( inFirstPalette, inSecondPalette, alphaFloat )
+	{
+		if( inFirstPalette.length != inSecondPalette.length )
+		{
+			console.assert( false, "Palette arguments must have same size" );
+			return null;
+		}
+
+		let result = _.cloneDeep( inSecondPalette );
+		
+		for( let i = 0; i < inFirstPalette.length; ++i )
+		{
+			result[ i ].color = module.blendColorRGBA( 
+				inFirstPalette[ i ].color, inSecondPalette[ i ].color, alphaFloat );
+		}		
+
+		return result;
+	}
 	
 	//----------------------------------------------------------------------------------------------------------------
-	/// Blend two colors and return the result. Alpha must be in the 0..1 range.
+	/// Blend two RGB color objects and return the result. Alpha must be in the 0..1 range.
+	
+	module.blendColorRGBA = function( c1, c2, alphaFloat )
+	{
+		return {
+			r: Math.round( c1.r + ( c2.r - c1.r ) * alphaFloat ),
+			g: Math.round( c1.g + ( c2.g - c1.g ) * alphaFloat ),
+			b: Math.round( c1.b + ( c2.b - c1.b ) * alphaFloat ),
+			a: Math.round( c1.a + ( c2.a - c1.a ) * alphaFloat ),
+		}
+	}	
+	
+	//----------------------------------------------------------------------------------------------------------------
+	/// Blend two RGB colors in Uint32 format and return the result. Alpha must be in the 0..1 range.
 	
 	module.blendColorRGBA_Uint32 = function( color1Uint32, color2Uint32, alphaFloat )
 	{
