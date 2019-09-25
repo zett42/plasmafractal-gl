@@ -49,6 +49,9 @@ Animation
 <a href="https://zett42.github.io/plasmafractal-gl/?f=.14&o=5&g=.55&l=3.7&a=4.9&n=c3&pg=0&icp=1&pbf=ios&pfb=ob&ps=.69&pb=1&pbg=000000&cp=0_000000_io2+.34_2e1746_io2+.715_000000_io4+.75_ffce5b_io2+.777_000000_l&acp=0&ntd=6.&ntu=1.83&prd=120.&ptde=10.&ptd=10.#">
   <img src="/screenshots/thumbs/GoldenCircles.jpg" alt="Golden Circles" title="Golden Circles" width="150">
 </a>
+<a href="https://zett42.github.io/plasmafractal-gl/?n=c3&f=.46&o=7&g=.58&l=2&a=1&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=1&pbg=000000&cp=.898_000000_l+.292_91ffff_o5+.192_000000_i5+.442_000000_i2+.663_00ffa2_o2&acp=0&inm=1&ns=.05&ntu=1.85&ipr=0&prs=.1&ptde=10.&ptd=5.#">
+  <img src="/screenshots/thumbs/Cellular1.jpg" alt="Cellular" title="Cellular" width="150">
+</a>
 
 ## Credits
 This project uses the following open source libraries. Each library comes with its own license terms, which can be found in the source code included in this project.
