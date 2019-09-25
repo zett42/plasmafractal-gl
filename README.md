@@ -56,24 +56,24 @@ Animation
 ## Credits
 This project uses the following open source libraries. Each library comes with its own license terms, which can be found in the source code included in this project.
 
+- [Wombat](https://github.com/BrianSharpe/Wombat) - An efficient texture-free GLSL procedural noise library
+  - by Brian Sharpe
+    - http://briansharpe.wordpress.com
+    - https://github.com/BrianSharpe
+    
 - [noisejs](https://github.com/josephg/noisejs) - A speed-improved perlin and simplex noise algorithms for 2D. 
   - Based on example code by Stefan Gustavson (stegu@itn.liu.se). 
   - Optimisations by Peter Eastman (peastman@drizzle.stanford.edu). 
   - Better rank ordering method by Stefan Gustavson in 2012. 
   - Converted to Javascript by Joseph Gentle.
-  
-- [Wombat](https://github.com/BrianSharpe/Wombat) - An efficient texture-free GLSL procedural noise library
-  - by Brian Sharpe
-    - http://briansharpe.wordpress.com
-    - https://github.com/BrianSharpe
+ 
+- [Vue.js](https://vuejs.org/)
+  - Copyright (c) 2013-present, Yuxi (Evan) You 
 
 - [Bootstrap](https://getbootstrap.com/) 
   - Copyright (c) 2011-2019 Twitter, Inc.
   - Copyright (c) 2011-2019 The Bootstrap Authors
-  
-- [Vue.js](https://vuejs.org/)
-  - Copyright (c) 2013-present, Yuxi (Evan) You 
-  
+
 - [Bootstrap-Vue](https://bootstrap-vue.js.org/)
   - Copyright (c) 2016-2019 - BootstrapVue
   
