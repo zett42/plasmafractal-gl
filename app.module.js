@@ -26,6 +26,7 @@ SOFTWARE.
 // Main entry point
 //===================================================================================================================
 
+import * as z42plasma from "./components/plasma.module.js"
 import * as plasmaOpt from "./components/plasmaOptions.module.js"
 import * as z42optUtil from "./components/optionsUtils.module.js"
 import "./components/optionsCompDialog.module.js"
@@ -35,42 +36,25 @@ import "./components/optionsCompPalette.module.js"
 const m_options = z42optUtil.mergeDefaultsWithUrlParams( plasmaOpt.optionsDescriptor, window.location.search );
 
 const m_canvas = document.getElementById( "plasmaCanvas" );
-const m_thread = createPlasmaThreadForCanvas( m_canvas );
+
+const m_plasma = new z42plasma.PlasmaFractal2D({ 
+	canvas   : m_canvas,
+	colorSeed: Math.random(),
+	noiseSeed: Math.random(),
+	options  : m_options,
+	width    : Math.round( window.innerWidth  * window.devicePixelRatio ),
+	height   : Math.round( window.innerHeight * window.devicePixelRatio ),
+});
 
 let m_optionsButtonFadeoutTimer = null;
 
 const m_app = initGui();
 
+requestAnimationFrame( animate );
+
 //===================================================================================================================
 // Functions
 //===================================================================================================================
-
-function createPlasmaThreadForCanvas( canvas ) {
-	let thread = new Worker( "./components/plasmaThread.js" );
-
-	// Create an offscreen canvas, as regular canvas is bound to DOM and cannot be passed to web worker.
-	const offscreenCanvas = canvas.transferControlToOffscreen();
-
-	// Launch animation in worker thread. Threads will generate different noise images, but same sequence of
-	// random palette colors.
-	thread.postMessage(
-		{
-			action   : "init",
-			isPaused : false,
-			canvas   : offscreenCanvas,
-			width    : Math.round( window.innerWidth  * window.devicePixelRatio ),
-			height   : Math.round( window.innerHeight * window.devicePixelRatio ),
-			noiseSeed: Math.random(),
-			colorSeed: Math.random(),
-			options  : m_options
-		},
-		[ offscreenCanvas ]   // transfer ownership of offscreenCanvas to thread
-	);
-
-	return thread;
-}
-
-//-------------------------------------------------------------------------------------------------------------------
 
 function initGui() {
 
@@ -91,7 +75,7 @@ function initGui() {
 				_.set( m_options, event.path, event.value );
 
 				const groupName = event.path.split( "." )[ 0 ];
-				setPlasmaOptions( groupName, m_options[ groupName ] ); 
+				m_plasma[ "options$" + groupName ] = m_options[ groupName ];
 			},
 		},
 		// TIP: Install VSCode "Comment tagged templates" extensions for syntax highlighting of template.
@@ -141,25 +125,21 @@ function initGui() {
 
 //-------------------------------------------------------------------------------------------------------------------
 
-function resizePlasmaToWindowSize(){
-	m_thread.postMessage({ 
-		action: "resize", 
-		width : Math.round( window.innerWidth  * window.devicePixelRatio ), 
-		height: Math.round( window.innerHeight * window.devicePixelRatio ),
-	});
+function animate() {
+	requestAnimationFrame( animate );
+
+	m_plasma.drawAnimationFrame();
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-function setPlasmaOptions( groupName, value ){
-	m_thread.postMessage({
-		action: "setOptions",
-		groupName: groupName,
-		value: value
-	});
-}
+function resizePlasmaToWindowSize(){
 
-const setPlasmaOptionsDebounced = _.debounce( setPlasmaOptions, 150 ); //, { leading: true, trailing: false } );
+	const width  = Math.round( window.innerWidth  * window.devicePixelRatio );
+	const height = Math.round( window.innerHeight * window.devicePixelRatio );
+
+	m_plasma.resize( width, height );
+}
 
 //-------------------------------------------------------------------------------------------------------------------
 

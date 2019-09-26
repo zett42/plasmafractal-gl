@@ -8,7 +8,7 @@
     } else {
         root.MersenneTwister = factory();
     }
-}(this, function () {
+}(self, function () {
     /**
      * A standalone, pure JavaScript implementation of the Mersenne Twister pseudo random number generator. Compatible
      * with Node.js, requirejs and browser environments. Packages are available for npm, Jam and Bower.
@@ -25,6 +25,11 @@
      *
      * The original port to JavaScript, on which this file is based, was done by Sean McCullough. It can be found at:
      * https://gist.github.com/banksean/300494
+     */
+
+    /*
+     * Changes by zett42: 
+     * Changed argument for parameter 'root' from 'this' to 'self' to support import as native module.
      */
     'use strict';
 
