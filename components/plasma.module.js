@@ -99,10 +99,6 @@ class PlasmaFractal2D {
 		this._paletteTexture  = gl.createTexture();
 
 		this._rebuildShaders();
-	}		
-
-	get gl() {
-		return this._gl;
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------
@@ -231,7 +227,7 @@ class PlasmaFractal2D {
 	//-------------------------------------------------------------------------------------------------------------------
 	// Draw animation frame in given 32-bit RGBA image buffer.
 
-	drawAnimationFrame( isCommitRequired ) {
+	drawAnimationFrame() {
 
 		let paletteToUse = null;
 
