@@ -22,15 +22,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. 
 */
-//-----------------------------------------------------------------------------------------------------------------------
-// Dependencies:
-//   external/perlin.js
-//   external/mersennetwister/MersenneTwister.js
-//   z42easing.js	
-//   z42color.js
-//   z42FractalNoise.js
-//
-// NOTE: This can't be a native module because it is included by a web worker, which still have limited module support.
+
+import '../external/mersennetwister/MersenneTwister.js';
+import '../external/tinycolor/tinycolor.js';
+import '../external/lodash/lodash.min.js';
+import './color.js'; 
+import './easing.js'; 
+import './glUtils.js'; 
+import './glNoise.js'; 
+import './glFractalNoise.js'; 
 
 // For syntax highlighting with glsl-literal extension of VSCode we need to define a glsl template tag.
 const glsl = ( strings, ...values ) => String.raw( strings, ...values );
@@ -38,11 +38,11 @@ const glsl = ( strings, ...values ) => String.raw( strings, ...values );
 //===================================================================================================================
 // This is the class for generating and animating a plasma. 
 
-class z42Plasma {
+class PlasmaFractal2D {
 	constructor( params ){
 
 		this._noiseSeed = params.noiseSeed;
-		this._options = params.options;
+		this._options = _.cloneDeep( params.options );
 
 		this._startTime = performance.now() / 1000;
 
@@ -51,7 +51,7 @@ class z42Plasma {
 		this._initPalettes( params.colorSeed );
 
 		this._initCanvasGl( params.canvas );
-		this.resize( params.width, params.height );
+		this.resize( params.width, params.height, true );
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------
@@ -100,6 +100,10 @@ class z42Plasma {
 
 		this._rebuildShaders();
 	}		
+
+	get gl() {
+		return this._gl;
+	}
 
 	//-------------------------------------------------------------------------------------------------------------------
 
@@ -204,9 +208,18 @@ class z42Plasma {
 	// Public methods
 
 	//-------------------------------------------------------------------------------------------------------------------
-	// Resize the canvas, update WebGL viewport and scale
+	// Resize the canvas, update WebGL viewport and scale.
 
-	resize( width, height ) {
+	resize( width, height, force = false ) {
+		if( width == this._canvas.width && height == this._canvas.height && ! force ) {
+			return;
+		}
+		if( width <= 0 || height <= 0 )
+			return;
+
+		width  = Math.trunc( width );
+		height = Math.trunc( height );
+
 		this._canvas.width  = width;
 		this._canvas.height = height;
 
@@ -218,7 +231,7 @@ class z42Plasma {
 	//-------------------------------------------------------------------------------------------------------------------
 	// Draw animation frame in given 32-bit RGBA image buffer.
 
-	drawAnimationFrame() {
+	drawAnimationFrame( isCommitRequired ) {
 
 		let paletteToUse = null;
 
@@ -289,6 +302,7 @@ class z42Plasma {
 		}
 
 		// Render palette into texture.
+		// TODO: do it only when palette has actually changed
 		gl.activeTexture( gl.TEXTURE0 );
 		gl.bindTexture( gl.TEXTURE_2D, this._paletteTexture );
 		z42glUtils.setPaletteTexture( gl, this._paletteTextureSize, paletteToUse ); 
@@ -375,7 +389,7 @@ class z42Plasma {
 
 	set options$paletteAnim( opt ) {
 		if( opt.transitionDelay != this._options.paletteAnim.transitionDelay ||
-		    opt.transitionDuration != this._options.paletteAnim.transitionDuration )
+			opt.transitionDuration != this._options.paletteAnim.transitionDuration )
 		{
 			// reset plaette transition animation to avoid some issues
 			this._isPaletteTransition = false;  
@@ -509,4 +523,10 @@ class z42Plasma {
 
 		return result;
 	}	
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+export {
+	PlasmaFractal2D
 }
