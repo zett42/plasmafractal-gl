@@ -24,7 +24,6 @@ Animation
 - Requires WebGL2 support by browser.
 - :white_check_mark: Tested successfully with Chrome v77.0.3865.90, Opera v63.0.3368.94, Firefox v69.0.1
 - Best performance observed in Chromium-based browsers like Chrome and Opera.
-- Runs 
   
 ### Preset Links
 <a href="https://zett42.github.io/plasmafractal-gl/?f=.09&o=12&g=.57&l=2.13&a=5.5&n=p3&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.149_000000_l+.7_8a0000_l+.845_f0c000_ios+.514_000000_i2+.99_8a0000_o2+.77_ff0000_ios+.92_f90000_l&acp=0&ntu=1.69&inm=1&ns=.03&ptde=10.&ptd=.1&ipr=0&prs=.1#">
