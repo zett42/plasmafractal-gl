@@ -50,6 +50,9 @@ Animation
 <a href="https://zett42.github.io/plasmafractal-gl/?n=c3&f=.46&o=7&g=.58&l=2&a=1&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=1&pbg=000000&cp=.898_000000_l+.292_91ffff_o5+.192_000000_i5+.442_000000_i2+.663_00ffa2_o2&acp=0&inm=1&ns=.05&ntu=1.85&ipr=0&prs=.1&ptde=10.&ptd=5.#">
   <img src="/screenshots/thumbs/Cellular1.jpg" alt="Cellular" title="Cellular" width="150">
 </a>
+<a href="https://zett42.github.io/plasmafractal-gl/?n=p3&f=.99&o=6&g=.41&l=1.96&a=5.7&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.03_000000_l+.1_ffffff_l+.14_2e2e2e_io4+.68_000000_l+.78_282828_ios23+.76_ffffff_l&acp=0&ntde=3.&ntd=10.&prd=10.&ptde=10.&ptd=5.#">
+  <img src="/screenshots/thumbs/MilkGrey.jpg" alt="milk greY - by Nickelartist" title="milk greY - by Nickelartist" width="150">
+</a>
 
 ## Credits
 This project uses the following open source libraries. Each library comes with its own license terms, which can be found in the source code included in this project.
