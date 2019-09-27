@@ -62,7 +62,7 @@ class PlasmaFractal2D {
 		
 		this._startPalette      = [];
 		this._nextPalette       = [];
-		this._transitionPalette = [];
+		this._currentPalette    = [];
 
 		this._grayScalePalette = [
 			{   
@@ -290,10 +290,13 @@ class PlasmaFractal2D {
 		if( ! this._options.palette.isGrayScale ) {	
 			paletteToUse = this._animatePalette();
 		}
+		if( ! _.isEqual( this._currentPalette, paletteToUse ) ) {
+			this._currentPalette = _.cloneDeep( paletteToUse );
 
-		gl.activeTexture( gl.TEXTURE0 );
-		gl.bindTexture( gl.TEXTURE_2D, this._paletteTexture );
-		z42glu.setPaletteTexture( gl, this._paletteTextureSize, paletteToUse ); 
+			gl.activeTexture( gl.TEXTURE0 );
+			gl.bindTexture( gl.TEXTURE_2D, this._paletteTexture );
+			z42glu.setPaletteTexture( gl, this._paletteTextureSize, paletteToUse ); 
+		}
 		
 		// Draw the rectangle from the vertex and texture coordinates buffers.
 		gl.drawArrays( gl.TRIANGLES, 0, 6 );
