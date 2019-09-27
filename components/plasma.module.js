@@ -58,7 +58,7 @@ class PlasmaFractal2D {
 
 	_initPalettes( colorSeed ) {
 
-		this._paletteColorCount = 2;
+		this._paletteRndColorCount = 2;
 		
 		this._startPalette      = [];
 		this._nextPalette       = [];
@@ -91,9 +91,16 @@ class PlasmaFractal2D {
 	//-------------------------------------------------------------------------------------------------------------------
 
 	_initCanvasGl( canvas ) {
-		this._canvas         = canvas;
+		this._canvas = canvas;
 
-		const gl = this._gl   = this._canvas.getContext( "webgl2" );
+		const gl = this._gl = canvas.getContext( "webgl2" );
+
+		// Disable unused features
+		gl.disable( gl.BLEND );
+		gl.disable( gl.DEPTH_TEST );
+		gl.depthMask( gl.FALSE );
+		gl.stencilMask( gl.FALSE );
+
 		this._positionBuffer  = gl.createBuffer();
 		this._texCoordBuffer  = gl.createBuffer();
 		this._paletteTexture  = gl.createTexture();
@@ -112,7 +119,9 @@ class PlasmaFractal2D {
 		const noiseFunSrc = z42glNoise[ this._options.noise.noiseFunction ]();
 		const fragShaderSrc = z42glFractalNoise.fragmentShader( noiseFunSrc );
 
-		this._program = z42glUtils.buildShaderProgram( this._gl, this.vertexShaderSrc(), fragShaderSrc );
+		this._program = z42glu.buildShaderProgram( this._gl, this.vertexShaderSrc(), fragShaderSrc );
+
+		this._uf = new z42glu.Uniforms( this._gl, this._program, true );
 
 		this._updateStaticShaderData();
 	}
@@ -148,7 +157,7 @@ class PlasmaFractal2D {
 		//--- Set a vertex buffer to store rectangle coordinates ---
 		gl.bindBuffer( gl.ARRAY_BUFFER, this._positionBuffer );
 		// Assign data to the buffer.
-		z42glUtils.setBufferStaticRectangle( gl, -1.0, -1.0, 2.0, 2.0 );
+		z42glu.setBufferRectangle( gl, -1.0, -1.0, 2.0, 2.0 );
 		// Enable the attribute.
 		gl.enableVertexAttribArray( a_position );
 		// Tell the attribute how to get data out of the buffer (ARRAY_BUFFER)
@@ -163,7 +172,7 @@ class PlasmaFractal2D {
 		//--- Set a vertex buffer to store texture coordinates ---
 		gl.bindBuffer( gl.ARRAY_BUFFER, this._texCoordBuffer );
 		// Assign data to the buffer.
-		z42glUtils.setBufferStaticRectangle( gl, -1.0, -1.0, 2.0, 2.0 );
+		z42glu.setBufferRectangle( gl, -1.0, -1.0, 2.0, 2.0 );
 		// Enable the attribute.
 		gl.enableVertexAttribArray( a_texCoord );
 		// Tell the attribute how to get data out of the buffer (ARRAY_BUFFER)
@@ -229,33 +238,13 @@ class PlasmaFractal2D {
 
 	drawAnimationFrame() {
 
-		let paletteToUse = null;
-
-		if( this._options.palette.isGrayScale )	{
-			paletteToUse = this._grayScalePalette;		
-		}
-		else {
-			paletteToUse = this._animatePalette();
-		}
-
 		const gl = this._gl;
 
-		// Get references to shader variables.
-		const u_paletteTexture   = gl.getUniformLocation( this._program, "u_paletteTexture" );
-		const u_time             = gl.getUniformLocation( this._program, "u_time" );
-		const u_seed             = gl.getUniformLocation( this._program, "u_seed" );
-		const u_octaves          = gl.getUniformLocation( this._program, "u_octaves" );
-		const u_frequency        = gl.getUniformLocation( this._program, "u_frequency" );
-		const u_amplitude        = gl.getUniformLocation( this._program, "u_amplitude" );
-		const u_gain             = gl.getUniformLocation( this._program, "u_gain" );
-		const u_lacunarity       = gl.getUniformLocation( this._program, "u_lacunarity" );
-		const u_noiseSpeed       = gl.getUniformLocation( this._program, "u_noiseSpeed" );
-		const u_turbulence       = gl.getUniformLocation( this._program, "u_turbulence" );
-		const u_paletteOffset    = gl.getUniformLocation( this._program, "u_paletteOffset" );
-	
+		console.debug("--- uniforms ---");
+
 		// Clear the canvas.
 		gl.clearColor( 0, 0, 0, 0 );
-		gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT) ;
+		gl.clear( gl.COLOR_BUFFER_BIT) ;
 
 		// Tell it to use our program (pair of shaders).
 		gl.useProgram( this._program );
@@ -263,45 +252,50 @@ class PlasmaFractal2D {
 		// Bind the attribute/buffer set we want.
 		gl.bindVertexArray( this._vao );
 
-		// Tell the shader which texture units to use.
-		gl.uniform1i( u_paletteTexture, 0 );
-
-		// Assign current time in seconds to shader variable.
-		const time = performance.now() / 1000.0 - this._startTime;
-		gl.uniform1f( u_time, time );
-
-		// Pass a random seed to the shader.
-		gl.uniform1f( u_seed, this._noiseSeed * 2 - 1 );   
-
 		// Set noise parameters.
-		gl.uniform1i( u_octaves, this._options.noise.octaves );
-		gl.uniform1f( u_frequency, this._options.noise.frequency / 2.5 );         
-		gl.uniform1f( u_amplitude, this._options.noise.amplitude );         
-		gl.uniform1f( u_gain, this._options.noise.gain );              
-		gl.uniform1f( u_lacunarity, this._options.noise.lacunarity );     
-		
+		this._uf.uniform1i( "u_octaves",    this._options.noise.octaves );
+		this._uf.uniform1f( "u_frequency",  this._options.noise.frequency / 2.5 );         
+		this._uf.uniform1f( "u_amplitude",  this._options.noise.amplitude );         
+		this._uf.uniform1f( "u_gain",       this._options.noise.gain );              
+		this._uf.uniform1f( "u_lacunarity", this._options.noise.lacunarity );     
+
+		// Current time in seconds since start of plasma.
+		const time = performance.now() / 1000.0 - this._startTime;
+
+		// Set parameters for noise animation.
+		let noiseZ = this._noiseSeed * 50.0;
+		let turbulence = 1.0;
+
 		if( this._options.noiseAnim.isNoiseMutation ) {
-			gl.uniform1f( u_noiseSpeed, this._options.noiseAnim.noiseSpeed / 3 );        
-			gl.uniform1f( u_turbulence, this._options.noiseAnim.turbulence );
+			noiseZ += time * this._options.noiseAnim.noiseSpeed / 3;
+			turbulence = this._options.noiseAnim.turbulence;
 		}
-		else {
-			gl.uniform1f( u_noiseSpeed, 0 );        
-			gl.uniform1f( u_turbulence, 1.0 );
-		}
-		
+
+		this._uf.uniform1f( "u_noiseZ", noiseZ );
+		this._uf.uniform1f( "u_turbulence", turbulence );
+
 		if( this._options.paletteAnim.isRotaEnabled ) {
 			const sizeFactor = this._paletteTextureSize / 4096;
-			gl.uniform1f( u_paletteOffset, time * this._options.paletteAnim.rotaSpeed * sizeFactor );
+			this._uf.uniform1f( "u_paletteOffset", time * this._options.paletteAnim.rotaSpeed * sizeFactor );
 		}
 		else {
-			gl.uniform1f( u_paletteOffset, 0 );
+			this._uf.uniform1f( "u_paletteOffset", 0 );
 		}
+
+		// Tell the shader which texture units to use.
+		this._uf.uniform1i( "u_paletteTexture", 0 );
 
 		// Render palette into texture.
 		// TODO: do it only when palette has actually changed
+
+		let paletteToUse = this._grayScalePalette;
+		if( ! this._options.palette.isGrayScale ) {	
+			paletteToUse = this._animatePalette();
+		}
+
 		gl.activeTexture( gl.TEXTURE0 );
 		gl.bindTexture( gl.TEXTURE_2D, this._paletteTexture );
-		z42glUtils.setPaletteTexture( gl, this._paletteTextureSize, paletteToUse ); 
+		z42glu.setPaletteTexture( gl, this._paletteTextureSize, paletteToUse ); 
 		
 		// Draw the rectangle from the vertex and texture coordinates buffers.
 		gl.drawArrays( gl.TRIANGLES, 0, 6 );
@@ -499,10 +493,10 @@ class PlasmaFractal2D {
 		const bgToFgFunction = z42easing[ this._options.palette.easeFunctionBgToFg ];
 		const fgToBgFunction = z42easing[ this._options.palette.easeFunctionFgToBg ];
 		
-		const subRange = 1.0 / this._paletteColorCount;
+		const subRange = 1.0 / this._paletteRndColorCount;
 		const subRangeHalf = subRange / 2;
 
-		for( let i = 0; i < this._paletteColorCount; ++i ){
+		for( let i = 0; i < this._paletteRndColorCount; ++i ){
 			const colorRGBA = z42color.nextGoldenRatioColorRGBA( colorHsv ); 
 		
 			result.push({

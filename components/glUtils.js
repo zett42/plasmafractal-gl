@@ -29,7 +29,7 @@ SOFTWARE.
 
 	// For compatibility with WebWorkers, where 'window' is not available, use 'self' instead.
 	// Also module import from WebWorkers isn't widely supported yet, so we keep this an "old-school" module. 
-	const module = self.z42glUtils = {};
+	const module = self.z42glu = {};
 
     //----------------------------------------------------------------------------------------------
 
@@ -69,20 +69,86 @@ SOFTWARE.
     }
 
     //----------------------------------------------------------------------------------------------
+    // Helper class to get/set WebGL shader uniform variables by name.
 
-    module.setBufferStaticRectangle = function( gl, x, y, width, height ) {
+    class Uniforms {
+        constructor( gl, program, isDebug = false ) {
+            this._gl = gl;
+            this._isDebug = isDebug;
+            this._locations = {};
+
+            // Get locations of all active uniform variables of given program.
+            const uniformCount = gl.getProgramParameter( program, gl.ACTIVE_UNIFORMS );
+            for( let i = 0; i < uniformCount; ++i ){
+                const uniform = gl.getActiveUniform( program, i );
+                const loc     = gl.getUniformLocation( program, uniform.name );
+                if( ! loc ) {
+                    throw new Error( `Could not get uniform location for '${uniform.name}'` );
+                }
+                this._locations[ uniform.name ] = loc;
+            }
+
+            ! isDebug || console.debug( "Active uniforms:", Object.keys( this._locations ) );
+        }
+
+        location( name ) {
+            let loc = this._locations[ name ];
+            if( ! loc ) {
+                ! this._isDebug || console.error( `Could not get uniform location for '${name}'` );
+            }
+            return loc;
+        }
+
+        _call( glFunction, name, ...args ) {
+            ! this._isDebug || console.debug( `uniform ${name} =`, ...args );
+            this._gl[ glFunction ]( this.location( name ), ...args );
+        }
+
+        uniform1f( name, v0 )             { this._call( "uniform1f", name, v0 ); }
+        uniform1fv( name, value )         { this._call( "uniform1fv", name, value ); }
+        uniform1i( name, v0 )             { this._call( "uniform1i", name, v0 ); }
+        uniform1iv( name, value )         { this._call( "uniform1iv", name, value ); }
+    
+        uniform2f( name, v0, v1 )         { this._call( "uniform2f", name, v0, v1 ); }
+        uniform2fv( name, value )         { this._call( "uniform2fv", name, value ); }
+        uniform2i( name, v0, v1 )         { this._call( "uniform2i", name, v0, v1 ); }
+        uniform2iv( name, value )         { this._call( "uniform2iv", name, value ); }
+    
+        uniform3f( name, v0, v1, v2 )     { this._call( "uniform3f", name, v0, v1, v2 ); }
+        uniform3fv( name, value )         { this._call( "uniform3fv", name, value ); }
+        uniform3i( name, v0, v1, v2 )     { this._call( "uniform3i", name, v0, v1, v2 ); }
+        uniform3iv( name, value )         { this._call( "uniform3iv", name, value ); }
+    
+        uniform4f( name, v0, v1, v2, v3 ) { this._call( "uniform4f", name, v0, v1, v2, v3 ); }
+        uniform4fv( name, value )         { this._call( "uniform4fv", name, value ); }
+        uniform4i( name, v0, v1, v2, v3 ) { this._call( "uniform4i", name, v0, v1, v2, v3 ); }
+        uniform4iv( name, value )         { this._call( "uniform4iv", name, value ); }  
+        
+        getUniform( name ) {
+            return this._gl.getUniform( this._program, this.location( name ) );
+        }
+    }
+
+    module.Uniforms = Uniforms;
+
+    //----------------------------------------------------------------------------------------------
+
+    module.setBufferRectangle = function( gl, x, y, width, height, usage = gl.STATIC_DRAW ) {
         let x1 = x;
         let x2 = x + width;
         let y1 = y;
         let y2 = y + height;
-        gl.bufferData( gl.ARRAY_BUFFER, new Float32Array([
-            x1, y1,
-            x2, y1,
-            x1, y2,
-            x1, y2,
-            x2, y1,
-            x2, y2 
-        ]), gl.STATIC_DRAW );
+        gl.bufferData( gl.ARRAY_BUFFER, 
+            new Float32Array([
+                x1, y1,
+                x2, y1,
+                x1, y2,
+                x1, y2,
+                x2, y1,
+                x2, y2 
+            ]), 
+            usage 
+        );
     }
 
     //----------------------------------------------------------------------------------------------

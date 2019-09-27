@@ -48,16 +48,14 @@ SOFTWARE.
         precision highp sampler2D;
     
         // noise parameters
-        uniform float u_time;              // current time in seconds
-        uniform float u_seed;              // random number of range -1..1
         uniform int   u_octaves;           // number of octaves for fractal noise
         uniform float u_frequency;         // noise frequency
         uniform float u_amplitude;         // noise amplitude
         uniform float u_gain;              // amplitude factor for each octave
         uniform float u_lacunarity;        // frequency factor for each octave
-        uniform float u_noiseSpeed;        // speed of noise mutation
+        uniform float u_noiseZ;            // Z-position in 3D noise, for animation
         uniform float u_turbulence;        // "boiling" effect of noise animation 
-        uniform float u_paletteOffset;     // offset for palette rotation
+        uniform float u_paletteOffset;     // offset for palette rotation animation
     
         // texture that defines the palette
         uniform sampler2D u_paletteTexture;
@@ -70,37 +68,29 @@ SOFTWARE.
     
         ${noiseFunctionSource}
     
-        // Create fractal noise by adding multiple u_octaves of noise.
-        float fractalNoise( vec3 pos ){
-            float result = 0.0;
-            float freq   = u_frequency;
-            float amp    = u_amplitude;
-            float z      = pos.z;
-
+        void main() { 
+            float n = 0.0;
+            float z = u_noiseZ;
+            float freq = u_frequency;
+            float amp = u_amplitude;
+            
             // Z-increment to "randomize" each octave for avoiding artefacts that originate from coords 0,0
             // due to the pseudo-random nature of the noise.
             // This value has been choosen by trial and error.
             const float zInc = 42.0;
     
+            // Create fractal noise by adding multiple octaves of noise.
             for( int i = 0; i < u_octaves; ++i ) {                
 
-                vec3 p = vec3( pos.xy * freq, z );
+                vec3 p = vec3( fragCoord.xy * freq, z );
 
-                result += noise( p ) * amp;
+                n += noise( p ) * amp;
 
                 freq   *= u_lacunarity;
                 amp    *= u_gain;
                 z      += zInc;
                 z      *= u_turbulence;
             }
-    
-            return result;
-        }
-    
-        void main() { 
-            vec3 p = vec3( fragCoord.xy, u_time * u_noiseSpeed + u_seed * 100.0 );
-    
-            float n = fractalNoise( p );
             
             fragColor = texture( u_paletteTexture, vec2( n + u_paletteOffset, 0 ) );
         }
