@@ -1,6 +1,6 @@
 /*
 Option descriptor classes. Copyright (c) 2019 zett42.
-https://github.com/zett42/PlasmaFractal2
+https://github.com/zett42/plasmafractal-gl
 
 MIT License
 
