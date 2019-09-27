@@ -121,7 +121,7 @@ class PlasmaFractal2D {
 
 		this._program = z42glu.buildShaderProgram( this._gl, this.vertexShaderSrc(), fragShaderSrc );
 
-		this._uf = new z42glu.Uniforms( this._gl, this._program, true );
+		this._uf = new z42glu.Uniforms( this._gl, this._program );
 
 		this._updateStaticShaderData();
 	}
@@ -239,8 +239,6 @@ class PlasmaFractal2D {
 	drawAnimationFrame() {
 
 		const gl = this._gl;
-
-		console.debug("--- uniforms ---");
 
 		// Clear the canvas.
 		gl.clearColor( 0, 0, 0, 0 );
