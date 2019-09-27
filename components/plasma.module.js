@@ -29,6 +29,7 @@ import '../external/lodash/lodash.min.js';
 import './color.js'; 
 import './easing.js'; 
 import './glUtils.js'; 
+import './glColor.js'; 
 import './glNoise.js'; 
 import './glFractalNoise.js'; 
 
@@ -252,7 +253,7 @@ class PlasmaFractal2D {
 
 		// Set noise parameters.
 		this._uf.uniform1i( "u_octaves",    this._options.noise.octaves );
-		this._uf.uniform1f( "u_frequency",  this._options.noise.frequency / 2.5 );         
+		this._uf.uniform1f( "u_frequency",  this._options.noise.frequency / 2 );         
 		this._uf.uniform1f( "u_amplitude",  this._options.noise.amplitude );         
 		this._uf.uniform1f( "u_gain",       this._options.noise.gain );              
 		this._uf.uniform1f( "u_lacunarity", this._options.noise.lacunarity );     
@@ -283,19 +284,18 @@ class PlasmaFractal2D {
 		// Tell the shader which texture units to use.
 		this._uf.uniform1i( "u_paletteTexture", 0 );
 
-		// Render palette into texture.
-		// TODO: do it only when palette has actually changed
-
 		let paletteToUse = this._grayScalePalette;
 		if( ! this._options.palette.isGrayScale ) {	
 			paletteToUse = this._animatePalette();
 		}
+
+		// If palette has changed, render it into texture.
 		if( ! _.isEqual( this._currentPalette, paletteToUse ) ) {
 			this._currentPalette = _.cloneDeep( paletteToUse );
 
 			gl.activeTexture( gl.TEXTURE0 );
 			gl.bindTexture( gl.TEXTURE_2D, this._paletteTexture );
-			z42glu.setPaletteTexture( gl, this._paletteTextureSize, paletteToUse ); 
+			z42glcolor.setPaletteTexture( gl, this._paletteTextureSize, paletteToUse ); 
 		}
 		
 		// Draw the rectangle from the vertex and texture coordinates buffers.

@@ -152,32 +152,5 @@ SOFTWARE.
     }
 
     //----------------------------------------------------------------------------------------------
-    // Render the given multi-gradient palette to the currently bound texture, generating mipmaps.
-
-    module.setPaletteTexture = function( gl, textureWidth, paletteDef ) {
-
-        textureWidth = Math.trunc( textureWidth );
-
-        // Loop to generate mipmaps (can't use gl.generateMipmap for non-square texture)
-        for( let mipLevel = 0; 
-             textureWidth >= 1; 
-             textureWidth = Math.trunc( textureWidth / 2 ), ++mipLevel ) {
-
-            const buffer = new ArrayBuffer( textureWidth * 4 );
-            const paletteUint32 = new Uint32Array( buffer );
-            z42color.makePaletteMultiGradientRGBA( paletteUint32, paletteUint32.length, paletteDef );
-                
-            const paletteUint8 = new Uint8Array( buffer );
-            gl.texImage2D( gl.TEXTURE_2D, mipLevel, gl.RGBA, textureWidth, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, paletteUint8, 0 );
-        }
-
-        // Set texture parameters
-        gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT );
-        gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT );
-        gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR );
-        gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
-    }
-    
-    //----------------------------------------------------------------------------------------------
    
 })();

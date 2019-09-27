@@ -35,8 +35,7 @@ SOFTWARE.
 	/// Wraps around in case index is out of range. 
 	/// Returns start + count.
 	
-	module.makePaletteGradientRGBA = function( outPaletteUint32, start, count, startColor, endColor, easeFunction )
-	{		
+	module.makePaletteGradientRGBA = function( outPaletteUint32, start, count, startColor, endColor, easeFunction ) {		
 		if( count <= 0 ) 
 			return;
 		if( count > outPaletteUint32.length )
@@ -72,8 +71,8 @@ SOFTWARE.
 	///
 	/// A temporary clone of the inputPalette will be made and the clone be sorted by positions.
 
-	module.makePaletteMultiGradientRGBA = function( outPaletteUint32, count, inputPalette )
-	{
+	module.makePaletteMultiGradientRGBA = function( outPaletteUint32, count, inputPalette )	{
+
 		// shallow clone is sufficient here, as we don't modify properties of array elements
 		let sortedPalette = [ ...inputPalette ];
 		sortedPalette.sort( ( a, b ) => a.pos - b.pos );
@@ -106,53 +105,10 @@ SOFTWARE.
 	}
 	
 	//----------------------------------------------------------------------------------------------------------------
-	/// Rotate palette paletteUint32Src by given offset and store result in paletteUint32Dest.
-	/// Palettes can have different sizes.
-	/// If paletteUint32Dest is smaller than paletteUint32Src, the output will be clipped.
-	/// If paletteUint32Dest is larger than paletteUint32Src, the input will be repeated in the output. 
-	
-	module.rotatePalette = function( paletteUint32Src, paletteUint32Dest, offset )
-	{
-		if( paletteUint32Src.length === 0 || paletteUint32Dest.length === 0 )
-			return;
-		
-		offset = Math.floor( offset );
-		
-		for( let iDest = 0; iDest < paletteUint32Dest.length; ++iDest )
-		{
-			let iSrc = module.mod( iDest - offset, paletteUint32Src.length );
-			
-			paletteUint32Dest[ iDest ] = paletteUint32Src[ iSrc ];
-		}
-	}
-	
-	//----------------------------------------------------------------------------------------------------------------
-	/// Blend two palettes (inFirstPaletteUint32, inSecondPaletteUint32) and store the result in another palette
-	/// (outPaletteUint32). 
+	/// Blend two palettes definitions (inFirstPalette, inSecondPalette) and return the result as a new palette.
 	/// Alpha must be in the 0..1 range.
 
-	module.blendPalette = function( inFirstPaletteUint32, inSecondPaletteUint32, outPaletteUint32, alphaFloat )
-	{
-		if( inFirstPaletteUint32.length != inSecondPaletteUint32.length ||
-			inFirstPaletteUint32.length != outPaletteUint32.length )
-		{
-			console.assert( false, "Palette arguments must have same size" );
-			return;
-		}
-		
-		for( let i = 0; i < inFirstPaletteUint32.length; ++i )
-		{
-			outPaletteUint32[ i ] = module.blendColorRGBA_Uint32( inFirstPaletteUint32[ i ], inSecondPaletteUint32[ i ], alphaFloat );
-		}		
-	}
-
-	//----------------------------------------------------------------------------------------------------------------
-	/// Blend two palettes definitions (inFirstPalette, inSecondPalette) and store the result in another 
-	/// palette def (outPalette). 
-	/// Alpha must be in the 0..1 range.
-
-	module.blendPaletteDef = function( inFirstPalette, inSecondPalette, alphaFloat )
-	{
+	module.blendPaletteDef = function( inFirstPalette, inSecondPalette, alphaFloat ){
 		if( inFirstPalette.length != inSecondPalette.length )
 		{
 			console.assert( false, "Palette arguments must have same size" );
@@ -173,8 +129,7 @@ SOFTWARE.
 	//----------------------------------------------------------------------------------------------------------------
 	/// Blend two RGB color objects and return the result. Alpha must be in the 0..1 range.
 	
-	module.blendColorRGBA = function( c1, c2, alphaFloat )
-	{
+	module.blendColorRGBA = function( c1, c2, alphaFloat ) {
 		return {
 			r: Math.round( c1.r + ( c2.r - c1.r ) * alphaFloat ),
 			g: Math.round( c1.g + ( c2.g - c1.g ) * alphaFloat ),
@@ -184,51 +139,9 @@ SOFTWARE.
 	}	
 	
 	//----------------------------------------------------------------------------------------------------------------
-	/// Blend two RGB colors in Uint32 format and return the result. Alpha must be in the 0..1 range.
-	
-	module.blendColorRGBA_Uint32 = function( color1Uint32, color2Uint32, alphaFloat )
-	{
-		let r1 = color1Uint32 & 0xFF;
-		let r2 = color2Uint32 & 0xFF;
-		let g1 = ( color1Uint32 >>  8 ) & 0xFF;
-		let g2 = ( color2Uint32 >>  8 ) & 0xFF;
-		let b1 = ( color1Uint32 >> 16 ) & 0xFF;
-		let b2 = ( color2Uint32 >> 16 ) & 0xFF;
-		let a1 = ( color1Uint32 >> 24 ) & 0xFF;
-		let a2 = ( color2Uint32 >> 24 ) & 0xFF;
-		
-		let r = Math.round( r1 + ( r2 - r1 ) * alphaFloat );
-		let g = Math.round( g1 + ( g2 - g1 ) * alphaFloat );
-		let b = Math.round( b1 + ( b2 - b1 ) * alphaFloat );
-		let a = Math.round( a1 + ( a2 - a1 ) * alphaFloat );
-		
-		return r | ( g << 8 ) | ( b << 16 ) | ( a << 24 );
-	}
-	
-	//----------------------------------------------------------------------------------------------------------------
-	/// Draw a Uint16 grayscale image into a Uint32 RGBA image by using colors from given palette.
-	/// Source image pixel values must be in range of palette!
-	
-	module.drawImageUint16WithPalette = function( destPixelsUint32, sourcePixelsUint16, sourcePaletteUint32 )
-	{
-		if( destPixelsUint32.length != sourcePixelsUint16.length )
-		{
-			console.assert( false, "Source and dest image must have same size" );
-			return;
-		}
-		
-		let i = 0;
-		for( const value of sourcePixelsUint16 )
-		{	
-			destPixelsUint32[ i++ ] = sourcePaletteUint32[ value ];
-		}
-	}	
-	
-	//----------------------------------------------------------------------------------------------------------------
 	/// Convert HSV input to RGB result, then increment hue of input color by golden ratio.
 	
-	module.nextGoldenRatioColorRGBA = function( hsva ) 
-	{ 
+	module.nextGoldenRatioColorRGBA = function( hsva ) { 
 		let result = tinycolor( hsva ).toRgb();
 		
 		const golden_ratio = 0.618033988749895 * 360;
@@ -241,16 +154,14 @@ SOFTWARE.
 	/// True modulo function that only returns positive numbers
 	/// (compare with JS "%" operator which returns the remainder instead, which can be negative).
 
-	module.mod = function( a, n ) 
-	{
+	module.mod = function( a, n ) {
 		return a - ( n * Math.floor( a / n ) );
 	}	
 
 	//----------------------------------------------------------------------------------------------------------------
 	/// Clamp x to min and max.
 
-	module.clamp = function( x, min, max )
-	{
+	module.clamp = function( x, min, max ) {
 		if( x < min ) return min;
 		if( x > max ) return max;
 		return x;
