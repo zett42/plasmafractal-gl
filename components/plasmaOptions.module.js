@@ -128,7 +128,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 	palette: new z42opt.Node( {}, {
 		isGrayScale: new z42opt.BoolOpt({
 			shortKey: "pg",
-			title: "Show original grayscale image",
+			title: "Show only grayscale output",
 			defaultVal: false,
 		}),
 		isCustom: new z42opt.BoolOpt({
