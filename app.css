@@ -11,16 +11,14 @@ html, body {
 	height: 100%; 
 	position: absolute;
 	display: block;  /* To remove the scrollbars */
-	
 	background: black;	
-	mix-blend-mode: screen;
+}
 
-	transition: opacity ease-in-out;
-	/* NOTE: transition-duration is set by JS */
+[disabled] {
+	opacity: 0.2;
+	transition: opacity 250ms ease;
 }
-#canvas2 {
-	opacity: 0;
-}
+
 #button-options-dialog {		
 	position: absolute;
 	left: 10px; 
