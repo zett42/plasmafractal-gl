@@ -161,9 +161,9 @@ function createPermalink( optionsData, optionsDescriptor, url ) {
 // - no duplicates
 // - short key is all lowercase
 
-function validateUniqueShortKeys( descriptor ) {
+function validateUniqueShortKeys( descriptor, path = null ) {
 	let shortKeyMap = new Map();
-	validateShortKeysRecursively( shortKeyMap, descriptor );
+	validateShortKeysRecursively( shortKeyMap, descriptor, path );
 	
 	for( const [ key, value ] of shortKeyMap.entries() ){
 		if( value.length > 1 ){
@@ -258,4 +258,6 @@ export {
 	optionsToUrlParams,
 	joinPath,
 	createPermalink,
+	validateUniqueShortKeys,
+	createShortKeyToPathMap
 }
