@@ -23,6 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. 
 */
 
+import './fractalNoise.js'
+
 (function(){
 	'use strict';
 
@@ -44,12 +46,12 @@ SOFTWARE.
 		for( let i = 0; i < count; ++i ) {
 			const pos = module.mod( i + start, outPaletteUint32.length );
 
-			const r = Math.round( easeFunction( i, startColor.r, endColor.r - startColor.r, count ) );
-			const g = Math.round( easeFunction( i, startColor.g, endColor.g - startColor.g, count ) );
-			const b = Math.round( easeFunction( i, startColor.b, endColor.b - startColor.b, count ) );
+			const r = Math.round( easeFunction( i, startColor.r, endColor.r - startColor.r, count, 0, 255 ) );
+			const g = Math.round( easeFunction( i, startColor.g, endColor.g - startColor.g, count, 0, 255 ) );
+			const b = Math.round( easeFunction( i, startColor.b, endColor.b - startColor.b, count, 0, 255 ) );
 
 			// Note: alpha component is in 0..1 range, so we have to multiply with 255.
-			const a = Math.round( easeFunction( i, startColor.a, endColor.a - startColor.a, count ) * 255 );
+			const a = Math.round( easeFunction( i, startColor.a, endColor.a - startColor.a, count, 0, 1 ) * 255 );
 		
 			outPaletteUint32[ pos ] = r | ( g << 8 ) | ( b << 16 ) | ( a << 24 );
 		}
@@ -95,13 +97,39 @@ SOFTWARE.
 			}
 
 			if( dist <= 0 ){
-				// TODO: assign weighted avg of all colors at same index 
-				outPaletteUint32[ startIndex ] = start.color;				
+				// TODO: to reduce aliasing of thin lines in the final image, assign weighted avg of all colors at same index
+				outPaletteUint32[ startIndex ] = start.color;
 			}
 			else {
-				z42color.renderPaletteSegment( outPaletteUint32, startIndex, dist, start.color, end.color, start.easeFun );
+				let easeFunToUse = start.easeFun;
+				if( start.isNoisy && start.noise ) {
+					easeFunToUse = module.makeNoisyEaseFun( start.easeFun, start.noise );
+				}
+				z42color.renderPaletteSegment( outPaletteUint32, startIndex, dist, start.color, end.color, easeFunToUse );
 			}
 		}	
+	}
+
+	//----------------------------------------------------------------------------------------------------------------
+	// Generate a new ease function that adds fractal noise to the result of the given ease function.
+
+	module.makeNoisyEaseFun = function( easeFun, noiseOpt ) {
+
+		const noiseGen = new z42noise.FractalNoiseGen2D( noiseOpt.octaves, noiseOpt.seed );
+
+		return function( t, b, c, d, min, max ){
+
+			let value = easeFun( t, b, c, d );
+
+			const amp = ( max - min ) * noiseOpt.amplitude;
+
+			const x = t / d;
+			const y = 0;  // possible future extension: animate y
+
+			value += noiseGen.noise( x, y, noiseOpt.frequency, noiseOpt.gain, noiseOpt.lacunarity, amp );
+
+			return module.clamp( value, min, max );
+		}
 	}
 	
 	//----------------------------------------------------------------------------------------------------------------

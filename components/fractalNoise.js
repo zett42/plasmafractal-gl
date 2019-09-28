@@ -1,5 +1,5 @@
 /*
-2D fractal noise image generation. Copyright (c) 2019 zett42.
+2D fractal noise generation. Copyright (c) 2019 zett42.
 https://github.com/zett42/plasmafractal-gl
 
 MIT License
@@ -23,76 +23,76 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. 
 */
 
+import './noiseGen.js'
+import '../external/mersennetwister/MersenneTwister.js'
+
 (function(){
 	'use strict';
 	
 	// For compatibility with WebWorkers, where 'window' is not available, use 'self' instead.
 	// Also module import from WebWorkers isn't widely supported yet, so we keep this an "old-school" module. 
-	var module = self.z42fractalNoise = {};
-	
+	var module = self.z42noise = {};
+
 	//----------------------------------------------------------------------------------------------------------------
-	/// Generate a grayscale fractal noise image.
-	/// noiseGenerators must be an array of NoiseGen instances for each octave.
+	// Class to generate 2D fractal noise.
 	
-	module.generateFractalNoiseImageUint16 = function( 
-		destPixelsUint16, width, height, outputRange, params, noiseGenerators )
-	{
-		if( destPixelsUint16.length < width * height )
-		{
-			console.assert( false, "Array argument destPixelsUint16 is too small" );
-			return;
+	class FractalNoiseGen2D {
+		constructor( octaves, seed = Math.random() ) {
+			this._noiseGenes = [];
+			this._seed = Math.trunc( seed * 0xFFFFFFFF );
+			this.octaves = octaves;
 		}
-		
-		const period    = 1.0 / ( width > height ? width : height );
-		const scale     = period * params.frequency;
-		const amplitude = params.amplitude * outputRange * 0.5;
-	
-		let i = 0;
-		for( let y = 0; y < height; ++y )
-		{
-			const yn = y * scale;
-		
-			for( let x = 0; x < width; ++x, ++i )
-			{
-				const xn = x * scale;
-					
-				const value = module.fractalNoise2d( 
-					xn, yn, params.octaves, params.gain, params.lacunarity, amplitude, noiseGenerators );
+
+		//----------------------------------------------------------------------------------------------------------------
+		// Get / set number of octaves for fractal noise.
+
+		set octaves( value ) {
+			value = Math.trunc( value );
+			if( this._noiseGenes.length === value )
+				return;
+
+			this._noiseGenes.length = value;
+
+			const rnd = new MersenneTwister( this._seed );
+
+			for( let i = 0; i < value; ++i ) {
+				const octaveSeed = rnd.random();
 				
-				destPixelsUint16[ i ] = module.mod( value, outputRange );
+				let gen = this._noiseGenes[ i ];
+				if( gen ) {
+					gen.seed = octaveSeed;
+				}
+				else {
+					gen = this._noiseGenes[ i ] = new noise.NoiseGen( octaveSeed );
+				}
+
 			}
 		}
-	}	
-	
-	//----------------------------------------------------------------------------------------------------------------
-	/// Get fractal noise value at given coordinates. Result will be in range of -amplitude to amplitude (approx.)
-	/// noiseGenerators must be an array of NoiseGen instances for each octave.
-	
-	module.fractalNoise2d = function( x, y, octaves, gain, lacunarity, amplitude, noiseGenerators ) 
-	{
-		let res  = 0;  // result
-		let f    = 1;  // frequency  
-		let a    = amplitude;  // amplitude
 
-		for( let i = 0; i < octaves; i++ )
-		{
-			// All noise functions return values in the range of -1 to 1.
-			let n = noiseGenerators[ i ].perlin2( x * f, y * f );
-			res += n * a;			
-			a *= gain;
-			f *= lacunarity;
-		}
+		get octaves() { return this._noiseGenes.length; }
+
+		//----------------------------------------------------------------------------------------------------------------
+		/// Get fractal noise value at given coordinates. Result will be in range of -amplitude to amplitude (approx.)
 		
-		return res;  
-	}	
-	
-	//----------------------------------------------------------------------------------------------------------------
-	/// True modulo function that only returns positive numbers
-	/// (compare with JS "%" operator which returns the remainder instead, which can be negative).
+		noise( x, y, frequency = 1.0, gain = 0.5, lacunarity = 2.0, amplitude = 1.0 ) {
+			let res  = 0;
+			let f    = frequency;
+			let a    = amplitude;
 
-	module.mod = function( a, n ) 
-	{
-		return a - ( n * Math.floor( a / n ) );
+			for( let i = 0; i < this._noiseGenes.length; i++ ) {
+				// All noise functions return values in the range of -1 to 1.
+				let n = this._noiseGenes[ i ].perlin2( x * f, y * f );
+				res += n * a;			
+				a *= gain;
+				f *= lacunarity;
+			}
+			
+			return res;  
+		}	
+
+		//----------------------------------------------------------------------------------------------------------------
 	}
+
+	module.FractalNoiseGen2D = FractalNoiseGen2D;
 
 })();

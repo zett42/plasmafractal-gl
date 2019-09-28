@@ -25,6 +25,7 @@ SOFTWARE.
 //---------------------------------------------------------------------------------------------------
 
 import * as z42opt from "./optionsDescriptorValues.module.js"
+import * as z42optUtil from "./optionsUtils.module.js"
 import * as z42color from "./color.module.js"
 import "../external/nouislider/nouislider.js"
 import '../external/ResizeObserver/ResizeObserver.js'
@@ -55,10 +56,7 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 	data() {
 		return {
 			selectedHandleIndex: null,
-			selectedPaletteItem: {
-				color: null,
-				easeFun: null, 
-			},
+			selectedPaletteItem: null,
 			selectedPaletteItemView: {
 				options: [ "" ]   // <- means "all children"
 			},
@@ -68,7 +66,7 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 		// Make a deep clone so we will be able to differentiate between changes of palette originating
 		// from the outside and from the inside of this component.
 
-		const palette = makePaletteValid( this.value );
+		const palette = makePaletteValid( this.value, this.optDesc );
 
 		const resizeObserver = new ResizeObserverPonyfill( this.onCanvasResize );
 		
@@ -202,11 +200,9 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 			// Clone required so setPaletteFromOutside() notices change in handle count.
 			let newPalette = _.cloneDeep( privates.get( this ).palette );
 
-			newPalette.push({
-				pos: palettePos,
-				color:   this.optDesc.$attrs.defaultColor || { r:0, g:0, b:0, a: 1 },
-				easeFun: this.optDesc.$attrs.defaultEaseFunction || "linear"
-			});
+			let newPaletteItem = { pos: palettePos };
+			z42optUtil.setDefaultOptions( newPaletteItem, this.optDesc.segment );
+			newPalette.push( newPaletteItem );
 
 			this.setPaletteFromOutside( newPalette );
 
@@ -314,7 +310,7 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 			}
 		},
 
-		// Called when a value in the input fields for the selected handle has changed. 
+		// Called when a value in the input components for the selected handle has changed. 
 		onPaletteAttributeInput( event ) {
 			if( this.selectedHandleIndex != null ) {
 				const oldValue = _.get( this.selectedPaletteItem, event.path );
@@ -526,7 +522,7 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 			deep: true,
 			handler: function( val, oldVal ) { 
 				
-				const newPalette = makePaletteValid( val );	
+				const newPalette = makePaletteValid( val, this.optDesc );	
 				const curPalette = privates.get( this ).palette;
 
 				// Sort new and current palettes for comparability.
@@ -601,25 +597,19 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 //==================================================================================================
 // Private functions
 
-function makePaletteValid( palette ) {
-
-	const defaults = {   
-		pos: 0,
-		color: { r: 0, g: 0, b: 0, a: 1 },
-		easeFun: "linear" 
-	};
+function makePaletteValid( palette, optDesc ) {
+	const defaults = { pos: 0 };
+	z42optUtil.setDefaultOptions( defaults, optDesc.segment );
 
 	if( ! Array.isArray( palette ) || palette.length === 0 ) {
-		const defaults2 = {   
-			pos: 0.5,
-			color: { r: 255, g: 255, b: 255, a: 1 },
-			easeFun: "linear" 
-		};
-	
+		const defaults2 = _.cloneDeep( defaults );
+		defaults2.pos = 0.5;
+		defaults2.color = { r: 255, g: 255, b: 255, a: 1 };
+
 		return [ defaults, defaults2 ];
 	}
 
-	let result = _.cloneDeep( palette );
+	const result = _.cloneDeep( palette );
 
 	// Set defaults for each array element.
 	for( let i = 0; i < result.length; ++i ){
