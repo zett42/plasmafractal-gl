@@ -53,6 +53,9 @@ Animation
 <a href="https://zett42.github.io/plasmafractal-gl/?n=p3&f=.99&o=6&g=.41&l=1.96&a=5.7&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.03_000000_l+.1_ffffff_l+.14_2e2e2e_io4+.68_000000_l+.78_282828_ios23+.76_ffffff_l&acp=0&ntde=3.&ntd=10.&prd=10.&ptde=10.&ptd=5.#">
   <img src="/screenshots/thumbs/MilkGrey.jpg" alt="milk greY - by Nickelartist" title="milk greY - by Nickelartist" width="150">
 </a>
+<a href="https://zett42.github.io/plasmafractal-gl/?n=p3&f=.96&o=12&g=.5&l=2&a=1&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=1&pbg=000000&cp=0_9b896f_io2+0_948167_io2_f8*o6*g.5*l2*a.5*s.5+.723_333c4d_l&acp=0&inm=1&ns=.05&ntu=1.67&ipr=0&prs=.1&ptde=10.&ptd=5.#">
+  <img src="/screenshots/thumbs/AgateBlueYellow.jpg" alt="Agate Blue/Yellow" title="Agate Blue/Yellow" width="150">
+</a>
 
 ## Credits
 This project uses the following open source libraries. Each library comes with its own license terms, which can be found in the source code included in this project.
