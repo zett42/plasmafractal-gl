@@ -27,33 +27,31 @@ import * as z42opt    from "./optionsDescriptor.module.js"
 import * as z42optVal from "./optionsDescriptorValues.module.js"
 import * as z42easing from "./easing.module.js"
 
-// Additional dependencies (include via <script> tag):
-// 'easing.js' (zett42 version)
-
 //------------------------------------------------------------------------------------------------
 
 class PaletteOpt extends z42opt.Option {
 	constructor( attrs ){
 		super( attrs );
 
-		// Assign default descriptors for palette item data
-		if( ! attrs.posDesc ) {
-			this.$attrs.posDesc = new z42optVal.FloatOpt({ 
-				min: 0, max: 1, maxDecimals: 3,
-				defaultVal: 0
-			});
-		}
-		if( ! attrs.colorDesc ) {
-			this.$attrs.colorDesc = new z42optVal.ColorOpt({
+		// Assign default descriptors for palette item data.
+
+		this.position = new z42optVal.FloatOpt({ 
+			min: 0, max: 1, 
+			maxDecimals: 3,
+			defaultVal: 0
+		});
+
+		this.segment = new z42opt.Node( {}, {
+			color: new z42optVal.ColorOpt({
+				title: "Selected color",
 				defaultVal: { r: 0, g: 0, b: 0 }
-			});
-		}
-		if( ! attrs.easeDesc ) {
-			this.$attrs.easeDesc  = new z42optVal.EnumOpt({	
+			}),
+			easeFun: new z42optVal.EnumOpt({
+				title: "Selected ease function",
 				values: this.$attrs.easeFunctions,
 				defaultVal: this.$attrs.defaultEaseFunction
-			});
-		}
+			}),
+		});
 	}
 
 	$serialize( value ) {
@@ -62,9 +60,9 @@ class PaletteOpt extends z42opt.Option {
 		for( const item of value ){
 			if( result.length > 0 )
 				result += " ";
-			result += this.$attrs.posDesc.$serialize( item.pos ) + "_";
-			result += this.$attrs.colorDesc.$serialize( item.color ) + "_";
-			result += this.$attrs.easeDesc.$serialize( item.easeFun );
+			result += this.position.$serialize( item.pos ) + "_";
+			result += this.segment.color.$serialize( item.color ) + "_";
+			result += this.segment.easeFun.$serialize( item.easeFun );
 		}
 
 		return result;
@@ -74,18 +72,20 @@ class PaletteOpt extends z42opt.Option {
 		let result = [];
 
 		for( const itemStr of value.split( " " ) ){
-			let item = {};
 			const itemValues = itemStr.split( "_" );
-			if( itemValues.length < 2 )
-				continue;
-			item.pos = Number( itemValues[ 0 ] );
-			item.color = this.$attrs.colorDesc.$deserialize( itemValues[ 1 ] );
-			if( itemValues.length >= 3 )
-				item.easeFun = this.$attrs.easeDesc.$deserialize( itemValues[ 2 ] );
-			else
-				item.easeFun = this.$attrs.defaultEaseFunction;
+			if( itemValues.length >= 2 )
+			{
+				let item = {
+					pos:   this.position.$deserialize( itemValues[ 0 ] ),
+					color: this.segment.color.$deserialize( itemValues[ 1 ] ),
+				};
+				if( itemValues.length >= 3 )
+					item.easeFun = this.segment.easeFun.$deserialize( itemValues[ 2 ] );
+				else
+					item.easeFun = this.$attrs.defaultEaseFunction;
 			
-			result.push( item );
+				result.push( item );
+			}
 		}
 
 		return result;			
