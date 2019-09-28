@@ -101,9 +101,16 @@ const containerComponent = Vue.component( "z42opt-container", {
 		childId( key ) {  
 			return z42optUtil.joinPath( this.id, key, "#" ); 
 		},			
-		// Return a flat array of options descriptors from given path.
+		// Return a flat array of options descriptors from given path. 
+		// Path can be empty (not null!) to return all children of root options descriptor.
 		resolveOptDesc( path ){
-			let node = _.get( this.optDesc, path );
+			if( path == null ) {
+				return [];
+			}
+			const node = ( path.length === 0 ?
+			               this.optDesc :
+						   _.get( this.optDesc, path ) );
+		
 			if( node instanceof z42opt.Option ){
 				return [{ path: path, node: node }];
 			}

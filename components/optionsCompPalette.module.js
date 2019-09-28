@@ -59,13 +59,9 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 				color: null,
 				easeFun: null, 
 			},
-			selectedColorDesc: new z42opt.ColorOpt({
-				title: "Selected color",
-			}),
-			selectedEaseFunDesc: new z42opt.EnumOpt({
-				title: "Selected ease function",
-				values: this.optDesc.$attrs.easeFunctions
-			}),
+			selectedPaletteItemView: {
+				options: [ "" ]   // <- means "all children"
+			},
 		}
 	},	
 	mounted() {
@@ -120,8 +116,7 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 	computed: {
 		easeFunCanvasId()     { return this.id + "#easeFunCanvas"; },
 		gradientCanvasId()    { return this.id + "#gradientCanvas"; },
-		selectedColorId()     { return this.id + "#selectedColor"; },
-		selectedEaseFunId()   { return this.id + "#selectedEaseFun"; },
+		selectedPaletteItemId()    { return this.id + "#segmentOptions"; },
 		label()               { return this.optDesc.$attrs.title ? this.optDesc.$attrs.title + ":" : undefined; },
 		labelFor()            { return this.optDesc.$attrs.title ? this.id : undefined; },
 	},
@@ -320,17 +315,19 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 		},
 
 		// Called when a value in the input fields for the selected handle has changed. 
-		onPaletteAttributeInput( name, value ) {
-			if( this.selectedHandleIndex != null && 
-				! _.isEqual( this.selectedPaletteItem[ name ], value ) ){
-				
-				this.selectedPaletteItem[ name ] = value;
+		onPaletteAttributeInput( event ) {
+			if( this.selectedHandleIndex != null ) {
+				const oldValue = _.get( this.selectedPaletteItem, event.path );
 
-				const palette = privates.get( this ).palette;
-				palette[ this.selectedHandleIndex ][ name ] = _.cloneDeep( value );
+				if( ! _.isEqual( oldValue, event.value ) ){
+					_.set( this.selectedPaletteItem, event.path, _.cloneDeep( event.value ) );
 
-				this.updateCanvas();
-				this.emitPaletteInputEvent();
+					const palette = privates.get( this ).palette;
+					_.set( palette[ this.selectedHandleIndex ], event.path, _.cloneDeep( event.value ) );
+
+					this.updateCanvas();
+					this.emitPaletteInputEvent();
+				}
 			}
 		},
 
@@ -550,11 +547,14 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 			:label-for="labelFor"
 			:disabled="disabled"
 			>
+			<!-- Show the curves of the ease functions -->
 			<canvas 
 				:id="easeFunCanvasId"
 				class="z42opt-palette-easefun-canvas"
 				>
 			</canvas>
+
+			<!-- Show the rendered palette -->
 			<canvas 
 				:id="gradientCanvasId"
 				class="z42opt-palette-gradient-canvas"
@@ -569,25 +569,20 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 				>
 			</div>
 
-			<z42opt-color
+			<!-- Components for selected palette item -->
+			<z42opt-container
 				v-if="selectedHandleIndex !== null"
-				:id="selectedColorId"
-				:value="selectedPaletteItem.color"
-				:optDesc="selectedColorDesc"
-				class="z42opt-palette-color"
-				@input="onPaletteAttributeInput( 'color', $event )"
-			/>
-
-			<z42opt-select
-				v-if="selectedHandleIndex !== null"
-				:id="selectedEaseFunId"
-				:value="selectedPaletteItem.easeFun"
-				:optDesc="selectedEaseFunDesc"
-				class="z42opt-palette-easeFun"
-				@input="onPaletteAttributeInput( 'easeFun', $event )"
+				:id="selectedPaletteItemId"
+				:key="selectedPaletteItemId"
+				:optData="selectedPaletteItem"
+				:optDesc="optDesc.segment"
+				:optView="selectedPaletteItemView"
+				class="container px-0"
+				@opt-modified="onPaletteAttributeInput( $event )"	
 			/>
 			
-			<div  v-if="selectedHandleIndex === null"
+			<!-- Help text -->
+			<div v-if="selectedHandleIndex === null"
 				class="text-info"
 				>
 				<p>
