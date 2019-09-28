@@ -107,6 +107,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			max: 1.0,
 			maxDecimals: 2,
 			defaultVal: 0.5,
+			enabled: options => options.noise.octaves >= 2,
 		}),
 		lacunarity: new z42opt.FloatOpt({
 			shortKey: "l",
@@ -115,6 +116,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			max: 10,
 			maxDecimals: 2,
 			defaultVal: 2,
+			enabled: options => options.noise.octaves >= 2,
 		}),
 		amplitude: new z42opt.FloatOpt({
 			shortKey: "a",
