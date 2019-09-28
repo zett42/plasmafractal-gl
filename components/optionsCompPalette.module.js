@@ -436,17 +436,23 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 		updateEaseFunCanvas( palette ){
 
 			const canvasElem = document.getElementById( this.easeFunCanvasId );
-			const ctx        = canvasElem.getContext( "2d" );
+			const width   = canvasElem.width;
+			const height  = canvasElem.height;
+
+			if( width === 0 || height === 0 )
+				return;
+
+			const ctx = canvasElem.getContext( "2d" );
 
 			ctx.fillStyle   = "rgba( 0, 0, 0, 0.3 )";
 			ctx.strokeStyle = "rgb( 255, 255, 255 )";
 			ctx.lineWidth   = window.devicePixelRatio;
 
-			ctx.clearRect( 0, 0, canvasElem.width, canvasElem.height );
-			ctx.fillRect( 0, 0, canvasElem.width, canvasElem.height );
+			ctx.clearRect( 0, 0, width, height );
+			ctx.fillRect( 0, 0, width, height );
 
-			const diagramWidth  = canvasElem.width + 1;
-			const diagramheight = canvasElem.height - ctx.lineWidth * 2;
+			const diagramWidth  = width + 1;
+			const diagramheight = height - ctx.lineWidth * 2;
 
 			const paletteRendered = new Uint32Array( new ArrayBuffer( diagramWidth * Uint32Array.BYTES_PER_ELEMENT ) );
 			z42color.renderPaletteDef( paletteRendered, paletteRendered.length, palette );
@@ -460,6 +466,10 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 			const canvasElem = document.getElementById( this.gradientCanvasId );
 			const width   = canvasElem.width;
 			const height  = canvasElem.height;
+
+			if( width === 0 || height === 0 )
+				return;
+
 			const context = canvasElem.getContext( "2d" );
 			const imgData = context.createImageData( width, 1 );
 			const pixels  = new Uint32Array( imgData.data.buffer );
