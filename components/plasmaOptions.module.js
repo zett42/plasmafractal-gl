@@ -135,21 +135,21 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			shortKey: "icp",
 			title: "Custom palette",
 			defaultVal: false,
-			isRendered: options => ! options.palette.isGrayScale,
+			depends: options => ! options.palette.isGrayScale,
 		}),		
 		easeFunctionBgToFg: new z42opt.EnumOpt({
 			shortKey: "pbf",
 			title: "Background to foreground easing",
 			values: paletteEaseFunctions,
 			defaultVal: "inBounce",
-			isRendered: options => ! options.palette.isCustom && ! options.palette.isGrayScale,
+			depends: options => ! options.palette.isCustom && ! options.palette.isGrayScale,
 		}),
 		easeFunctionFgToBg: new z42opt.EnumOpt({
 			shortKey: "pfb",
 			title: "Foreground to background easing",
 			values: paletteEaseFunctions,
 			defaultVal: "outBounce",
-			isRendered: options => ! options.palette.isCustom && ! options.palette.isGrayScale,
+			depends: options => ! options.palette.isCustom && ! options.palette.isGrayScale,
 		}),
 		saturation: new z42opt.FloatOpt({
 			shortKey: "ps",
@@ -158,7 +158,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			max: 1,
 			maxDecimals: 2,
 			defaultVal: 0.5,
-			isRendered: options => ! options.palette.isCustom && ! options.palette.isGrayScale,
+			depends: options => ! options.palette.isCustom && ! options.palette.isGrayScale,
 		}),
 		brightness: new z42opt.FloatOpt({
 			shortKey: "pb",
@@ -167,26 +167,26 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			max: 1,
 			maxDecimals: 2,
 			defaultVal: 1.0,
-			isRendered: options => ! options.palette.isCustom && ! options.palette.isGrayScale,
+			depends: options => ! options.palette.isCustom && ! options.palette.isGrayScale,
 		}),
 		bgColor: new z42opt.ColorOpt({
 			shortKey: "pbg",
 			title: "Background color",
 			defaultVal: { r: 0, g: 0, b: 0, a: 1 },
-			isRendered: options => ! options.palette.isCustom && ! options.palette.isGrayScale,
+			depends: options => ! options.palette.isCustom && ! options.palette.isGrayScale,
 		}),
 		customPalette: new z42pal.PaletteOpt({
 			shortKey: "cp",
 			easeFunctions: paletteEaseFunctions,
 			defaultEaseFunction: "linear",
 			defaultVal: [],
-			isRendered: options => options.palette.isCustom && ! options.palette.isGrayScale,
+			depends: options => options.palette.isCustom && ! options.palette.isGrayScale,
 		}),
 		isCustomPaletteAnimated: new z42opt.BoolOpt({
 			shortKey: "acp",
 			title: "Animate custom palette (random hue offset)",
 			defaultVal: false,
-			isRendered: options => options.palette.isCustom && ! options.palette.isGrayScale,
+			depends: options => options.palette.isCustom && ! options.palette.isGrayScale,
 		}),		
 	}),
 	noiseAnim: new z42opt.Node( {}, {
@@ -203,7 +203,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			maxDecimals: 2,
 			isSlow: true,
 			defaultVal: 0.05,
-			isRendered: options => options.noiseAnim.isNoiseMutation
+			depends: options => options.noiseAnim.isNoiseMutation
 		}),
 		turbulence: new z42opt.FloatOpt({
 			shortKey: "ntu",
@@ -213,7 +213,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			maxDecimals: 2,
 			isSlow: true,
 			defaultVal: 1.85,
-			isRendered: options => options.noiseAnim.isNoiseMutation
+			depends: options => options.noiseAnim.isNoiseMutation
 		}),
 	}),
 	paletteAnim: new z42opt.Node( {}, {
@@ -230,7 +230,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			maxDecimals: 2,
 			isSlow: true,
 			defaultVal: 0.1,
-			isRendered: options => options.paletteAnim.isRotaEnabled,
+			depends: options => options.paletteAnim.isRotaEnabled,
 		}),
 		transitionDelay: new z42opt.DurationOpt({
 			shortKey: "ptde",
@@ -241,7 +241,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			maxDecimals: 1,
 			isSlow: true,
 			defaultVal: 10,
-			isRendered: options => ! options.palette.isCustom || options.palette.isCustomPaletteAnimated,
+			depends: options => ! options.palette.isCustom || options.palette.isCustomPaletteAnimated,
 		}),
 		transitionDuration: new z42opt.DurationOpt({
 			shortKey: "ptd",
@@ -252,7 +252,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			maxDecimals: 1,
 			isSlow: true,
 			defaultVal: 5,
-			isRendered: options => ! options.palette.isCustom || options.palette.isCustomPaletteAnimated,
+			depends: options => ! options.palette.isCustom || options.palette.isCustomPaletteAnimated,
 		}),
 	}),
 });

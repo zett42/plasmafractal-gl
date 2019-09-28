@@ -147,13 +147,12 @@ const containerComponent = Vue.component( "z42opt-container", {
 			<template v-for="basePath in optView.options">
 				<template v-for="opt in resolveOptDesc( basePath )">
 					
-					<!-- Transition when an options isRendered/isShown state changes.  -->
+					<!-- Transition when an options depends/isShown state changes.  -->
 					<transition name="z42opt-component-transition" mode="out-in">
 
 						<!-- Component for manipulating a single option value -->
 						<component :is="opt.node.$component" 
-							v-if="isAttrTrue( opt.node, 'isRendered' )" 
-							v-show="isAttrTrue( opt.node, 'isShown' )"
+							v-if="isAttrTrue( opt.node, 'depends' )" 
 							:disabled="! isAttrTrue( opt.node, 'isEnabled' )"
 							:key="childId( opt.path )"
 							:id="childId( opt.path )"
