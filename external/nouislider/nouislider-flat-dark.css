@@ -1,0 +1,28 @@
+.noUi-target {
+  background: rgba(77, 77, 77, 0.5); 
+  border: none;
+  box-shadow: none;
+}
+.noUi-connect {
+  background: #205B56;
+}
+.noUi-handle {
+  border: none;
+  background: #808080;
+  box-shadow: none;
+}
+.noUi-active {
+  box-shadow: none;
+  background: #AAA;
+}
+/* Handle stripes;
+ */
+.noUi-handle:before,
+.noUi-handle:after {
+  width: 0px;
+}
+/* Disabled state;
+ */
+[disabled] .noUi-connect {
+  background: #666;
+}
