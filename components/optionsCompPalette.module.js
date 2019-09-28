@@ -435,10 +435,6 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 		// Draw a diagram of the palette ease functions into the canvas.
 		updateEaseFunCanvas( palette ){
 
-			// shallow clone is sufficient here, as we don't modify properties of array elements
-			const paletteSorted = [ ...palette ];
-			paletteSorted.sort( ( a, b ) => a.pos - b.pos );
-
 			const canvasElem = document.getElementById( this.easeFunCanvasId );
 			const ctx        = canvasElem.getContext( "2d" );
 
@@ -449,53 +445,13 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 			ctx.clearRect( 0, 0, canvasElem.width, canvasElem.height );
 			ctx.fillRect( 0, 0, canvasElem.width, canvasElem.height );
 
-			const width      = canvasElem.width;
-			const height     = canvasElem.height - ctx.lineWidth * 2;
+			const diagramWidth  = canvasElem.width + 1;
+			const diagramheight = canvasElem.height - ctx.lineWidth * 2;
 
-			ctx.beginPath();
+			const paletteRendered = new Uint32Array( new ArrayBuffer( diagramWidth * Uint32Array.BYTES_PER_ELEMENT ) );
+			z42color.renderPaletteDef( paletteRendered, paletteRendered.length, palette );
 
-			const first = paletteSorted[ 0 ];
-			const last  = paletteSorted[ paletteSorted.length - 1 ];
-
-			const firstX = first.pos * width;
-			const lastX  = last.pos * width;
-
-			const distRight = width - lastX;
-
-			const firstY = height - luminance( first.color ) * height + ctx.lineWidth;
-			const lastY  = height - luminance( last.color )  * height + ctx.lineWidth;
-
-			if( firstX > 0 ){
-				// Draw clipped segment from left border to first handle.
-				drawEaseFunction( ctx, -distRight, firstX, 0, firstX, lastY, firstY, last.easeFun );
-			}
-
-			for( let i = 0; i < paletteSorted.length - 1; ++i ) {
-				const start = paletteSorted[ i ];
-				const end   = paletteSorted[ i + 1 ];
-
-				const startX = Math.trunc( start.pos * width );
-				const endX   = Math.trunc( end.pos   * width );
-
-				const startY = height - luminance( start.color ) * height + ctx.lineWidth;
-				const endY   = height - luminance( end.color )   * height + ctx.lineWidth;
-
-				// Draw full segment.
-				if( endX != startX ) {
-					drawEaseFunction( ctx, startX, endX, startX, endX, startY, endY, start.easeFun );
-				}
-				else {					
-					ctx.moveTo( startX, startY );
-					ctx.lineTo( startX, endY );
-				}
-			}
-
-			if( distRight > 0 ){
-				// Draw clipped segment from last handle to right border.
-				drawEaseFunction( ctx, lastX, lastX + firstX + distRight, lastX, width, lastY, firstY, last.easeFun );
-			}
-
-			ctx.stroke();
+			drawPaletteDiagram( ctx, 0, ctx.lineWidth, diagramWidth, diagramheight, paletteRendered, luminance );
 		},
 
 		// Draw the current palette into the canvas.
@@ -634,32 +590,24 @@ function palettePositions( palette ){
 
 //---------------------------------------------------------------------------------------------------
 
-function luminance( color ){
-	return ( 0.299 * color.r + 0.587 * color.g + 0.114 * color.b ) / 255;
-} 	
+function drawPaletteDiagram( ctx, left, bottom, width, height, paletteUint32, fun ) {
 
-//---------------------------------------------------------------------------------------------------
+	let x1 = Math.trunc( left );
+	bottom = Math.trunc( bottom );
 
-function drawEaseFunction( ctx, xStart, xEnd, xClipMin, xClipMax, yStart, yEnd, easeFun ) {
+	const calcY = ( index ) => bottom + height - fun( paletteUint32[ index ] ) * height;
 
-	xStart = Math.trunc( xStart );
-	xEnd   = Math.trunc( xEnd );
-	xClipMin = Math.trunc( xClipMin );
-	xClipMax = Math.trunc( xClipMax );
+	ctx.beginPath();
 
-	const iMax  = xClipMax - xClipMin;
-	const xOffs = xClipMin - xStart;
-
-	let x1 = xClipMin;
-	let y1 = easeFun( xOffs, yStart, yEnd - yStart, xEnd - xStart )
+	let y1 = calcY( 0 );
 	ctx.moveTo( x1, y1 );
 
-	for( let i = 1; i <= iMax; ++i ) {
-		const x2 = i + xClipMin;
-		const y2 = easeFun( i + xOffs, yStart, yEnd - yStart, xEnd - xStart );
+	for( let i = 1; i < width; ++i ) {
+		const x2 = i;
+		const y2 = calcY( i );
 	
 		// To avoid aliasing in horizontal direction, draw curve segments only when Y changes or curve ends.
-		if( y2 != y1 || i >= iMax ) {
+		if( y2 != y1 || i >= width - 1 ) {
 			// Draw horizontal line for any x values we previously skipped.
 			if( x2 - x1 > 1 ) {
 				ctx.lineTo( x2 - 1, y1 );
@@ -671,7 +619,19 @@ function drawEaseFunction( ctx, xStart, xEnd, xClipMin, xClipMax, yStart, yEnd, 
 			y1 = y2;
 		}
 	}
+
+	ctx.stroke();
 }
+
+//---------------------------------------------------------------------------------------------------
+// Return luminance of packed RGB Uint32 color in range 0..1.
+
+function luminance( colorUint32 ){
+	const r = ( colorUint32 >> 16 ) & 0xFF;
+	const g = ( colorUint32 >> 8 ) & 0xFF;
+	const b = ( colorUint32 ) & 0xFF;
+	return ( 0.299 * r + 0.587 * g + 0.114 * b ) / 255;
+} 	
 
 //---------------------------------------------------------------------------------------------------
 
