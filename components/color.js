@@ -31,11 +31,11 @@ SOFTWARE.
 	const module = self.z42color = {};
 	
 	//----------------------------------------------------------------------------------------------------------------
-	/// Fill a one-dimensional RGBA Uint32Array with a single gradient.
+	/// Render a palette segment into a one-dimensional RGBA Uint32Array.
 	/// Wraps around in case index is out of range. 
 	/// Returns start + count.
 	
-	module.makePaletteGradientRGBA = function( outPaletteUint32, start, count, startColor, endColor, easeFunction ) {		
+	module.renderPaletteSegment = function( outPaletteUint32, start, count, startColor, endColor, easeFunction ) {		
 		if( count <= 0 ) 
 			return;
 		if( count > outPaletteUint32.length )
@@ -58,23 +58,23 @@ SOFTWARE.
 	}
 
 	//----------------------------------------------------------------------------------------------------------------
-	/// Fill a one-dimensional RGBA Uint32Array with multiple consecutive gradients.
+	/// Render a palette definition into a one-dimensional RGBA Uint32Array.
 	///
 	/// Wraps around in case index is out of range. 
 	///
-	/// Argument for inputPalette must be an array of objects:
+	/// Argument for inputPaletteDef must be an array of objects:
 	/// { 
 	///		pos,      // 0..1
 	///		color,    // { r, g, b, a } where rgb values are in range 0..255 and a is in range 0..1
 	///		easeFun,  // ease function
 	/// }
 	///
-	/// A temporary clone of the inputPalette will be made and the clone be sorted by positions.
+	/// Before rendering, a temporary clone of the inputPalette will be made and sorted by positions.
 
-	module.makePaletteMultiGradientRGBA = function( outPaletteUint32, count, inputPalette )	{
+	module.renderPaletteDef = function( outPaletteUint32, count, inputPaletteDef )	{
 
 		// shallow clone is sufficient here, as we don't modify properties of array elements
-		let sortedPalette = [ ...inputPalette ];
+		let sortedPalette = [ ...inputPaletteDef ];
 		sortedPalette.sort( ( a, b ) => a.pos - b.pos );
 
 		for( let i = 0; i < sortedPalette.length; ++i ) {
@@ -99,7 +99,7 @@ SOFTWARE.
 				outPaletteUint32[ startIndex ] = start.color;				
 			}
 			else {
-				z42color.makePaletteGradientRGBA( outPaletteUint32, startIndex, dist, start.color, end.color, start.easeFun );
+				z42color.renderPaletteSegment( outPaletteUint32, startIndex, dist, start.color, end.color, start.easeFun );
 			}
 		}	
 	}

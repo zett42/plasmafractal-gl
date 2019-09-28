@@ -516,7 +516,7 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 			const pixels  = new Uint32Array( imgData.data.buffer );
 			
 			// Fill buffer with a single line.
-			z42color.makePaletteMultiGradientRGBA( pixels, pixels.length, palette );
+			z42color.renderPaletteDef( pixels, pixels.length, palette );
 		
 			// Draw repeatedly to stretch vertically.
 			for( let y = 0; y < height; ++y ) {

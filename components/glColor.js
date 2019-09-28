@@ -45,7 +45,7 @@ SOFTWARE.
 
             const buffer = new ArrayBuffer( textureWidth * 4 );
             const paletteUint32 = new Uint32Array( buffer );
-            z42color.makePaletteMultiGradientRGBA( paletteUint32, paletteUint32.length, paletteDef );
+            z42color.renderPaletteDef( paletteUint32, paletteUint32.length, paletteDef );
                 
             const paletteUint8 = new Uint8Array( buffer );
             gl.texImage2D( gl.TEXTURE_2D, mipLevel, gl.RGBA, textureWidth, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, paletteUint8, 0 );
