@@ -91,6 +91,7 @@ const rangeComponent = Vue.component( "z42opt-range", {
 				start: [ this.value ],
 				step: step,
 				range: range,
+				behaviour: "none",  // so touch scrolling of dialog doesn't move slider
 				tooltips: this.optDesc.$attrs.isSlow ? tooltipFormatter : false,
 			};
 		},
