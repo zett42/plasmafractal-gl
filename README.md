@@ -56,8 +56,11 @@ Animation
 <a href="https://zett42.github.io/plasmafractal-gl/?f=.23&o=14&g=.65&l=2&a=1.1&n=p3&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.69_ffae55_l+.695_481700_o2+.688_481700_l+.23_00485e_l+.233_9bf5ff_l+.237_00485e_o2+.456_000000_i2+.896_000000_i2&acp=0&ptde=10.&ptd=5.&ipr=0&prs=.1&inm=1&ns=.05&ntu=1.46#">
   <img src="/screenshots/thumbs/CosmicEnergy.jpg" alt="Cosmic Energy" title="Cosmic Energy" width="150">
 </a>
-<a href="https://zett42.github.io/plasmafractal-gl/?n=p3&f=.96&o=12&g=.5&l=2&a=1&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=1&pbg=000000&cp=0_9b896f_io2+0_948167_io2_f8*o6*g.5*l2*a.5*s.5+.723_333c4d_l&acp=0&inm=1&ns=.05&ntu=1.67&ipr=0&prs=.1&ptde=10.&ptd=5.#">
+<a href="https://zett42.github.io/plasmafractal-gl/?n=p3&f=.96&o=12&g=.5&l=2&a=1&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=1&pbg=000000&cp=0_948167_io2_f8*o6*g.61*l2*a.5*s.41+.723_333c4d_l&acp=0&inm=1&ns=.04&ntu=1.67&ipr=0&prs=.1&ptde=10.&ptd=5.#">
   <img src="/screenshots/thumbs/AgateBlueYellow.jpg" alt="Agate Blue/Yellow" title="Agate Blue/Yellow" width="150">
+</a>
+<a href="https://zett42.github.io/plasmafractal-gl/?n=p3&f=.33&o=5&g=.5&l=2&a=1&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=1&pbg=000000&cp=0_525787_l_f4*o12*g.61*l2*a.71*s.39&acp=1&inm=1&ns=.02&ntu=1.67&ipr=0&prs=.1&ptde=10.&ptd=5.#">
+  <img src="/screenshots/thumbs/MonochromaticStripes.jpg" alt="Monochromatic Stripes" title="Monochromatic Stripes" width="150">
 </a>
 
 ## Credits
