@@ -53,7 +53,7 @@ class PaletteOpt extends z42opt.Option {
 				defaultVal: this.$attrs.defaultEaseFunction
 			}),
 			isNoisy: new z42optVal.BoolOpt({
-				title: "Add noise (experimental)",
+				title: "Add noise to lightness (HSL)",
 				defaultVal: false,
 			}),
 			noise: new z42opt.Node( {}, {
