@@ -23,6 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. 
 */
 
+import './fractalNoise.js'
+
 (function(){
 	'use strict';
 
@@ -33,28 +35,37 @@ SOFTWARE.
 	//----------------------------------------------------------------------------------------------------------------
 	/// Render a palette segment into a one-dimensional RGBA Uint32Array.
 	/// Wraps around in case index is out of range. 
-	/// Returns start + count.
+	/// Returns startIndex + count.
 	
-	module.renderPaletteSegment = function( outPaletteUint32, start, count, startColor, endColor, easeFunction ) {		
+	module.renderPaletteSegment = function( outPaletteUint32, startIndex, count, startColor, endColor, 
+											easeFunction, noiseFunction ) {		
 		if( count <= 0 ) 
 			return;
 		if( count > outPaletteUint32.length )
 			count = outPaletteUint32.length;
 
 		for( let i = 0; i < count; ++i ) {
-			const pos = module.mod( i + start, outPaletteUint32.length );
+			const pos = module.mod( i + startIndex, outPaletteUint32.length );
 
-			const r = Math.round( easeFunction( i, startColor.r, endColor.r - startColor.r, count ) );
-			const g = Math.round( easeFunction( i, startColor.g, endColor.g - startColor.g, count ) );
-			const b = Math.round( easeFunction( i, startColor.b, endColor.b - startColor.b, count ) );
+			const ec = {
+				r: easeFunction( i, startColor.r, endColor.r - startColor.r, count ),
+				g: easeFunction( i, startColor.g, endColor.g - startColor.g, count ),
+				b: easeFunction( i, startColor.b, endColor.b - startColor.b, count ),
+				a: easeFunction( i, startColor.a, endColor.a - startColor.a, count ),
+			};
 
-			// Note: alpha component is in 0..1 range, so we have to multiply with 255.
-			const a = Math.round( easeFunction( i, startColor.a, endColor.a - startColor.a, count ) * 255 );
-		
+			const nc = noiseFunction( i / count, ec );
+
+			const r = Math.round( nc.r );
+			const g = Math.round( nc.g );
+			const b = Math.round( nc.b );
+			// Note: alpha component is in 0..1 range, so we have to multiply with 255 for final output.
+			const a = Math.round( nc.a * 255 );
+
 			outPaletteUint32[ pos ] = r | ( g << 8 ) | ( b << 16 ) | ( a << 24 );
 		}
 
-		return start + count;
+		return startIndex + count;
 	}
 
 	//----------------------------------------------------------------------------------------------------------------
@@ -95,13 +106,42 @@ SOFTWARE.
 			}
 
 			if( dist <= 0 ){
-				// TODO: assign weighted avg of all colors at same index 
-				outPaletteUint32[ startIndex ] = start.color;				
+				// TODO: to reduce aliasing of thin lines in the final image, assign weighted avg of all colors at same index
+				outPaletteUint32[ startIndex ] = start.color;
 			}
 			else {
-				z42color.renderPaletteSegment( outPaletteUint32, startIndex, dist, start.color, end.color, start.easeFun );
+				let noiseFun = ( pos, rgb ) => rgb;
+				if( start.isNoisy && start.noise ) {
+					noiseFun = module.makeNoiseFun( start.noise );
+				}
+				z42color.renderPaletteSegment( outPaletteUint32, startIndex, dist, start.color, end.color, start.easeFun, noiseFun );
 			}
 		}	
+	}
+
+	//----------------------------------------------------------------------------------------------------------------
+	// Generate a noise function.
+
+	module.makeNoiseFun = function( noiseOpt ) {
+
+		const noiseGen = new z42noise.FractalNoiseGen2D( noiseOpt.octaves, noiseOpt.seed );
+
+		return function( pos, rgb ){
+
+			const y = 0;  // possible future extension: animate y
+
+			let hsl = tinycolor( rgb ).toHsl();
+
+			hsl.l += noiseGen.noise( pos, y, noiseOpt.frequency, noiseOpt.gain, noiseOpt.lacunarity, 
+				                     noiseOpt.amplitude );
+			hsl.l = module.clamp( hsl.l, 0.0, 1.0 );
+
+			//hsl.h += noiseGen.noise( pos, y, noiseOpt.frequency, noiseOpt.gain, noiseOpt.lacunarity, 
+			//	                     noiseOpt.amplitude * 360 );
+			//hsl.h = module.mod( hsl.h, 360 );
+
+			return tinycolor( hsl ).toRgb();
+		}
 	}
 	
 	//----------------------------------------------------------------------------------------------------------------

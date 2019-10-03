@@ -457,15 +457,15 @@ class PlasmaFractal2D {
 			return this._generatePaletteRandom( firstHue );
 	}
 
-	// Render a custom palette.
+	// Generate palette from custom palette options.
 
 	_generatePaletteCustom( firstHue )	{
 		// Create a cloned palette with ease function names resolved to actual functions.
-		let result = this._options.palette.customPalette.map( item => ({ 
-			pos     : item.pos, 
-			color   : { ...item.color },
-			easeFun : z42easing[ item.easeFun ] || z42easing.linear
-		}));
+		const result = this._options.palette.customPalette.map( item => {
+			const res = _.cloneDeep( item );
+			res.easeFun = z42easing[ res.easeFun ] || z42easing.linear 
+			return res;
+		});
 
 		if( this._options.palette.isCustomPaletteAnimated ) {
 			for( let item of result ){

@@ -25,6 +25,7 @@ SOFTWARE.
 //---------------------------------------------------------------------------------------------------
 
 import * as z42opt from "./optionsDescriptorValues.module.js"
+import * as z42optUtil from "./optionsUtils.module.js"
 import * as z42color from "./color.module.js"
 import "../external/nouislider/nouislider.js"
 import '../external/ResizeObserver/ResizeObserver.js'
@@ -55,10 +56,7 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 	data() {
 		return {
 			selectedHandleIndex: null,
-			selectedPaletteItem: {
-				color: null,
-				easeFun: null, 
-			},
+			selectedPaletteItem: null,
 			selectedPaletteItemView: {
 				options: [ "" ]   // <- means "all children"
 			},
@@ -68,7 +66,7 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 		// Make a deep clone so we will be able to differentiate between changes of palette originating
 		// from the outside and from the inside of this component.
 
-		const palette = makePaletteValid( this.value );
+		const palette = makePaletteValid( this.value, this.optDesc );
 
 		const resizeObserver = new ResizeObserverPonyfill( this.onCanvasResize );
 		
@@ -202,11 +200,9 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 			// Clone required so setPaletteFromOutside() notices change in handle count.
 			let newPalette = _.cloneDeep( privates.get( this ).palette );
 
-			newPalette.push({
-				pos: palettePos,
-				color:   this.optDesc.$attrs.defaultColor || { r:0, g:0, b:0, a: 1 },
-				easeFun: this.optDesc.$attrs.defaultEaseFunction || "linear"
-			});
+			let newPaletteItem = { pos: palettePos };
+			z42optUtil.setDefaultOptions( newPaletteItem, this.optDesc.segment );
+			newPalette.push( newPaletteItem );
 
 			this.setPaletteFromOutside( newPalette );
 
@@ -314,7 +310,7 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 			}
 		},
 
-		// Called when a value in the input fields for the selected handle has changed. 
+		// Called when a value in the input components for the selected handle has changed. 
 		onPaletteAttributeInput( event ) {
 			if( this.selectedHandleIndex != null ) {
 				const oldValue = _.get( this.selectedPaletteItem, event.path );
@@ -439,67 +435,29 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 		// Draw a diagram of the palette ease functions into the canvas.
 		updateEaseFunCanvas( palette ){
 
-			// shallow clone is sufficient here, as we don't modify properties of array elements
-			const paletteSorted = [ ...palette ];
-			paletteSorted.sort( ( a, b ) => a.pos - b.pos );
-
 			const canvasElem = document.getElementById( this.easeFunCanvasId );
-			const ctx        = canvasElem.getContext( "2d" );
+			const width   = canvasElem.width;
+			const height  = canvasElem.height;
+
+			if( width === 0 || height === 0 )
+				return;
+
+			const ctx = canvasElem.getContext( "2d" );
 
 			ctx.fillStyle   = "rgba( 0, 0, 0, 0.3 )";
 			ctx.strokeStyle = "rgb( 255, 255, 255 )";
 			ctx.lineWidth   = window.devicePixelRatio;
 
-			ctx.clearRect( 0, 0, canvasElem.width, canvasElem.height );
-			ctx.fillRect( 0, 0, canvasElem.width, canvasElem.height );
+			ctx.clearRect( 0, 0, width, height );
+			ctx.fillRect( 0, 0, width, height );
 
-			const width      = canvasElem.width;
-			const height     = canvasElem.height - ctx.lineWidth * 2;
+			const diagramWidth  = width + 1;
+			const diagramheight = height - ctx.lineWidth * 2;
 
-			ctx.beginPath();
+			const paletteRendered = new Uint32Array( new ArrayBuffer( diagramWidth * Uint32Array.BYTES_PER_ELEMENT ) );
+			z42color.renderPaletteDef( paletteRendered, paletteRendered.length, palette );
 
-			const first = paletteSorted[ 0 ];
-			const last  = paletteSorted[ paletteSorted.length - 1 ];
-
-			const firstX = first.pos * width;
-			const lastX  = last.pos * width;
-
-			const distRight = width - lastX;
-
-			const firstY = height - luminance( first.color ) * height + ctx.lineWidth;
-			const lastY  = height - luminance( last.color )  * height + ctx.lineWidth;
-
-			if( firstX > 0 ){
-				// Draw clipped segment from left border to first handle.
-				drawEaseFunction( ctx, -distRight, firstX, 0, firstX, lastY, firstY, last.easeFun );
-			}
-
-			for( let i = 0; i < paletteSorted.length - 1; ++i ) {
-				const start = paletteSorted[ i ];
-				const end   = paletteSorted[ i + 1 ];
-
-				const startX = Math.trunc( start.pos * width );
-				const endX   = Math.trunc( end.pos   * width );
-
-				const startY = height - luminance( start.color ) * height + ctx.lineWidth;
-				const endY   = height - luminance( end.color )   * height + ctx.lineWidth;
-
-				// Draw full segment.
-				if( endX != startX ) {
-					drawEaseFunction( ctx, startX, endX, startX, endX, startY, endY, start.easeFun );
-				}
-				else {					
-					ctx.moveTo( startX, startY );
-					ctx.lineTo( startX, endY );
-				}
-			}
-
-			if( distRight > 0 ){
-				// Draw clipped segment from last handle to right border.
-				drawEaseFunction( ctx, lastX, lastX + firstX + distRight, lastX, width, lastY, firstY, last.easeFun );
-			}
-
-			ctx.stroke();
+			drawPaletteDiagram( ctx, 0, ctx.lineWidth, diagramWidth, diagramheight, paletteRendered, luminance );
 		},
 
 		// Draw the current palette into the canvas.
@@ -508,6 +466,10 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 			const canvasElem = document.getElementById( this.gradientCanvasId );
 			const width   = canvasElem.width;
 			const height  = canvasElem.height;
+
+			if( width === 0 || height === 0 )
+				return;
+
 			const context = canvasElem.getContext( "2d" );
 			const imgData = context.createImageData( width, 1 );
 			const pixels  = new Uint32Array( imgData.data.buffer );
@@ -526,7 +488,7 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 			deep: true,
 			handler: function( val, oldVal ) { 
 				
-				const newPalette = makePaletteValid( val );	
+				const newPalette = makePaletteValid( val, this.optDesc );	
 				const curPalette = privates.get( this ).palette;
 
 				// Sort new and current palettes for comparability.
@@ -601,25 +563,19 @@ const paletteComponent = Vue.component( "z42opt-palette", {
 //==================================================================================================
 // Private functions
 
-function makePaletteValid( palette ) {
-
-	const defaults = {   
-		pos: 0,
-		color: { r: 0, g: 0, b: 0, a: 1 },
-		easeFun: "linear" 
-	};
+function makePaletteValid( palette, optDesc ) {
+	const defaults = { pos: 0 };
+	z42optUtil.setDefaultOptions( defaults, optDesc.segment );
 
 	if( ! Array.isArray( palette ) || palette.length === 0 ) {
-		const defaults2 = {   
-			pos: 0.5,
-			color: { r: 255, g: 255, b: 255, a: 1 },
-			easeFun: "linear" 
-		};
-	
+		const defaults2 = _.cloneDeep( defaults );
+		defaults2.pos = 0.5;
+		defaults2.color = { r: 255, g: 255, b: 255, a: 1 };
+
 		return [ defaults, defaults2 ];
 	}
 
-	let result = _.cloneDeep( palette );
+	const result = _.cloneDeep( palette );
 
 	// Set defaults for each array element.
 	for( let i = 0; i < result.length; ++i ){
@@ -644,32 +600,24 @@ function palettePositions( palette ){
 
 //---------------------------------------------------------------------------------------------------
 
-function luminance( color ){
-	return ( 0.299 * color.r + 0.587 * color.g + 0.114 * color.b ) / 255;
-} 	
+function drawPaletteDiagram( ctx, left, bottom, width, height, paletteUint32, fun ) {
 
-//---------------------------------------------------------------------------------------------------
+	let x1 = Math.trunc( left );
+	bottom = Math.trunc( bottom );
 
-function drawEaseFunction( ctx, xStart, xEnd, xClipMin, xClipMax, yStart, yEnd, easeFun ) {
+	const calcY = ( index ) => bottom + height - fun( paletteUint32[ index ] ) * height;
 
-	xStart = Math.trunc( xStart );
-	xEnd   = Math.trunc( xEnd );
-	xClipMin = Math.trunc( xClipMin );
-	xClipMax = Math.trunc( xClipMax );
+	ctx.beginPath();
 
-	const iMax  = xClipMax - xClipMin;
-	const xOffs = xClipMin - xStart;
-
-	let x1 = xClipMin;
-	let y1 = easeFun( xOffs, yStart, yEnd - yStart, xEnd - xStart )
+	let y1 = calcY( 0 );
 	ctx.moveTo( x1, y1 );
 
-	for( let i = 1; i <= iMax; ++i ) {
-		const x2 = i + xClipMin;
-		const y2 = easeFun( i + xOffs, yStart, yEnd - yStart, xEnd - xStart );
+	for( let i = 1; i < width; ++i ) {
+		const x2 = i;
+		const y2 = calcY( i );
 	
 		// To avoid aliasing in horizontal direction, draw curve segments only when Y changes or curve ends.
-		if( y2 != y1 || i >= iMax ) {
+		if( y2 != y1 || i >= width - 1 ) {
 			// Draw horizontal line for any x values we previously skipped.
 			if( x2 - x1 > 1 ) {
 				ctx.lineTo( x2 - 1, y1 );
@@ -681,7 +629,19 @@ function drawEaseFunction( ctx, xStart, xEnd, xClipMin, xClipMax, yStart, yEnd, 
 			y1 = y2;
 		}
 	}
+
+	ctx.stroke();
 }
+
+//---------------------------------------------------------------------------------------------------
+// Return luminance of packed RGB Uint32 color in range 0..1.
+
+function luminance( colorUint32 ){
+	const r = ( colorUint32 >> 16 ) & 0xFF;
+	const g = ( colorUint32 >> 8 ) & 0xFF;
+	const b = ( colorUint32 ) & 0xFF;
+	return ( 0.299 * r + 0.587 * g + 0.114 * b ) / 255;
+} 	
 
 //---------------------------------------------------------------------------------------------------
 
