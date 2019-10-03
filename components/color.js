@@ -35,28 +35,37 @@ import './fractalNoise.js'
 	//----------------------------------------------------------------------------------------------------------------
 	/// Render a palette segment into a one-dimensional RGBA Uint32Array.
 	/// Wraps around in case index is out of range. 
-	/// Returns start + count.
+	/// Returns startIndex + count.
 	
-	module.renderPaletteSegment = function( outPaletteUint32, start, count, startColor, endColor, easeFunction ) {		
+	module.renderPaletteSegment = function( outPaletteUint32, startIndex, count, startColor, endColor, 
+											easeFunction, noiseFunction ) {		
 		if( count <= 0 ) 
 			return;
 		if( count > outPaletteUint32.length )
 			count = outPaletteUint32.length;
 
 		for( let i = 0; i < count; ++i ) {
-			const pos = module.mod( i + start, outPaletteUint32.length );
+			const pos = module.mod( i + startIndex, outPaletteUint32.length );
 
-			const r = Math.round( easeFunction( i, startColor.r, endColor.r - startColor.r, count, 0, 255 ) );
-			const g = Math.round( easeFunction( i, startColor.g, endColor.g - startColor.g, count, 0, 255 ) );
-			const b = Math.round( easeFunction( i, startColor.b, endColor.b - startColor.b, count, 0, 255 ) );
+			const ec = {
+				r: easeFunction( i, startColor.r, endColor.r - startColor.r, count ),
+				g: easeFunction( i, startColor.g, endColor.g - startColor.g, count ),
+				b: easeFunction( i, startColor.b, endColor.b - startColor.b, count ),
+				a: easeFunction( i, startColor.a, endColor.a - startColor.a, count ),
+			};
 
-			// Note: alpha component is in 0..1 range, so we have to multiply with 255.
-			const a = Math.round( easeFunction( i, startColor.a, endColor.a - startColor.a, count, 0, 1 ) * 255 );
-		
+			const nc = noiseFunction( i / count, ec );
+
+			const r = Math.round( nc.r );
+			const g = Math.round( nc.g );
+			const b = Math.round( nc.b );
+			// Note: alpha component is in 0..1 range, so we have to multiply with 255 for final output.
+			const a = Math.round( nc.a * 255 );
+
 			outPaletteUint32[ pos ] = r | ( g << 8 ) | ( b << 16 ) | ( a << 24 );
 		}
 
-		return start + count;
+		return startIndex + count;
 	}
 
 	//----------------------------------------------------------------------------------------------------------------
@@ -101,34 +110,37 @@ import './fractalNoise.js'
 				outPaletteUint32[ startIndex ] = start.color;
 			}
 			else {
-				let easeFunToUse = start.easeFun;
+				let noiseFun = ( pos, rgb ) => rgb;
 				if( start.isNoisy && start.noise ) {
-					easeFunToUse = module.makeNoisyEaseFun( start.easeFun, start.noise );
+					noiseFun = module.makeNoiseFun( start.noise );
 				}
-				z42color.renderPaletteSegment( outPaletteUint32, startIndex, dist, start.color, end.color, easeFunToUse );
+				z42color.renderPaletteSegment( outPaletteUint32, startIndex, dist, start.color, end.color, start.easeFun, noiseFun );
 			}
 		}	
 	}
 
 	//----------------------------------------------------------------------------------------------------------------
-	// Generate a new ease function that adds fractal noise to the result of the given ease function.
+	// Generate a noise function.
 
-	module.makeNoisyEaseFun = function( easeFun, noiseOpt ) {
+	module.makeNoiseFun = function( noiseOpt ) {
 
 		const noiseGen = new z42noise.FractalNoiseGen2D( noiseOpt.octaves, noiseOpt.seed );
 
-		return function( t, b, c, d, min, max ){
+		return function( pos, rgb ){
 
-			let value = easeFun( t, b, c, d );
-
-			const amp = ( max - min ) * noiseOpt.amplitude;
-
-			const x = t / d;
 			const y = 0;  // possible future extension: animate y
 
-			value += noiseGen.noise( x, y, noiseOpt.frequency, noiseOpt.gain, noiseOpt.lacunarity, amp );
+			let hsl = tinycolor( rgb ).toHsl();
 
-			return module.clamp( value, min, max );
+			hsl.l += noiseGen.noise( pos, y, noiseOpt.frequency, noiseOpt.gain, noiseOpt.lacunarity, 
+				                     noiseOpt.amplitude );
+			hsl.l = module.clamp( hsl.l, 0.0, 1.0 );
+
+			//hsl.h += noiseGen.noise( pos, y, noiseOpt.frequency, noiseOpt.gain, noiseOpt.lacunarity, 
+			//	                     noiseOpt.amplitude * 360 );
+			//hsl.h = module.mod( hsl.h, 360 );
+
+			return tinycolor( hsl ).toRgb();
 		}
 	}
 	
