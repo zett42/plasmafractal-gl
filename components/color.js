@@ -130,17 +130,10 @@ import './fractalNoise.js'
 
 			const y = 0;  // possible future extension: animate y
 
-			let hsl = tinycolor( rgb ).toHsl();
-
-			hsl.l += noiseGen.noise( pos, y, noiseOpt.frequency, noiseOpt.gain, noiseOpt.lacunarity, 
-				                     noiseOpt.amplitude );
-			hsl.l = module.clamp( hsl.l, 0.0, 1.0 );
-
-			//hsl.h += noiseGen.noise( pos, y, noiseOpt.frequency, noiseOpt.gain, noiseOpt.lacunarity, 
-			//	                     noiseOpt.amplitude * 360 );
-			//hsl.h = module.mod( hsl.h, 360 );
-
-			return tinycolor( hsl ).toRgb();
+			const n = noiseGen.noise( pos, y, noiseOpt.frequency, noiseOpt.gain, noiseOpt.lacunarity, 
+									  noiseOpt.amplitude );
+									  
+			return module.adjustRgbLightness( rgb, n );									  
 		}
 	}
 	
@@ -206,5 +199,87 @@ import './fractalNoise.js'
 		if( x > max ) return max;
 		return x;
 	}
+
+	//----------------------------------------------------------------------------------------------------------------
+	// Linear interpolation.
+
+	module.lerp = function( start, end, alpha ) {
+		return start + ( end - start ) * alpha;
+	}
+
+	//----------------------------------------------------------------------------------------------------------------
+	// Linear interpolation applied two times.
 	
+	module.doubleLerp = function( start, end1, alpha1, end2, alpha2 ) {
+		return module.lerp( module.lerp( start, end1, alpha1 ),
+					        end2, alpha2 ); 
+	}
+
+	//----------------------------------------------------------------------------------------------------------------
+	// Calculate HSL lightness of RGB color. Result is in range 0..1.
+
+	module.rgbToHslLightness = function( color ) {
+		return ( Math.max( color.r, color.g, color.b ) + 
+				 Math.min( color.r, color.g, color.b ) ) / 255 / 2;
+	}
+
+	//----------------------------------------------------------------------------------------------------------------
+	// Set absolute lightness of RGB color according to HSL model, without leaving the RGB space.
+	// Lightness must be in range of 0..1.
+	// This is implemented by blending the given color with black and/or white. 
+
+	module.setRgbLightness = function( color, lightness, 
+	                                   baseLightness = module.rgbToHslLightness( color ) ) {
+
+		baseLightness = baseLightness * 2 - 1;    // 0..1 => -1..1
+		
+		if( baseLightness < 0 ){
+			// Handle edge case that would cause div by zero
+			if( baseLightness === -1 ) {
+				lightness *= 255;
+				return { r: lightness, g: lightness, b: lightness, a: color.a };
+			} 
+			lightness    = lightness * 2 - 1;   // 0..1 => -1..1
+			const a      = -baseLightness;
+			const b      = -Math.min( lightness, 0 );   
+			const alpha1 = ( b - a ) / ( 1 - a );      // percentage of fade with black
+			const alpha2 = Math.max( lightness, 0 );   // percentage of fade with white
+
+			return{
+				r: module.doubleLerp( color.r, 0, alpha1, 255, alpha2 ),
+				g: module.doubleLerp( color.g, 0, alpha1, 255, alpha2 ),
+				b: module.doubleLerp( color.b, 0, alpha1, 255, alpha2 ),
+				a: color.a
+			}	
+		}
+		else {
+			// Handle edge case that would cause div by zero
+			if( baseLightness === 1 ) {
+				lightness *= 255;
+				return { r: lightness, g: lightness, b: lightness, a: color.a };
+			}
+			lightness    = lightness * 2 - 1;   // 0..1 => -1..1
+			const a      = baseLightness;
+			const b      = Math.max( lightness, 0 );     
+			const alpha1 = ( b - a ) / ( 1 - a );       // percentage of fade with white
+			const alpha2 = -Math.min( lightness, 0 );   // percentage of fade with black
+
+			return{
+				r: module.doubleLerp( color.r, 255, alpha1, 0, alpha2 ),
+				g: module.doubleLerp( color.g, 255, alpha1, 0, alpha2 ),
+				b: module.doubleLerp( color.b, 255, alpha1, 0, alpha2 ),
+				a: color.a
+			}	
+		}
+	}
+
+	//----------------------------------------------------------------------------------------------------------------
+	// Adjust relative lightness (+/- offset) of RGB color according to HSL model.
+
+	module.adjustRgbLightness = function( color, relativeLightness ) { 
+		const baseLightness = module.rgbToHslLightness( color );
+		const lightness = module.clamp( baseLightness + relativeLightness, 0, 1 );
+		return module.setRgbLightness( color, lightness, baseLightness );
+	}
+
 })();
