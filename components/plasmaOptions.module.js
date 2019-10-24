@@ -93,11 +93,12 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			scaleNormalPos: 0.33,
 			defaultVal: 1.5,
 		}),
-		octaves: new z42opt.IntOpt({
+		octaves: new z42opt.FloatOpt({
 			shortKey: "o",
 			title: "Octaves",
 			min: 1,
 			max: 15,
+			maxDecimals: 2,
 			defaultVal: 10,
 		}),
 		gain: new z42opt.FloatOpt({

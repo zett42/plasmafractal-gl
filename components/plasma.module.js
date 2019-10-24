@@ -252,11 +252,12 @@ class PlasmaFractal2D {
 		gl.bindVertexArray( this._vao );
 
 		// Set noise parameters.
-		this._uf.uniform1i( "u_octaves",    this._options.noise.octaves );
-		this._uf.uniform1f( "u_frequency",  this._options.noise.frequency / 2 );         
-		this._uf.uniform1f( "u_amplitude",  this._options.noise.amplitude );         
-		this._uf.uniform1f( "u_gain",       this._options.noise.gain );              
-		this._uf.uniform1f( "u_lacunarity", this._options.noise.lacunarity );     
+		this._uf.uniform1i( "u_octaves",      Math.trunc( this._options.noise.octaves ) );
+		this._uf.uniform1f( "u_octavesFract", this._options.noise.octaves % 1 );
+		this._uf.uniform1f( "u_frequency",    this._options.noise.frequency / 2 );         
+		this._uf.uniform1f( "u_amplitude",    this._options.noise.amplitude );         
+		this._uf.uniform1f( "u_gain",         this._options.noise.gain );              
+		this._uf.uniform1f( "u_lacunarity",   this._options.noise.lacunarity );     
 
 		// Current time in seconds since start of plasma.
 		const time = performance.now() / 1000.0 - this._startTime;

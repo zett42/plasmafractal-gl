@@ -49,6 +49,7 @@ SOFTWARE.
     
         // noise parameters
         uniform int   u_octaves;           // number of octaves for fractal noise
+        uniform float u_octavesFract;      // fractional part of octaves value
         uniform float u_frequency;         // noise frequency
         uniform float u_amplitude;         // noise amplitude
         uniform float u_gain;              // amplitude factor for each octave
@@ -83,7 +84,6 @@ SOFTWARE.
             for( int i = 0; i < u_octaves; ++i ) {                
 
                 vec3 p = vec3( fragCoord.xy * freq, z );
-
                 n += noise( p ) * amp;
 
                 freq   *= u_lacunarity;
@@ -91,7 +91,12 @@ SOFTWARE.
                 z      += zInc;
                 z      *= u_turbulence;
             }
-            
+
+            // Fractional part of octave value is used for smooth transition.
+            vec3 p1 = vec3( fragCoord.xy * freq, z );
+            n += noise( p1 ) * amp * u_octavesFract;
+        
+            // Actual color is defined by palette
             fragColor = texture( u_paletteTexture, vec2( n + u_paletteOffset, 0 ) );
         }
     `}    
