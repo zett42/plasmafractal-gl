@@ -65,7 +65,9 @@ Animation
 <a href="https://zett42.github.io/plasmafractal-gl/?n=p3&f=.96&o=12&g=.5&l=2&a=1&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=1&pbg=000000&cp=0_461b00_io2_f2*o12*g.68*l2*a.5*s.41+.199_1f222c_io2_f4*o12*g.61*l2*a.2*s.5+.786_1f222c_io2_f2*o12*g.68*l2*a.5*s.69&acp=1&inm=1&ns=.03&ntu=1.36&ipr=0&prs=.1&ptde=15.&ptd=5.#">
   <img src="/screenshots/thumbs/DarkComplexity.jpg" alt="Dark Complexity" title="Dark Complexity" width="150">
 </a>
-
+<a href="https://zett42.github.io/plasmafractal-gl/?n=p3&f=.34&o=5.84&g=.45&l=2&a=1&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=1&pbg=000000&cp=0_000000_l_f3*o12*g.83*l3*a.96*s.1&acp=0&inm=1&ns=.01&ntu=1.55&ipr=0&prs=.1&ptde=10.&ptd=5.#">
+  <img src="/screenshots/thumbs/GraphicalFlux.jpg" alt="Graphical Flux" title="Graphical Flux" width="150">
+</a>
 
 ## Credits
 This project uses the following open source libraries. Each library comes with its own license terms, which can be found in the source code included in this project.
