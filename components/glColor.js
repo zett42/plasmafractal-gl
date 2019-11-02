@@ -24,6 +24,8 @@ SOFTWARE.
 */
 //----------------------------------------------------------------------------------------------
 
+import './color.js'
+
 (function(){
 	'use strict';
 
@@ -58,9 +60,9 @@ SOFTWARE.
                 for( let iDst = 0, iSrc = 0; iDst < scaledTextureWidth; ++iDst, iSrc += 2 ) {
                     
                     // Averaging 3 samples seems to be the sweet spot between aliasing and too much blur.
-                    const c1 = samplePaletteClamp( paletteUint32, iSrc - 1, textureWidth );
-                    const c2 = samplePaletteClamp( paletteUint32, iSrc + 0, textureWidth );
-                    const c3 = samplePaletteClamp( paletteUint32, iSrc + 1, textureWidth );
+                    const c1 = samplePalette( paletteUint32, iSrc - 1 );
+                    const c2 = samplePalette( paletteUint32, iSrc + 0 );
+                    const c3 = samplePalette( paletteUint32, iSrc + 1 );
 
                     const c = roundColor( mulColor( sumColors([ c1, c2, c3 ]), 1 / 3 ) );
 
@@ -122,11 +124,9 @@ SOFTWARE.
         };
     }
 
-    function samplePaletteClamp( pal, i, iMax ) {
-        if( i < 0 || i >= iMax )
-            return { a: 1, r: 0, g: 0, b: 0 };
-        
-        return splitColor( pal[ i ] );
+	// Sample Uint32 palette with wrap-around.
+    function samplePalette( pal, i ) {
+        return splitColor( pal[ z42color.mod( i, pal.length ) ] );
     }
 
 })();
