@@ -47,8 +47,6 @@ class PlasmaFractal2D {
 
 		this._startTime = performance.now() / 1000;
 
-		this._paletteTextureSize = 4096;
-
 		this._initPalettes( params.colorSeed );
 
 		this._initCanvasGl( params.canvas );
@@ -102,10 +100,14 @@ class PlasmaFractal2D {
 		gl.depthMask( gl.FALSE );
 		gl.stencilMask( gl.FALSE );
 
-		this._positionBuffer  = gl.createBuffer();
-		this._texCoordBuffer  = gl.createBuffer();
-		this._paletteTexture  = gl.createTexture();
-
+		this._positionBuffer     = gl.createBuffer();
+		this._texCoordBuffer     = gl.createBuffer();
+		
+		this._paletteTexture     = gl.createTexture();
+		// Palette texture is 1-dimensional so we could use max. possible size for best quality.
+		// I still like to have some control over this value, so I limit it anyway.
+		this._paletteTextureSize = Math.min( gl.getParameter( gl.MAX_TEXTURE_SIZE ), 32768 );
+		
 		this._rebuildShaders();
 	}
 

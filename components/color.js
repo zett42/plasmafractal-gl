@@ -106,7 +106,6 @@ import './fractalNoise.js'
 			}
 
 			if( dist <= 0 ){
-				// TODO: to reduce aliasing of thin lines in the final image, assign weighted avg of all colors at same index
 				outPaletteUint32[ startIndex ] = start.color;
 			}
 			else {
