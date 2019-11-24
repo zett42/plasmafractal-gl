@@ -1,0 +1,66 @@
+{
+  "name": "plasmafractal-gl",
+  "version": "1.0.0",
+  "author": "zett42",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build --modern",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "bootstrap-vue": "^2.0.4",
+    "bootswatch": "^4.3.1",
+    "core-js": "^3.4.2",
+    "lodash": "^4.17.15",
+    "mersennetwister": "^0.2.3",
+    "nouislider": "^14.0.3",
+    "tinycolor2": "^1.4.1",
+    "vue": "^2.6.10"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "^4.0.0",
+    "@vue/cli-plugin-eslint": "^4.0.0",
+    "@vue/cli-service": "^4.0.0",
+    "@vue/eslint-config-prettier": "^5.0.0",
+    "babel-eslint": "^10.0.3",
+    "bootstrap": "^4.3.1",
+    "eslint": "^5.16.0",
+    "eslint-plugin-prettier": "^3.1.1",
+    "eslint-plugin-vue": "^5.0.0",
+    "favicons-webpack-plugin": "^1.0.2",
+    "node-sass": "^4.12.0",
+    "popper.js": "^1.15.0",
+    "portal-vue": "^2.1.4",
+    "prettier": "^1.18.2",
+    "resize-observer-polyfill": "^1.5.1",
+    "sass": "^1.19.0",
+    "sass-loader": "^8.0.0",
+    "vue-cli-plugin-bootstrap-vue": "^0.5.0",
+    "vue-template-compiler": "^2.6.10"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/essential"
+    ],
+    "rules": {
+      "no-console": 0
+    },
+    "parserOptions": {
+      "parser": "babel-eslint"
+    }
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {}
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions"
+  ]
+}
