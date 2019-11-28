@@ -26,15 +26,16 @@ SOFTWARE.
 import MersenneTwister from 'mersennetwister';
 import * as tinycolor from 'tinycolor2';
 import * as _ from 'lodash';
+import createShader from 'gl-shader';
+import injectDefines from 'glsl-inject-defines';
+
 import * as z42color from './color.js'; 
 import * as z42easing  from "./easing.js";
 import * as z42glu from './glUtils.js'; 
 import * as z42glcolor from './glColor.js'; 
-import * as z42glNoise from './glNoise.js'; 
-import * as z42glFractalNoise from './glFractalNoise.js'; 
 
-// For syntax highlighting with glsl-literal extension of VSCode we need to define a glsl template tag.
-const glsl = ( strings, ...values ) => String.raw( strings, ...values );
+import vertexShaderSrc from './glPlasmaVertex.glsl'
+import fragShaderSrc from './glPlasmaFrag.glsl'
 
 //===================================================================================================================
 // This is the class for generating and animating a plasma. 
@@ -114,17 +115,20 @@ class PlasmaFractal2D {
 	//-------------------------------------------------------------------------------------------------------------------
 
 	_rebuildShaders() {
-		if( this._program )	{
-			this._gl.deleteProgram( this._program );
-			this._program = null;
+	
+		const fragShaderSrcTransformed = injectDefines( fragShaderSrc, {
+			NOISE_FUN: this._options.noise.noiseFunction,
+		});
+
+		//console.log('vertexShaderSrc', vertexShaderSrc)		
+		//console.log('fragShaderSrcTransformed', fragShaderSrcTransformed)		
+
+		if( this._shader ) {
+			this._shader.update( vertexShaderSrc, fragShaderSrcTransformed )
 		}
-
-		const noiseFunSrc = z42glNoise[ this._options.noise.noiseFunction ]();
-		const fragShaderSrc = z42glFractalNoise.fragmentShader( noiseFunSrc );
-
-		this._program = z42glu.buildShaderProgram( this._gl, this.vertexShaderSrc(), fragShaderSrc );
-
-		this._uf = new z42glu.Uniforms( this._gl, this._program );
+		else {
+			this._shader = createShader( this._gl, vertexShaderSrc, fragShaderSrcTransformed );
+		}
 
 		this._updateStaticShaderData();
 	}
@@ -134,7 +138,7 @@ class PlasmaFractal2D {
 
 	_updateStaticShaderData() {
 		// Activate the pair of vertex and fragment shaders.
-		this._gl.useProgram( this._program );		
+		this._shader.bind();
 
 		this._updateShaderVar_coords();
 		this._updateShaderVar_scale();
@@ -147,10 +151,6 @@ class PlasmaFractal2D {
 
 		const gl = this._gl;
 
-		// Look up shader variables.
-		const a_position = gl.getAttribLocation ( this._program, "a_position" );
-		const a_texCoord = gl.getAttribLocation ( this._program, "a_texCoord" );
-
 		// (Re-)create and activate vertex array object (VAO) that records the following vertex buffer objects (VBO).
 		if( this._vao ) gl.deleteVertexArray( this._vao );
 		this._vao = gl.createVertexArray();
@@ -161,11 +161,8 @@ class PlasmaFractal2D {
 		gl.bindBuffer( gl.ARRAY_BUFFER, this._positionBuffer );
 		// Assign data to the buffer.
 		z42glu.setBufferRectangle( gl, -1.0, -1.0, 2.0, 2.0 );
-		// Enable the attribute.
-		gl.enableVertexAttribArray( a_position );
 		// Tell the attribute how to get data out of the buffer (ARRAY_BUFFER)
-		gl.vertexAttribPointer( a_position, 
-			2,          // 2 components per iteration
+		this._shader.attributes.a_position.pointer(
 			gl.FLOAT,   // the data is 32bit floats
 			false,      // don't normalize the data
 			0,          // 0 = move forward size * sizeof(type) each iteration to get the next position
@@ -176,11 +173,8 @@ class PlasmaFractal2D {
 		gl.bindBuffer( gl.ARRAY_BUFFER, this._texCoordBuffer );
 		// Assign data to the buffer.
 		z42glu.setBufferRectangle( gl, -1.0, -1.0, 2.0, 2.0 );
-		// Enable the attribute.
-		gl.enableVertexAttribArray( a_texCoord );
 		// Tell the attribute how to get data out of the buffer (ARRAY_BUFFER)
-		gl.vertexAttribPointer( a_texCoord, 
-			2,        // 2 components per iteration
+		this._shader.attributes.a_texCoord.pointer(
 			gl.FLOAT, // the data is 32bit floats
 			false,    // don't normalize the data
 			0,        // 0 = move forward size * sizeof(type) each iteration to get the next position
@@ -200,7 +194,7 @@ class PlasmaFractal2D {
 		const width  = this._canvas.width;
 		const height = this._canvas.height;
 	
-		const u_scale = gl.getUniformLocation( this._program, "u_scale" );
+		const u_scale = gl.getUniformLocation( this._shader.program, "u_scale" );
 
 		if( width > height ){
 			if( height > 0 )
@@ -248,18 +242,18 @@ class PlasmaFractal2D {
 		gl.clear( gl.COLOR_BUFFER_BIT) ;
 
 		// Tell it to use our program (pair of shaders).
-		gl.useProgram( this._program );
+		this._shader.bind();
 	
 		// Bind the attribute/buffer set we want.
 		gl.bindVertexArray( this._vao );
 
 		// Set noise parameters.
-		this._uf.uniform1i( "u_octaves",      Math.trunc( this._options.noise.octaves ) );
-		this._uf.uniform1f( "u_octavesFract", this._options.noise.octaves % 1 );
-		this._uf.uniform1f( "u_frequency",    this._options.noise.frequency / 2 );         
-		this._uf.uniform1f( "u_amplitude",    this._options.noise.amplitude );         
-		this._uf.uniform1f( "u_gain",         this._options.noise.gain );              
-		this._uf.uniform1f( "u_lacunarity",   this._options.noise.lacunarity );     
+		this._shader.uniforms.u_octaves      = Math.trunc( this._options.noise.octaves );
+		this._shader.uniforms.u_octavesFract = this._options.noise.octaves % 1;
+		this._shader.uniforms.u_frequency    = this._options.noise.frequency / 2;         
+		this._shader.uniforms.u_amplitude    = this._options.noise.amplitude;         
+		this._shader.uniforms.u_gain         = this._options.noise.gain;              
+		this._shader.uniforms.u_lacunarity   = this._options.noise.lacunarity;     
 
 		// Current time in seconds since start of plasma.
 		const time = performance.now() / 1000.0 - this._startTime;
@@ -273,19 +267,19 @@ class PlasmaFractal2D {
 			turbulence = this._options.noiseAnim.turbulence;
 		}
 
-		this._uf.uniform1f( "u_noiseZ", noiseZ );
-		this._uf.uniform1f( "u_turbulence", turbulence );
+		this._shader.uniforms.u_noiseZ = noiseZ;
+		this._shader.uniforms.u_turbulence = turbulence;
 
 		if( this._options.paletteAnim.isRotaEnabled ) {
 			const sizeFactor = this._paletteTextureSize / 4096;
-			this._uf.uniform1f( "u_paletteOffset", time * this._options.paletteAnim.rotaSpeed * sizeFactor );
+			this._shader.uniforms.u_paletteOffset = time * this._options.paletteAnim.rotaSpeed * sizeFactor;
 		}
 		else {
-			this._uf.uniform1f( "u_paletteOffset", 0 );
+			this._shader.uniforms.u_paletteOffset = 0.0;
 		}
 
 		// Tell the shader which texture units to use.
-		this._uf.uniform1i( "u_paletteTexture", 0 );
+		this._shader.uniforms.u_paletteTexture = 0;
 
 		let paletteToUse = this._grayScalePalette;
 		if( ! this._options.palette.isGrayScale ) {	
@@ -304,36 +298,6 @@ class PlasmaFractal2D {
 		// Draw the rectangle from the vertex and texture coordinates buffers.
 		gl.drawArrays( gl.TRIANGLES, 0, 6 );
 	}
-
-	//----------------------------------------------------------------------------------------------
-
-	vertexShaderSrc(){ return glsl`#version 300 es
-
-		precision highp float;
-
-		// Scale factor to adjust for screen aspect ratio and orientation.
-		uniform vec2 u_scale;
-
-		// An attribute is an input (in) to a vertex shader.
-		// It will receive data from a buffer
-		in vec2 a_position;
-		in vec2 a_texCoord;
-
-		// Used to pass the texture coordinates to the fragment shader
-		out vec2 fragCoord;
-
-		void main() {
-			// Scale to adjust for screen aspect ratio and orientation.
-			vec2 pos = a_position * u_scale;
-
-			// Define position of the current vertex by assigning to global variable gl_Position 
-			gl_Position = vec4( pos, 0, 1 );
-
-			// pass the texCoord to the fragment shader
-			// The GPU will interpolate this value between points.
-			fragCoord = a_texCoord;
-		}
-	`}
 
 	//-------------------------------------------------------------------------------------------------------------------
 	// Get / set noise options.

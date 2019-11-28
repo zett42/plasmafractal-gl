@@ -66,9 +66,9 @@ const paletteEaseFunctions = {
 };
 
 const noiseFunctions = {
-	perlin3D   : { shortKey: "p3", title: "Perlin 3D" },
-	value3D    : { shortKey: "v3", title: "Value 3D" },
-	cellular3D : { shortKey: "c3", title: "Cellular 3D" },
+	Perlin3D   : { shortKey: "p3", title: "Perlin" },
+	Value3D    : { shortKey: "v3", title: "Value" },
+	Cellular3D : { shortKey: "c3", title: "Cellular" },
 };
 
 //------------------------------------------------------------------------------------------------
@@ -81,7 +81,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			shortKey: "n",
 			title: "Noise function",
 			values: noiseFunctions,
-			defaultVal: "perlin3D",
+			defaultVal: "Perlin3D",
 		}),
 		frequency: new z42opt.FloatOpt({ 
 			shortKey: "f",
