@@ -25,12 +25,10 @@ in vec2 fragCoord;
 // declare output of the fragment shader
 out vec4 fragColor;
 
+// NOTE: We select one of these noise functions by preprocessor variable NOISE_FUN passed from JS via injectDefines()
 #pragma glslify: Perlin3D   = require('./gl-noise/Perlin3D.glsl')
 #pragma glslify: Value3D    = require('./gl-noise/Value3D.glsl')
 #pragma glslify: Cellular3D = require('./gl-noise/Cellular3D.glsl')
-
-// Select one of the noise functions by preprocessor #define passed from JS injectDefines().
-float noise( vec3 p ) { return NOISE_FUN( p ); }
 
 void main() { 
 	float n = 0.0;
@@ -47,7 +45,7 @@ void main() {
 	for( int i = 0; i < u_octaves; ++i ) {                
 
 		vec3 p = vec3( fragCoord.xy * freq, z );
-		n += noise( p ) * amp;
+		n += NOISE_FUN( p ) * amp;
 
 		freq   *= u_lacunarity;
 		amp    *= u_gain;
@@ -57,7 +55,7 @@ void main() {
 
 	// Fractional part of octave value is used for smooth transition.
 	vec3 p1 = vec3( fragCoord.xy * freq, z );
-	n += noise( p1 ) * amp * u_octavesFract;
+	n += NOISE_FUN( p1 ) * amp * u_octavesFract;
 
 	// Actual color is defined by palette
 	fragColor = texture( u_paletteTexture, vec2( n + u_paletteOffset, 0 ) );
