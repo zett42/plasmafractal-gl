@@ -190,19 +190,16 @@ class PlasmaFractal2D {
 	// Update vertex shader variable to adjust for canvas aspect ratio and orientation.
 
 	_updateShaderVar_scale() {
-		const gl     = this._gl;
 		const width  = this._canvas.width;
 		const height = this._canvas.height;
 	
-		const u_scale = gl.getUniformLocation( this._shader.program, "u_scale" );
-
 		if( width > height ){
 			if( height > 0 )
-				gl.uniform2f( u_scale, 1.0, width / height );
+				this._shader.uniforms.u_scale = [ 1.0, width / height ];
 		}
 		else {
 			if( width > 0 )
-				gl.uniform2f( u_scale, height / width, 1.0 );
+				this._shader.uniforms.u_scale = [ height / width, 1.0 ];
 		}
 	}
 
