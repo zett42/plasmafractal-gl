@@ -128,6 +128,69 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			defaultVal: 1,
 		}),
 	}),
+	warping: new z42opt.Node( {}, {
+		isEnabled: new z42opt.BoolOpt({
+			shortKey: "de",
+			title: "Enable domain warping",
+			defaultVal: false,
+		}),		
+		noiseFunction: new z42opt.EnumOpt({
+			shortKey: "wn",
+			title: "Noise function",
+			values: noiseFunctions,
+			defaultVal: "Perlin3D",
+			depends: options => options.warping.isEnabled,
+		}),
+		frequency: new z42opt.FloatOpt({ 
+			shortKey: "wf",
+			title: "Frequency",
+			min: 0.01,
+			max: 15,
+			maxDecimals: 2,
+			isScale: true,
+			scaleNormalPos: 0.33,
+			defaultVal: 1.5,
+			depends: options => options.warping.isEnabled,
+		}),
+		octaves: new z42opt.FloatOpt({
+			shortKey: "wo",
+			title: "Octaves",
+			min: 1,
+			max: 15,
+			maxDecimals: 2,
+			defaultVal: 10,
+			depends: options => options.warping.isEnabled,
+		}),
+		gain: new z42opt.FloatOpt({
+			shortKey: "wg",
+			title: "Gain",
+			min: 0.1,
+			max: 1.0,
+			maxDecimals: 2,
+			defaultVal: 0.5,
+			enabled: options => options.noise.octaves >= 2,
+			depends: options => options.warping.isEnabled,
+		}),
+		lacunarity: new z42opt.FloatOpt({
+			shortKey: "wl",
+			title: "Lacunarity",
+			min: 1,
+			max: 10,
+			maxDecimals: 2,
+			defaultVal: 2,
+			enabled: options => options.noise.octaves >= 2,
+			depends: options => options.warping.isEnabled,
+		}),
+		amplitude: new z42opt.FloatOpt({
+			shortKey: "wa",
+			title: "Amplitude",
+			min: 1,
+			max: 100,
+			maxDecimals: 1,
+			defaultVal: 1,
+			depends: options => options.warping.isEnabled,
+		}),
+	}),
 	palette: new z42opt.Node( {}, {
 		isGrayScale: new z42opt.BoolOpt({
 			shortKey: "pg",
@@ -275,6 +338,10 @@ const optionsView = {
 		noiseTab: {
 			title: "Noise",
 			options: [ "noise" ]
+		},
+		warpingTab: {
+			title: "Warping",
+			options: [ "warping" ]
 		},
 		paletteTab: {
 			title: "Palette",

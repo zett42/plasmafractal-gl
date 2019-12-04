@@ -1,5 +1,7 @@
 #version 300 es
 
+#define SHADER_NAME glPlasmaVertex.glsl
+
 precision highp float;
 
 // Scale factor to adjust for screen aspect ratio and orientation.

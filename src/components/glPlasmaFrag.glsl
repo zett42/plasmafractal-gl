@@ -1,5 +1,7 @@
 #version 300 es
 
+#define SHADER_NAME glPlasmaFrag.glsl
+
 // fragment shaders don't have a default precision so we need
 // to pick one. mediump is a good default. It means "medium precision"
 precision highp float;
@@ -30,32 +32,45 @@ out vec4 fragColor;
 #pragma glslify: Value3D    = require('./gl-noise/Value3D.glsl')
 #pragma glslify: Cellular3D = require('./gl-noise/Cellular3D.glsl')
 
-void main() { 
-	float n = 0.0;
-	float z = u_noiseZ;
-	float freq = u_frequency;
-	float amp = u_amplitude;
-	
+//·············································································································
+
+float fbm( vec3 pos, int octaves, float octavesFract, float frequency, float amplitude, float lacunarity, float gain,
+           float turbulence ) {
+
+	float result = 0.0;
+
+	float freq = frequency;
+	float amp  = amplitude;
+	float z    = pos.z;
+
 	// Z-increment to "randomize" each octave for avoiding artefacts that originate from coords 0,0
 	// due to the pseudo-random nature of the noise.
 	// This value has been choosen by trial and error.
-	const float zInc = 42.0;
+	const float zInc = 7.0;
 
 	// Create fractal noise by adding multiple octaves of noise.
-	for( int i = 0; i < u_octaves; ++i ) {                
+	for( int i = 0; i < octaves; ++i ) {                
 
-		vec3 p = vec3( fragCoord.xy * freq, z );
-		n += NOISE_FUN( p ) * amp;
+		vec3 p = vec3( pos.xy * freq, z );
+		result += NOISE_FUN( p ) * amp;
 
-		freq   *= u_lacunarity;
-		amp    *= u_gain;
+		freq   *= lacunarity;
+		amp    *= gain;
 		z      += zInc;
-		z      *= u_turbulence;
+		z      *= turbulence;
 	}
 
 	// Fractional part of octave value is used for smooth transition.
-	vec3 p1 = vec3( fragCoord.xy * freq, z );
-	n += NOISE_FUN( p1 ) * amp * u_octavesFract;
+	vec3 p1 = vec3( pos.xy * freq, z );
+	result += NOISE_FUN( p1 ) * amp * octavesFract;
+
+	return result;
+}
+
+//·············································································································
+
+void main() { 
+	float n = fbm( vec3( fragCoord.xy, u_noiseZ ), u_octaves, u_octavesFract, u_frequency, u_amplitude, u_lacunarity, u_gain, u_turbulence );
 
 	// Actual color is defined by palette
 	fragColor = texture( u_paletteTexture, vec2( n + u_paletteOffset, 0 ) );

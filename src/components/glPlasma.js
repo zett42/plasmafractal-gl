@@ -117,7 +117,8 @@ class PlasmaFractal2D {
 	_rebuildShaders() {
 	
 		const fragShaderSrcTransformed = injectDefines( fragShaderSrc, {
-			NOISE_FUN: this._options.noise.noiseFunction,
+			NOISE_FUN   : this._options.noise.noiseFunction,
+			WARPING_FUN : this._options.warping.noiseFunction,
 		});
 
 		//console.log('vertexShaderSrc', vertexShaderSrc)		
@@ -309,6 +310,25 @@ class PlasmaFractal2D {
 		const needRebuildShaders = ! _.isEqual( this._options.noise.noiseFunction, opt.noiseFunction );
 
 		this._options.noise = _.cloneDeep( opt );
+
+		if( needRebuildShaders ) {
+			this._rebuildShaders();
+		}
+	}
+
+	//-------------------------------------------------------------------------------------------------------------------
+	// Get / set domain warping options.
+
+	get options$warping()
+	{
+		return _.cloneDeep( this._options.warping );
+	}
+
+	set options$warping( opt )
+	{
+		const needRebuildShaders = ! _.isEqual( this._options.warping.noiseFunction, opt.noiseFunction );
+
+		this._options.warping = _.cloneDeep( opt );
 
 		if( needRebuildShaders ) {
 			this._rebuildShaders();
