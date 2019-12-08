@@ -254,39 +254,39 @@ class PlasmaFractal2D {
 		this._shader.uniforms.u_lacunarity   = this._options.noise.lacunarity;     
 
 		// Set parameters for noise animation.
-		let noiseZ = this._noiseSeed * 50.0;
-		let turbulence = 1.0;
+		let noiseAnim = this._noiseSeed * 50.0;
+		let noiseTurbulence = 1.0;
 
 		if( this._options.noiseAnim.isEnabled ) {
-			noiseZ += time * this._options.noiseAnim.noiseSpeed / 3;
-			turbulence = this._options.noiseAnim.turbulence;
+			noiseAnim += time * this._options.noiseAnim.noiseSpeed / 3;
+			noiseTurbulence = this._options.noiseAnim.turbulence;
 		}
 
-		this._shader.uniforms.u_noiseZ = noiseZ;
-		this._shader.uniforms.u_turbulence = turbulence;
+		this._shader.uniforms.u_noiseAnim = noiseAnim;
+		this._shader.uniforms.u_turbulence = noiseTurbulence;
 
 
 		//····· Set domain warp parameters ····································································
 
 		this._shader.uniforms.u_warp_octaves      = Math.trunc( this._options.warp.octaves );
 		this._shader.uniforms.u_warp_octavesFract = this._options.warp.octaves % 1;
-		this._shader.uniforms.u_warp_frequency    = this._options.warp.frequency / 2;         
-		this._shader.uniforms.u_warp_amplitude    = this._options.warp.amplitude;         
+		this._shader.uniforms.u_warp_frequency    = this._options.warp.frequency;         
+		this._shader.uniforms.u_warp_amplitude    = this._options.warp.amplitude * 0.01;         
 		this._shader.uniforms.u_warp_rotation     = this._options.warp.rotation;         
 		this._shader.uniforms.u_warp_gain         = this._options.warp.gain;              
 		this._shader.uniforms.u_warp_lacunarity   = this._options.warp.lacunarity;     
 
 		// Set parameters for noise animation.
-		let warp_anim = this._warpSeed * 50.0;
-		let warp_turbulence = 1.0;
+		let warpAnim = this._warpSeed * 50.0;
+		let warpTurbulence = 1.0;
 
 		if( this._options.warpAnim.isEnabled ) {
-			warp_anim += time * this._options.warpAnim.noiseSpeed / 3;
-			warp_turbulence = this._options.warpAnim.turbulence;
+			warpAnim += time * this._options.warpAnim.noiseSpeed / 3;
+			warpTurbulence = this._options.warpAnim.turbulence;
 		}
 
-		this._shader.uniforms.u_warp_anim = warp_anim;
-		this._shader.uniforms.u_warp_turbulence = warp_turbulence;
+		this._shader.uniforms.u_warp_anim = warpAnim;
+		this._shader.uniforms.u_warp_turbulence = warpTurbulence;
 
 
 		//····· Apply palette options ··························································· 

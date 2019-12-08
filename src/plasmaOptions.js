@@ -65,22 +65,11 @@ const paletteEaseFunctions = {
 	inOutBounce  : { shortKey: "iob"   , title: "Bounce [in/out]"               },
 };
 
-const noiseFunctions2D = {
-	Perlin2D   : { shortKey: "p2", title: "Perlin" },
-	Value2D    : { shortKey: "v2", title: "Value" },
-	Cellular2D : { shortKey: "c2", title: "Cellular" },
-};
-
 const noiseFunctions3D = {
-	Perlin3D   : { shortKey: "p3", title: "Perlin" },
-	Value3D    : { shortKey: "v3", title: "Value" },
-	Cellular3D : { shortKey: "c3", title: "Cellular" },
-};
-
-const noiseFunctions3D_Deriv = {
-	Perlin3D_Deriv   : { shortKey: "pd3", title: "Perlin" },
-	Value3D_Deriv    : { shortKey: "vd3", title: "Value" },
-	Cellular3D_Deriv : { shortKey: "cd3", title: "Cellular" },
+	Perlin3D        : { shortKey: "p3", title: "Perlin" },
+	SimplexPerlin3D : { shortKey: "s3", title: "Simplex" },
+	Value3D         : { shortKey: "v3", title: "Value" },
+	Cellular3D      : { shortKey: "c3", title: "Cellular" },
 };
 
 //------------------------------------------------------------------------------------------------
@@ -120,7 +109,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			max: 1.0,
 			maxDecimals: 2,
 			defaultVal: 0.5,
-			enabled: options => options.noise.octaves >= 2,
+			enabled: options => options.noise.octaves > 1,
 		}),
 		lacunarity: new z42opt.FloatOpt({
 			shortKey: "l",
@@ -129,7 +118,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			max: 10,
 			maxDecimals: 2,
 			defaultVal: 2,
-			enabled: options => options.noise.octaves >= 2,
+			enabled: options => options.noise.octaves > 1,
 		}),
 		amplitude: new z42opt.FloatOpt({
 			shortKey: "a",
@@ -170,7 +159,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			min: 1,
 			max: 15,
 			maxDecimals: 2,
-			defaultVal: 10,
+			defaultVal: 4,
 			depends: options => options.warp.isEnabled,
 		}),
 		gain: new z42opt.FloatOpt({
@@ -179,8 +168,8 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			min: 0.1,
 			max: 1.0,
 			maxDecimals: 2,
-			defaultVal: 0.5,
-			enabled: options => options.noise.octaves >= 2,
+			defaultVal: 0.75,
+			enabled: options => options.warp.octaves > 1,
 			depends: options => options.warp.isEnabled,
 		}),
 		lacunarity: new z42opt.FloatOpt({
@@ -190,7 +179,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			max: 10,
 			maxDecimals: 2,
 			defaultVal: 2,
-			enabled: options => options.noise.octaves >= 2,
+			enabled: options => options.warp.octaves > 1,
 			depends: options => options.warp.isEnabled,
 		}),
 		amplitude: new z42opt.FloatOpt({
@@ -199,7 +188,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			min: 1,
 			max: 100,
 			maxDecimals: 1,
-			defaultVal: 1,
+			defaultVal: 5,
 			depends: options => options.warp.isEnabled,
 		}),
 		rotation: new z42opt.FloatOpt({
@@ -208,7 +197,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			min: 1,
 			max: 20,
 			maxDecimals: 1,
-			defaultVal: 1,
+			defaultVal: 4,
 			depends: options => options.warp.isEnabled,
 		}),
 	}),
