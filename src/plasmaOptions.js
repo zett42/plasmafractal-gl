@@ -202,6 +202,15 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			defaultVal: 1,
 			depends: options => options.warp.isEnabled,
 		}),
+		rotation: new z42opt.FloatOpt({
+			shortKey: "wr",
+			title: "Rotation",
+			min: 1,
+			max: 20,
+			maxDecimals: 1,
+			defaultVal: 1,
+			depends: options => options.warp.isEnabled,
+		}),
 	}),
 	palette: new z42opt.Node( {}, {
 		isGrayScale: new z42opt.BoolOpt({

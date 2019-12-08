@@ -272,6 +272,7 @@ class PlasmaFractal2D {
 		this._shader.uniforms.u_warp_octavesFract = this._options.warp.octaves % 1;
 		this._shader.uniforms.u_warp_frequency    = this._options.warp.frequency / 2;         
 		this._shader.uniforms.u_warp_amplitude    = this._options.warp.amplitude;         
+		this._shader.uniforms.u_warp_rotation     = this._options.warp.rotation;         
 		this._shader.uniforms.u_warp_gain         = this._options.warp.gain;              
 		this._shader.uniforms.u_warp_lacunarity   = this._options.warp.lacunarity;     
 
