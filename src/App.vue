@@ -78,6 +78,7 @@ export default {
             canvas   : m_canvas,
             colorSeed: Math.random(),
             noiseSeed: Math.random(),
+            warpSeed : Math.random(),
             options  : m_options,
             width    : Math.round( window.innerWidth  * window.devicePixelRatio ),
             height   : Math.round( window.innerHeight * window.devicePixelRatio ),

@@ -65,10 +65,22 @@ const paletteEaseFunctions = {
 	inOutBounce  : { shortKey: "iob"   , title: "Bounce [in/out]"               },
 };
 
-const noiseFunctions = {
+const noiseFunctions2D = {
+	Perlin2D   : { shortKey: "p2", title: "Perlin" },
+	Value2D    : { shortKey: "v2", title: "Value" },
+	Cellular2D : { shortKey: "c2", title: "Cellular" },
+};
+
+const noiseFunctions3D = {
 	Perlin3D   : { shortKey: "p3", title: "Perlin" },
 	Value3D    : { shortKey: "v3", title: "Value" },
 	Cellular3D : { shortKey: "c3", title: "Cellular" },
+};
+
+const noiseFunctions3D_Deriv = {
+	Perlin3D_Deriv   : { shortKey: "pd3", title: "Perlin" },
+	Value3D_Deriv    : { shortKey: "vd3", title: "Value" },
+	Cellular3D_Deriv : { shortKey: "cd3", title: "Cellular" },
 };
 
 //------------------------------------------------------------------------------------------------
@@ -80,7 +92,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 		noiseFunction: new z42opt.EnumOpt({
 			shortKey: "n",
 			title: "Noise function",
-			values: noiseFunctions,
+			values: noiseFunctions3D,
 			defaultVal: "Perlin3D",
 		}),
 		frequency: new z42opt.FloatOpt({ 
@@ -128,7 +140,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			defaultVal: 1,
 		}),
 	}),
-	warping: new z42opt.Node( {}, {
+	warp: new z42opt.Node( {}, {
 		isEnabled: new z42opt.BoolOpt({
 			shortKey: "de",
 			title: "Enable domain warping",
@@ -137,9 +149,9 @@ const optionsDescriptor = new z42opt.Node( {}, {
 		noiseFunction: new z42opt.EnumOpt({
 			shortKey: "wn",
 			title: "Noise function",
-			values: noiseFunctions,
+			values: noiseFunctions3D,
 			defaultVal: "Perlin3D",
-			depends: options => options.warping.isEnabled,
+			depends: options => options.warp.isEnabled,
 		}),
 		frequency: new z42opt.FloatOpt({ 
 			shortKey: "wf",
@@ -150,7 +162,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			isScale: true,
 			scaleNormalPos: 0.33,
 			defaultVal: 1.5,
-			depends: options => options.warping.isEnabled,
+			depends: options => options.warp.isEnabled,
 		}),
 		octaves: new z42opt.FloatOpt({
 			shortKey: "wo",
@@ -159,7 +171,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			max: 15,
 			maxDecimals: 2,
 			defaultVal: 10,
-			depends: options => options.warping.isEnabled,
+			depends: options => options.warp.isEnabled,
 		}),
 		gain: new z42opt.FloatOpt({
 			shortKey: "wg",
@@ -169,7 +181,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			maxDecimals: 2,
 			defaultVal: 0.5,
 			enabled: options => options.noise.octaves >= 2,
-			depends: options => options.warping.isEnabled,
+			depends: options => options.warp.isEnabled,
 		}),
 		lacunarity: new z42opt.FloatOpt({
 			shortKey: "wl",
@@ -179,7 +191,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			maxDecimals: 2,
 			defaultVal: 2,
 			enabled: options => options.noise.octaves >= 2,
-			depends: options => options.warping.isEnabled,
+			depends: options => options.warp.isEnabled,
 		}),
 		amplitude: new z42opt.FloatOpt({
 			shortKey: "wa",
@@ -188,7 +200,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			max: 100,
 			maxDecimals: 1,
 			defaultVal: 1,
-			depends: options => options.warping.isEnabled,
+			depends: options => options.warp.isEnabled,
 		}),
 	}),
 	palette: new z42opt.Node( {}, {
@@ -256,7 +268,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 		}),		
 	}),
 	noiseAnim: new z42opt.Node( {}, {
-		isNoiseMutation: new z42opt.BoolOpt({
+		isEnabled: new z42opt.BoolOpt({
 			shortKey: "inm",
 			title: "Mutate noise",
 			defaultVal: true,
@@ -269,7 +281,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			maxDecimals: 2,
 			isSlow: true,
 			defaultVal: 0.05,
-			depends: options => options.noiseAnim.isNoiseMutation
+			depends: options => options.noiseAnim.isEnabled
 		}),
 		turbulence: new z42opt.FloatOpt({
 			shortKey: "ntu",
@@ -279,7 +291,35 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			maxDecimals: 2,
 			isSlow: true,
 			defaultVal: 1.85,
-			depends: options => options.noiseAnim.isNoiseMutation
+			depends: options => options.noiseAnim.isEnabled
+		}),
+	}),
+	warpAnim: new z42opt.Node( {}, {
+		isEnabled: new z42opt.BoolOpt({
+			shortKey: "iwm",
+			title: "Mutate warping",
+			defaultVal: false,
+			depends: options => options.warp.isEnabled 
+		}),
+		noiseSpeed: new z42opt.FloatOpt({
+			shortKey: "ws",
+			title: "Warping mutation speed",
+			min: 0,
+			max: 1,
+			maxDecimals: 2,
+			isSlow: true,
+			defaultVal: 0.05,
+			depends: options => options.warp.isEnabled && options.warpAnim.isEnabled 
+		}),
+		turbulence: new z42opt.FloatOpt({
+			shortKey: "wtu",
+			title: "Warping turbulence",
+			min: 1.0,
+			max: 2.5,
+			maxDecimals: 2,
+			isSlow: true,
+			defaultVal: 1.85,
+			depends: options => options.warp.isEnabled && options.warpAnim.isEnabled
 		}),
 	}),
 	paletteAnim: new z42opt.Node( {}, {
@@ -341,7 +381,7 @@ const optionsView = {
 		},
 		warpingTab: {
 			title: "Warping",
-			options: [ "warping" ]
+			options: [ "warp" ]
 		},
 		paletteTab: {
 			title: "Palette",
@@ -351,7 +391,7 @@ const optionsView = {
 			title: "Animation",
 
 			// This creates a flat view of the palette and noise anim options:
-			options: [ "noiseAnim", "paletteAnim" ],
+			options: [ "noiseAnim", "warpAnim", "paletteAnim" ],
 
 			/* This would create nested tabs instead:
 			groups: {

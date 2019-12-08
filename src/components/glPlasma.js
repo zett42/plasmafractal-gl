@@ -44,6 +44,7 @@ class PlasmaFractal2D {
 	constructor( params ){
 
 		this._noiseSeed = params.noiseSeed;
+		this._warpSeed = params.warpSeed;
 		this._options = _.cloneDeep( params.options );
 
 		this._startTime = performance.now() / 1000;
@@ -117,12 +118,13 @@ class PlasmaFractal2D {
 	_rebuildShaders() {
 	
 		const fragShaderSrcTransformed = injectDefines( fragShaderSrc, {
-			NOISE_FUN   : this._options.noise.noiseFunction,
-			WARPING_FUN : this._options.warping.noiseFunction,
+			NOISE_FUN    : this._options.noise.noiseFunction,
+			WARP_FUN     : this._options.warp.noiseFunction,
+			FBM_WARP_FUN : this._options.warp.isEnabled ? 'fbm_warp' : 'fbm_warp_none'
 		});
 
 		//console.log('vertexShaderSrc', vertexShaderSrc)		
-		//console.log('fragShaderSrcTransformed', fragShaderSrcTransformed)		
+		console.log('fragShaderSrcTransformed: ', fragShaderSrcTransformed)		
 
 		if( this._shader ) {
 			this._shader.update( vertexShaderSrc, fragShaderSrcTransformed )
@@ -233,19 +235,17 @@ class PlasmaFractal2D {
 
 	drawAnimationFrame() {
 
+		// Current time in seconds since start of plasma.
+		const time = performance.now() / 1000.0 - this._startTime;
+
 		const gl = this._gl;
 
-		// Clear the canvas.
-		gl.clearColor( 0, 0, 0, 0 );
-		gl.clear( gl.COLOR_BUFFER_BIT) ;
-
-		// Tell it to use our program (pair of shaders).
+		// Tell WebGL to use our program (pair of shaders).
 		this._shader.bind();
-	
-		// Bind the attribute/buffer set we want.
-		gl.bindVertexArray( this._vao );
 
-		// Set noise parameters.
+
+		//····· Set noise parameters ····································································
+
 		this._shader.uniforms.u_octaves      = Math.trunc( this._options.noise.octaves );
 		this._shader.uniforms.u_octavesFract = this._options.noise.octaves % 1;
 		this._shader.uniforms.u_frequency    = this._options.noise.frequency / 2;         
@@ -253,20 +253,42 @@ class PlasmaFractal2D {
 		this._shader.uniforms.u_gain         = this._options.noise.gain;              
 		this._shader.uniforms.u_lacunarity   = this._options.noise.lacunarity;     
 
-		// Current time in seconds since start of plasma.
-		const time = performance.now() / 1000.0 - this._startTime;
-
 		// Set parameters for noise animation.
 		let noiseZ = this._noiseSeed * 50.0;
 		let turbulence = 1.0;
 
-		if( this._options.noiseAnim.isNoiseMutation ) {
+		if( this._options.noiseAnim.isEnabled ) {
 			noiseZ += time * this._options.noiseAnim.noiseSpeed / 3;
 			turbulence = this._options.noiseAnim.turbulence;
 		}
 
 		this._shader.uniforms.u_noiseZ = noiseZ;
 		this._shader.uniforms.u_turbulence = turbulence;
+
+
+		//····· Set domain warp parameters ····································································
+
+		this._shader.uniforms.u_warp_octaves      = Math.trunc( this._options.warp.octaves );
+		this._shader.uniforms.u_warp_octavesFract = this._options.warp.octaves % 1;
+		this._shader.uniforms.u_warp_frequency    = this._options.warp.frequency / 2;         
+		this._shader.uniforms.u_warp_amplitude    = this._options.warp.amplitude;         
+		this._shader.uniforms.u_warp_gain         = this._options.warp.gain;              
+		this._shader.uniforms.u_warp_lacunarity   = this._options.warp.lacunarity;     
+
+		// Set parameters for noise animation.
+		let warp_anim = this._warpSeed * 50.0;
+		let warp_turbulence = 1.0;
+
+		if( this._options.warpAnim.isEnabled ) {
+			warp_anim += time * this._options.warpAnim.noiseSpeed / 3;
+			warp_turbulence = this._options.warpAnim.turbulence;
+		}
+
+		this._shader.uniforms.u_warp_anim = warp_anim;
+		this._shader.uniforms.u_warp_turbulence = warp_turbulence;
+
+
+		//····· Apply palette options ··························································· 
 
 		if( this._options.paletteAnim.isRotaEnabled ) {
 			const sizeFactor = this._paletteTextureSize / 4096;
@@ -292,7 +314,16 @@ class PlasmaFractal2D {
 			gl.bindTexture( gl.TEXTURE_2D, this._paletteTexture );
 			z42glcolor.setPaletteTexture( gl, this._paletteTextureSize, paletteToUse ); 
 		}
+
+		//····· Render ············································································· 
 		
+		// Clear the canvas.
+		gl.clearColor( 0, 0, 0, 0 );
+		gl.clear( gl.COLOR_BUFFER_BIT) ;
+		
+		// Bind the attribute/buffer set we want.
+		gl.bindVertexArray( this._vao );
+
 		// Draw the rectangle from the vertex and texture coordinates buffers.
 		gl.drawArrays( gl.TRIANGLES, 0, 6 );
 	}
@@ -317,18 +348,21 @@ class PlasmaFractal2D {
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------
-	// Get / set domain warping options.
+	// Get / set domain warp options.
 
-	get options$warping()
+	get options$warp()
 	{
-		return _.cloneDeep( this._options.warping );
+		return _.cloneDeep( this._options.warp );
 	}
 
-	set options$warping( opt )
+	set options$warp( opt )
 	{
-		const needRebuildShaders = ! _.isEqual( this._options.warping.noiseFunction, opt.noiseFunction );
+		const needRebuildShaders = ! _.isEqual( 
+			[ this._options.warp.isEnabled, this._options.warp.noiseFunction ], 
+			[ opt.isEnabled               , opt.noiseFunction                ] 
+		);
 
-		this._options.warping = _.cloneDeep( opt );
+		this._options.warp = _.cloneDeep( opt );
 
 		if( needRebuildShaders ) {
 			this._rebuildShaders();
@@ -383,13 +417,14 @@ class PlasmaFractal2D {
 		this._options.noiseAnim = _.cloneDeep( opt );
 	}
 
-	//-------------------------------------------------------------------------------------------------------------------
-	// Recreate noise image with new seed.
-
-	reseed( seed ) {
-		this._noiseSeed = seed;
+	get options$warpAnim()	{
+		return _.cloneDeep( this._options.warpAnim );
 	}	
-	
+
+	set options$warpAnim( opt ) {
+		this._options.warpAnim = _.cloneDeep( opt );
+	}
+
 	//-------------------------------------------------------------------------------------------------------------------
 	// Rotate and cross-fade the palette.
 
