@@ -73,6 +73,9 @@ Animation
 <a href="https://zett42.github.io/plasmafractal-gl/?n=s3&f=.2&o=11.32&g=.54&l=2&a=1.7&de=1&wn=s3&wf=6.4&wo=10&wg=.52&wl=1.89&wa=50.8&wr=2.2&wt=v&pg=0&icp=0&pbf=i3&pfb=o3&ps=.5&pb=1&pbg=000000&cp=&acp=0&inm=1&ns=.01&ntu=1.85&iwm=1&ws=.03&wtu=1.92&ipr=0&prs=.1&ptde=10.&ptd=5.#">
   <img src="/screenshots/thumbs/DomainWarping1.jpg" alt="Domain Warping 1" title="Domain Warping 1" width="150">
 </a>
+<a href="https://zett42.github.io/plasmafractal-gl/?n=s3&f=.5&o=11.87&g=.46&l=2&a=1.7&de=1&wn=s3&wf=4.02&wo=10.55&wg=.52&wl=1.77&wa=16.6&wr=16&wt=v&pg=0&icp=1&pbf=i3&pfb=o3&ps=.5&pb=1&pbg=000000&cp=0_000000_io2+.485_e7c232_io2+.152_000000_io2+.851_000000_l&acp=0&inm=1&ns=.01&ntu=1.63&iwm=1&ws=.11&wtu=1.7&ipr=0&prs=.1&ptde=10.&ptd=5.">
+  <img src="/screenshots/thumbs/Sulfur.jpg" alt="Domain Warping 1" title="Sulfur" width="150">
+</a>
 
 ## Credits
 This project uses the following open source libraries. Each library comes with its own license terms, which can be found in the source code included in this project.
