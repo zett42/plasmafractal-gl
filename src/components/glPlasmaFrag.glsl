@@ -99,10 +99,10 @@ vec2 warpPolar( vec2 pos ) {
 
 //·············································································································
 // Most sample code for domain warping simply adds noise values to the fragment position. 
-// This is a variation where we are using the noise value for a helix transformation.
+// This is a variation where we are using the noise value for a vortex (spiral) transformation.
 // Creates results similar to warpPolar, but requires only a single noise function, reducing GPU load!
 
-vec2 warpHelix( vec2 pos ) {
+vec2 warpVortex( vec2 pos ) {
 	float warp = fbmNoise3D_warp( vec3( pos, u_warp_anim ), u_warp_octaves, u_warp_octavesFract, u_warp_frequency * u_frequency, u_warp_amplitude, u_warp_lacunarity, u_warp_gain, u_warp_turbulence );
 
 	// Most sample code for domain warping simply adds noise values to the fragment position. 

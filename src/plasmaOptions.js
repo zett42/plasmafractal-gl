@@ -75,7 +75,7 @@ const noiseFunctions3D = {
 const warpFunctions = {
 	warpRegular : { shortKey: "r", title: "Regular" },
 	warpPolar   : { shortKey: "p", title: "Polar" },
-	warpHelix   : { shortKey: "h", title: "Helix" },
+	warpVortex  : { shortKey: "v", title: "Vortex" },
 };
 
 //------------------------------------------------------------------------------------------------
@@ -145,7 +145,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			shortKey: "wt",
 			title: "Transform function",
 			values: warpFunctions,
-			defaultVal: "warpHelix",
+			defaultVal: "warpVortex",
 			depends: options => options.warp.isEnabled,
 		}),
 		noiseFunction: new z42opt.EnumOpt({
@@ -212,7 +212,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			maxDecimals: 1,
 			defaultVal: 4,
 			depends: options => options.warp.isEnabled && 
-			                    ( options.warp.transformFunction == 'warpPolar' || options.warp.transformFunction == 'warpHelix' ),
+			                    ( options.warp.transformFunction == 'warpPolar' || options.warp.transformFunction == 'warpVortex' ),
 		}),
 	}),
 	palette: new z42opt.Node( {}, {
