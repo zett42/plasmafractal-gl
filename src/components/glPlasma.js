@@ -118,13 +118,13 @@ class PlasmaFractal2D {
 	_rebuildShaders() {
 	
 		const fragShaderSrcTransformed = injectDefines( fragShaderSrc, {
-			NOISE_FUN    : this._options.noise.noiseFunction,
-			WARP_FUN     : this._options.warp.noiseFunction,
-			FBM_WARP_FUN : this._options.warp.isEnabled ? 'fbm_warp' : 'fbm_warp_none'
+			NOISE_FUN          : this._options.noise.noiseFunction,
+			WARP_NOISE_FUN     : this._options.warp.noiseFunction,
+			WARP_TRANSFORM_FUN : this._options.warp.isEnabled ? this._options.warp.transformFunction : 'warpNone',
 		});
 
 		//console.log('vertexShaderSrc', vertexShaderSrc)		
-		console.log('fragShaderSrcTransformed: ', fragShaderSrcTransformed)		
+		//console.log('fragShaderSrcTransformed: ', fragShaderSrcTransformed)		
 
 		if( this._shader ) {
 			this._shader.update( vertexShaderSrc, fragShaderSrcTransformed )
@@ -359,8 +359,8 @@ class PlasmaFractal2D {
 	set options$warp( opt )
 	{
 		const needRebuildShaders = ! _.isEqual( 
-			[ this._options.warp.isEnabled, this._options.warp.noiseFunction ], 
-			[ opt.isEnabled               , opt.noiseFunction                ] 
+			[ this._options.warp.isEnabled, this._options.warp.noiseFunction, this._options.warp.transformFunction ], 
+			[ opt.isEnabled               , opt.noiseFunction,                opt.transformFunction                ] 
 		);
 
 		this._options.warp = _.cloneDeep( opt );

@@ -72,6 +72,12 @@ const noiseFunctions3D = {
 	Cellular3D      : { shortKey: "c3", title: "Cellular" },
 };
 
+const warpFunctions = {
+	warpRegular : { shortKey: "r", title: "Regular" },
+	warpPolar   : { shortKey: "p", title: "Polar" },
+	warpHelix   : { shortKey: "h", title: "Helix" },
+};
+
 //------------------------------------------------------------------------------------------------
 // Describes all available options, e. g. default values, constraints, mapping to URL params, etc.
 // It does NOT store actual option values!
@@ -135,6 +141,13 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			title: "Enable domain warping",
 			defaultVal: false,
 		}),		
+		transformFunction: new z42opt.EnumOpt({
+			shortKey: "wt",
+			title: "Transform function",
+			values: warpFunctions,
+			defaultVal: "warpHelix",
+			depends: options => options.warp.isEnabled,
+		}),
 		noiseFunction: new z42opt.EnumOpt({
 			shortKey: "wn",
 			title: "Noise function",
@@ -188,7 +201,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			min: 1,
 			max: 100,
 			maxDecimals: 1,
-			defaultVal: 5,
+			defaultVal: 12,
 			depends: options => options.warp.isEnabled,
 		}),
 		rotation: new z42opt.FloatOpt({
@@ -198,7 +211,8 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			max: 20,
 			maxDecimals: 1,
 			defaultVal: 4,
-			depends: options => options.warp.isEnabled,
+			depends: options => options.warp.isEnabled && 
+			                    ( options.warp.transformFunction == 'warpPolar' || options.warp.transformFunction == 'warpHelix' ),
 		}),
 	}),
 	palette: new z42opt.Node( {}, {
