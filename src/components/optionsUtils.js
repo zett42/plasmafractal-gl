@@ -232,12 +232,14 @@ function createUrlParams( urlParams, options, rootDescriptor, path = null ) {
 		const childDescriptor = _.get( rootDescriptor, childPath );
 		
 		if( childDescriptor instanceof z42opt.Option )	{
-			if( ! childDescriptor.$attrs.shortKey ) {
-				console.error( "Missing attribute shortKey for option:", childPath );
-				continue;
+			if( childDescriptor.$attrs.serialize !== false ) {
+				if( ! childDescriptor.$attrs.shortKey ) {
+					console.error( "Missing attribute shortKey for option:", childPath );
+					continue;
+				}
+				const urlValue = childDescriptor.$serialize( value ); 
+				urlParams.append( childDescriptor.$attrs.shortKey, urlValue );
 			}
-			const urlValue = childDescriptor.$serialize( value ); 
-			urlParams.append( childDescriptor.$attrs.shortKey, urlValue );
 		}
 		else if( typeof value === "object" ) {			
 			// Recurse

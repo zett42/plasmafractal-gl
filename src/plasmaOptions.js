@@ -373,6 +373,13 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			depends: options => ! options.palette.isCustom || options.palette.isCustomPaletteAnimated,
 		}),
 	}),
+	info: new z42opt.Node( {}, {
+		showFps: new z42opt.BoolOpt({
+			title: "Show FPS",
+			defaultVal: false,
+			serialize: false,
+		}),
+	}),
 });
 
 //------------------------------------------------------------------------------------------------
@@ -417,6 +424,10 @@ const optionsView = {
 				}
 			},
 			*/
+		},
+		infoTab: {
+			title: "Info",
+			options: [ "info" ]
 		},
 	}
 };

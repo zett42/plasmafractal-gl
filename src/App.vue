@@ -41,6 +41,8 @@ Main component
             @opt-modified="onModified( $event )"
         />
 
+        <div id="fps-info" v-if="optData.info.showFps"></div>        
+
        	<canvas id="plasmaCanvas" class="plasma">PlasmaFractal</canvas>
     </div>
 </template>
@@ -57,6 +59,9 @@ const m_options = z42optUtil.mergeDefaultsWithUrlParams( plasmaOpt.optionsDescri
 let m_canvas = null;
 let m_plasma = null;
 let m_optionsButtonFadeoutTimer = null;
+
+let m_lastFpsTime = performance.now();
+let m_frameCount = 0;
 
 //···················································································································
 
@@ -124,9 +129,28 @@ function wireUpEventListeners() {
 //···················································································································
 
 function animate() {
-	m_plasma.drawAnimationFrame();
+    m_plasma.drawAnimationFrame();
+
+    showFps();
 
 	requestAnimationFrame( animate );
+}
+
+//···················································································································
+
+function showFps() {
+    ++m_frameCount;
+
+    let now = performance.now();
+    if( now - m_lastFpsTime >= 1000 ) {
+        let fpsElem = document.getElementById( "fps-info" );
+        if( fpsElem ) {
+            fpsElem.textContent = m_frameCount.toFixed( 0 ) + ' fps';
+        }
+
+        m_lastFpsTime = now;
+        m_frameCount = 0;
+    }
 }
 
 //···················································································································
