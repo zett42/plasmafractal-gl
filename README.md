@@ -70,7 +70,7 @@ Animation
 <a href="https://zett42.github.io/plasmafractal-gl/?n=p3&f=.55&o=5.84&g=.45&l=2&a=1&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=1&pbg=000000&cp=0_000000_l_f1*o12*g.83*l3*a1.49*s.09&acp=0&inm=1&ns=.01&ntu=1.55&ipr=0&prs=.1&ptde=10.&ptd=5.#">
   <img src="/screenshots/thumbs/GraphicalFlux.jpg" alt="Graphical Flux" title="Graphical Flux" width="150">
 </a>
-<a href="https://zett42.github.io/plasmafractal-gl/?n=s3&f=.2&o=11.32&g=.54&l=2&a=1.7&de=1&wn=s3&wf=6.4&wo=10&wg=.52&wl=2&wa=50.8&wr=2.2&wt=v&pg=0&icp=0&pbf=i3&pfb=o3&ps=.5&pb=1&pbg=000000&cp=&acp=0&inm=1&ns=.01&ntu=1.85&iwm=1&ws=.03&wtu=1.92&ipr=0&prs=.1&ptde=10.&ptd=5.#">
+<a href="https://zett42.github.io/plasmafractal-gl/?n=s3&f=.2&o=11.32&g=.54&l=2&a=1.7&de=1&wn=s3&wf=6.4&wo=10&wg=.52&wl=1.89&wa=50.8&wr=2.2&wt=v&pg=0&icp=0&pbf=i3&pfb=o3&ps=.5&pb=1&pbg=000000&cp=&acp=0&inm=1&ns=.01&ntu=1.85&iwm=1&ws=.03&wtu=1.92&ipr=0&prs=.1&ptde=10.&ptd=5.#">
   <img src="/screenshots/thumbs/DomainWarping1.jpg" alt="Domain Warping 1" title="Domain Warping 1" width="150">
 </a>
 
