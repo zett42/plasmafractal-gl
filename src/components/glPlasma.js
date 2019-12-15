@@ -261,6 +261,7 @@ class PlasmaFractal2D {
 		this._shader.uniforms.u_amplitude    = this._options.noise.amplitude;         
 		this._shader.uniforms.u_gain         = this._options.noise.gain;              
 		this._shader.uniforms.u_lacunarity   = this._options.noise.lacunarity;     
+		this._shader.uniforms.u_angle        = this._options.noise.angle * 2 * Math.PI / 360;
 
 		// Set parameters for noise animation.
 		let noiseAnim = this._noiseSeed * 50.0;
@@ -281,7 +282,7 @@ class PlasmaFractal2D {
 		this._shader.uniforms.u_warp_octavesFract = this._options.warp.octaves % 1;
 		this._shader.uniforms.u_warp_frequency    = this._options.warp.frequency;         
 		this._shader.uniforms.u_warp_amplitude    = this._options.warp.amplitude * 0.01;         
-		this._shader.uniforms.u_warp_rotation     = this._options.warp.rotation;         
+		this._shader.uniforms.u_warp_rotation     = this._options.warp.rotation * Math.PI;         
 		this._shader.uniforms.u_warp_gain         = this._options.warp.gain;              
 		this._shader.uniforms.u_warp_lacunarity   = this._options.warp.lacunarity;     
 

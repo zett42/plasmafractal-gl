@@ -73,9 +73,10 @@ const noiseFunctions3D = {
 };
 
 const warpFunctions = {
-	warpRegular : { shortKey: "r", title: "Regular" },
-	warpPolar   : { shortKey: "p", title: "Polar" },
-	warpVortex  : { shortKey: "v", title: "Vortex" },
+	warpRegular       : { shortKey: "r", title: "Regular" },
+	warpPolar         : { shortKey: "p", title: "Polar" },
+	warpVortex        : { shortKey: "v", title: "Vortex" },
+	warpVortexInverse : { shortKey: "vi", title: "Vortex Inverse" },
 };
 
 //------------------------------------------------------------------------------------------------
@@ -126,11 +127,22 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			defaultVal: 2,
 			enabled: options => options.noise.octaves > 1,
 		}),
+		angle: new z42opt.FloatOpt({
+			shortKey: "an",
+			title: "Angle",
+			min: 0,
+			max: 90,
+			maxDecimals: 1,
+			defaultVal: 0,
+			enabled: options => options.noise.octaves > 1,
+		}),
 		amplitude: new z42opt.FloatOpt({
 			shortKey: "a",
 			title: "Amplitude",
 			min: 0.1,
-			max: 100,
+			max: 50,
+			isScale: true,
+			scaleNormalPos: 0.15,
 			maxDecimals: 2,
 			defaultVal: 1,
 		}),
@@ -216,8 +228,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			max: 20,
 			maxDecimals: 1,
 			defaultVal: 4,
-			depends: options => options.warp.isEnabled && 
-			                    ( options.warp.transformFunction == 'warpPolar' || options.warp.transformFunction == 'warpVortex' ),
+			depends: options => options.warp.isEnabled && options.warp.transformFunction != 'warpRegular',
 		}),
 	}),
 	palette: new z42opt.Node( {}, {
@@ -381,6 +392,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 	}),
 	info: new z42opt.Node( {}, {
 		showFps: new z42opt.BoolOpt({
+			shortKey: "sfp",
 			title: "Show FPS",
 			defaultVal: false,
 			serialize: false,

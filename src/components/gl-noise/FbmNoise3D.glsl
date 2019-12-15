@@ -26,7 +26,7 @@ SOFTWARE.
 // Fractal brownian motion noise.
 // Requires NOISE_FUN argument in require() call to define noise function to use.
 
-float fbmNoise3D( vec3 pos, int octaves, float octavesFract, float frequency, float amplitude, float lacunarity, float gain,
+float fbmNoise3D( vec3 pos, int octaves, float octavesFract, float frequency, float amplitude, float angle, float lacunarity, float gain,
                   float turbulence ) {
 
 	float result = 0.0;
@@ -40,21 +40,23 @@ float fbmNoise3D( vec3 pos, int octaves, float octavesFract, float frequency, fl
 	// This value has been choosen by trial and error.
 	const float zInc = 7.2;
 
+	mat2 rot = mat2( cos( angle ), sin( angle ), -sin( angle ), cos( angle ) );
+
+	vec2 p2 = pos.xy * frequency;
+
 	// Create fractal noise by adding multiple octaves of noise.
 	for( int i = 0; i < octaves; ++i ) {                
 
-		vec3 p = vec3( pos.xy * freq, z );
-		result += NOISE_FUN( p ) * amp;
+		result += NOISE_FUN( vec3( p2, z ) ) * amp;
 
-		freq   *= lacunarity;
-		amp    *= gain;
-		z      += zInc;
-		z      *= turbulence;
+		p2  *= rot * lacunarity;
+		amp *= gain;
+		z   += zInc;
+		z   *= turbulence;
 	}
 
 	// Fractional part of octave value is used for smooth transition.
-	vec3 p = vec3( pos.xy * freq, z );
-	result += NOISE_FUN( p ) * amp * octavesFract;
+	result += NOISE_FUN( vec3( p2, z ) ) * amp * octavesFract;
 
 	return result;
 }

@@ -36,8 +36,9 @@ uniform float u_octavesFract;      // fractional part of octaves value
 uniform float u_frequency;         // noise frequency
 uniform float u_amplitude;         // noise amplitude
 uniform float u_gain;              // amplitude factor for each octave
+uniform float u_angle;             // rotation per octave
 uniform float u_lacunarity;        // frequency factor for each octave
-uniform float u_noiseAnim;            // Z-position in 3D noise, for animation
+uniform float u_noiseAnim;         // Z-position in 3D noise, for animation
 uniform float u_turbulence;        // "boiling" effect of noise animation 
 
 // Domain warping parameters.
@@ -61,8 +62,6 @@ in vec2 fragCoord;
 // Output of this fragment shader.
 out vec4 fragColor;
 
-const float PI = 3.1415926535897932384626433832795;
-
 //·············································································································
 // Imports
 
@@ -81,7 +80,8 @@ const float PI = 3.1415926535897932384626433832795;
 // Regular domain warping. Just offset coordinates by noise values.
 
 vec2 warpRegular( vec2 pos ) {
-	vec2 warp = fbmNoiseDual3D_warp( vec3( pos, u_warp_anim ), u_warp_octaves, u_warp_octavesFract, u_warp_frequency * u_frequency, u_warp_lacunarity, u_warp_gain, u_warp_turbulence );
+	vec2 warp = fbmNoiseDual3D_warp( vec3( pos, u_warp_anim ), u_warp_octaves, u_warp_octavesFract, u_warp_frequency * u_frequency, 
+									 u_warp_lacunarity, u_warp_gain, u_warp_turbulence );
 	return pos + warp * u_warp_amplitude;
 }
 
@@ -91,9 +91,10 @@ vec2 warpRegular( vec2 pos ) {
 // produce more fluid-looking results. 
 
 vec2 warpPolar( vec2 pos ) {
-	vec2 warp = fbmNoiseDual3D_warp( vec3( pos, u_warp_anim ), u_warp_octaves, u_warp_octavesFract, u_warp_frequency * u_frequency, u_warp_lacunarity, u_warp_gain, u_warp_turbulence );
+	vec2 warp = fbmNoiseDual3D_warp( vec3( pos, u_warp_anim ), u_warp_octaves, u_warp_octavesFract, u_warp_frequency * u_frequency, 
+									 u_warp_lacunarity, u_warp_gain, u_warp_turbulence );
 
-	float angle = warp.x * PI * u_warp_rotation;
+	float angle = warp.x * u_warp_rotation;
 	return pos + vec2( sin( angle ), cos( angle ) ) * warp.x * u_warp_amplitude;
 }
 
@@ -103,10 +104,28 @@ vec2 warpPolar( vec2 pos ) {
 // Creates results similar to warpPolar, but requires only a single noise function, reducing GPU load!
 
 vec2 warpVortex( vec2 pos ) {
-	float warp = fbmNoise3D_warp( vec3( pos, u_warp_anim ), u_warp_octaves, u_warp_octavesFract, u_warp_frequency * u_frequency, u_warp_amplitude, u_warp_lacunarity, u_warp_gain, u_warp_turbulence );
+	float warp = fbmNoise3D_warp( vec3( pos, u_warp_anim ), u_warp_octaves, u_warp_octavesFract, u_warp_frequency * u_frequency, 
+								  1.0, 0.0, u_warp_lacunarity, u_warp_gain, u_warp_turbulence );
 
-	float angle = warp * PI * u_warp_rotation;
-	return pos + vec2( sin( angle ), cos( angle ) ) * warp;
+	float angle = warp * u_warp_rotation;
+	float dist  = warp * u_warp_amplitude;
+
+	return pos + vec2( sin( angle ), cos( angle ) ) * dist;
+}
+
+//·············································································································
+// Variation of warpVortex. 
+
+vec2 warpVortexInverse( vec2 pos ) {
+	float warp = fbmNoise3D_warp( vec3( pos, u_warp_anim ), u_warp_octaves, u_warp_octavesFract, u_warp_frequency * u_frequency, 
+								  1.0, 0.0, u_warp_lacunarity, u_warp_gain, u_warp_turbulence );
+
+	warp = 1.0 - abs( clamp( warp, -1.0, 1.0 ) );
+
+	float angle = warp * u_warp_rotation;
+	float dist  = warp * u_warp_amplitude;
+
+	return pos + vec2( sin( angle ), cos( angle ) ) * dist;
 }
 
 //·············································································································
@@ -137,7 +156,7 @@ void main() {
 
 	vec2 pos = WARP_TRANSFORM_FUN( fragCoord.xy );
 
-	float n = fbmNoise3D( vec3( pos, u_noiseAnim ), u_octaves, u_octavesFract, u_frequency, u_amplitude, u_lacunarity, u_gain, u_turbulence );
+	float n = fbmNoise3D( vec3( pos, u_noiseAnim ), u_octaves, u_octavesFract, u_frequency, u_amplitude, u_angle, u_lacunarity, u_gain, u_turbulence );
 	
 	// Adjust for differences in noise function range (-1..1 or 0..1).
 	n = MAP_TO_PALETTE_FUN( n );
