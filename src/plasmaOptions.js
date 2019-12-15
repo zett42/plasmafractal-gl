@@ -129,10 +129,15 @@ const optionsDescriptor = new z42opt.Node( {}, {
 		amplitude: new z42opt.FloatOpt({
 			shortKey: "a",
 			title: "Amplitude",
-			min: 1,
+			min: 0.1,
 			max: 100,
-			maxDecimals: 1,
+			maxDecimals: 2,
 			defaultVal: 1,
+		}),
+		isClamp: new z42opt.BoolOpt({
+			shortKey: "c",
+			title: "Clamp",
+			defaultVal: false,
 		}),
 	}),
 	warp: new z42opt.Node( {}, {
@@ -226,7 +231,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			title: "Custom palette",
 			defaultVal: false,
 			depends: options => ! options.palette.isGrayScale,
-		}),		
+		}),
 		easeFunctionBgToFg: new z42opt.EnumOpt({
 			shortKey: "pbf",
 			title: "Background to foreground easing",
@@ -337,8 +342,9 @@ const optionsDescriptor = new z42opt.Node( {}, {
 	paletteAnim: new z42opt.Node( {}, {
 		isRotaEnabled: new z42opt.BoolOpt({
 			shortKey: "ipr",
-			title: "Rotate palette",
+			title: "Rotate palette (disabled if Noise > Clamp is set)",
 			defaultVal: false,
+			enabled: options => ! options.noise.isClamp,
 		}),		
 		rotaSpeed: new z42opt.FloatOpt({
 			shortKey: "prs",
@@ -348,7 +354,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			maxDecimals: 2,
 			isSlow: true,
 			defaultVal: 0.1,
-			depends: options => options.paletteAnim.isRotaEnabled,
+			depends: options => options.paletteAnim.isRotaEnabled && ! options.noise.isClamp,
 		}),
 		transitionDelay: new z42opt.DurationOpt({
 			shortKey: "ptde",

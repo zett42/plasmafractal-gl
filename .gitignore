@@ -21,3 +21,4 @@ yarn-error.log*
 *.sln
 *.sw?
 /plasmafractal-gl
+/__TODO.txt

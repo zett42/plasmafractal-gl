@@ -29,7 +29,7 @@ import * as z42color from './color.js'
 //----------------------------------------------------------------------------------------------
 // Render the given multi-gradient palette to the currently bound texture, generating mipmaps.
 
-export function setPaletteTexture( gl, textureWidth, paletteDef ) {
+export function setPaletteTexture( gl, textureWidth, paletteDef, isRepeat ) {
 
     textureWidth = Math.trunc( textureWidth );
 
@@ -53,9 +53,9 @@ export function setPaletteTexture( gl, textureWidth, paletteDef ) {
             for( let iDst = 0, iSrc = 0; iDst < scaledTextureWidth; ++iDst, iSrc += 2 ) {
                 
                 // Averaging 3 samples seems to be the sweet spot between aliasing and too much blur.
-                const c1 = samplePalette( paletteUint32, iSrc - 1 );
-                const c2 = samplePalette( paletteUint32, iSrc + 0 );
-                const c3 = samplePalette( paletteUint32, iSrc + 1 );
+                const c1 = samplePalette( paletteUint32, iSrc - 1, isRepeat );
+                const c2 = samplePalette( paletteUint32, iSrc + 0, isRepeat );
+                const c3 = samplePalette( paletteUint32, iSrc + 1, isRepeat );
 
                 const c = roundColor( mulColor( sumColors([ c1, c2, c3 ]), 1 / 3 ) );
 
@@ -70,8 +70,7 @@ export function setPaletteTexture( gl, textureWidth, paletteDef ) {
     }
 
     // Set texture parameters
-    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT );
-    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT );
+	gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, isRepeat ? gl.REPEAT : gl.CLAMP_TO_EDGE );
     gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR );
     gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
 }
@@ -118,6 +117,10 @@ function roundColor( c ) {
 }
 
 // Sample Uint32 palette with wrap-around.
-function samplePalette( pal, i ) {
-    return splitColor( pal[ z42color.mod( i, pal.length ) ] );
+function samplePalette( pal, index, isRepeat ) {
+
+    const i = isRepeat ? z42color.mod( index, pal.length )
+                       : z42color.clamp( index, 0, pal.length - 1 );
+    
+    return splitColor( pal[ i ] );
 }

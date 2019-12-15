@@ -105,16 +105,30 @@ vec2 warpPolar( vec2 pos ) {
 vec2 warpVortex( vec2 pos ) {
 	float warp = fbmNoise3D_warp( vec3( pos, u_warp_anim ), u_warp_octaves, u_warp_octavesFract, u_warp_frequency * u_frequency, u_warp_amplitude, u_warp_lacunarity, u_warp_gain, u_warp_turbulence );
 
-	// Most sample code for domain warping simply adds noise values to the fragment position. 
-	// Interpreting the warp.xy values as angle and length instead produces more interesting results. 
 	float angle = warp * PI * u_warp_rotation;
 	return pos + vec2( sin( angle ), cos( angle ) ) * warp;
 }
 
 //·············································································································
 
-vec2 warpNone( vec2 pos ) {
-	return pos;
+float clampZeroOne( float value ) {
+	return clamp( value, 0.0, 1.0 );
+}
+
+//·············································································································
+
+float mapToPaletteMinusOneToOne( float value ) {
+	return value / 2.0 + 0.5;	
+}
+
+//·············································································································
+
+float identity( float value ) {
+	return value;
+}
+
+vec2 identity( vec2 value ) {
+	return value;
 }
 
 //·············································································································
@@ -124,6 +138,12 @@ void main() {
 	vec2 pos = WARP_TRANSFORM_FUN( fragCoord.xy );
 
 	float n = fbmNoise3D( vec3( pos, u_noiseAnim ), u_octaves, u_octavesFract, u_frequency, u_amplitude, u_lacunarity, u_gain, u_turbulence );
+	
+	// Adjust for differences in noise function range (-1..1 or 0..1).
+	n = MAP_TO_PALETTE_FUN( n );
+
+	// Optionally clamp to 0..1
+	n = NOISE_CLAMP_FUN( n );
 
 	// Actual color is defined by palette
 	fragColor = texture( u_paletteTexture, vec2( n + u_paletteOffset, 0 ) );

@@ -87,6 +87,8 @@ class PlasmaFractal2D {
 		
 		this._isPaletteTransition = false;     // Palette currently transitioning to next palette?
 		this._paletteStartTime = this._startTime;  // Start time of current phase (constant or transition).
+
+		this._currentPaletteIsRepeat = null;
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------
@@ -117,10 +119,17 @@ class PlasmaFractal2D {
 
 	_rebuildShaders() {
 	
+		let mapToPaletteFun = 'mapToPaletteMinusOneToOne';
+		if( this._options.noise.noiseFunction == 'Cellular3D' ) {
+			mapToPaletteFun = 'identity';
+		}
+
 		const fragShaderSrcTransformed = injectDefines( fragShaderSrc, {
 			NOISE_FUN          : this._options.noise.noiseFunction,
+			NOISE_CLAMP_FUN    : this._options.noise.isClamp ? 'clampZeroOne' : 'identity',
+			MAP_TO_PALETTE_FUN : mapToPaletteFun,
 			WARP_NOISE_FUN     : this._options.warp.noiseFunction,
-			WARP_TRANSFORM_FUN : this._options.warp.isEnabled ? this._options.warp.transformFunction : 'warpNone',
+			WARP_TRANSFORM_FUN : this._options.warp.isEnabled ? this._options.warp.transformFunction : 'identity',
 		});
 
 		//console.log('vertexShaderSrc', vertexShaderSrc)		
@@ -291,7 +300,7 @@ class PlasmaFractal2D {
 
 		//····· Apply palette options ··························································· 
 
-		if( this._options.paletteAnim.isRotaEnabled ) {
+		if( this._options.paletteAnim.isRotaEnabled && ! this._options.noise.isClamp ) {
 			const sizeFactor = this._paletteTextureSize / 4096;
 			this._shader.uniforms.u_paletteOffset = time * this._options.paletteAnim.rotaSpeed * sizeFactor;
 		}
@@ -307,13 +316,20 @@ class PlasmaFractal2D {
 			paletteToUse = this._animatePalette();
 		}
 
-		// If palette has changed, render it into texture.
-		if( ! _.isEqual( this._currentPalette, paletteToUse ) ) {
-			this._currentPalette = _.cloneDeep( paletteToUse );
+		gl.activeTexture( gl.TEXTURE0 );
+		gl.bindTexture( gl.TEXTURE_2D, this._paletteTexture );
 
-			gl.activeTexture( gl.TEXTURE0 );
-			gl.bindTexture( gl.TEXTURE_2D, this._paletteTexture );
-			z42glcolor.setPaletteTexture( gl, this._paletteTextureSize, paletteToUse ); 
+		// If palette has changed, render it into texture.
+
+		const paletteIsRepeat = ! this._options.noise.isClamp;
+
+		if( ! _.isEqual([ this._currentPalette, this._currentPaletteIsRepeat ],
+			            [ paletteToUse,         paletteIsRepeat  ]) ) {
+
+			this._currentPalette = _.cloneDeep( paletteToUse );
+			this._currentPaletteIsRepeat = paletteIsRepeat;	
+
+			z42glcolor.setPaletteTexture( gl, this._paletteTextureSize, paletteToUse, paletteIsRepeat );
 		}
 
 		//····· Render ············································································· 
@@ -332,14 +348,15 @@ class PlasmaFractal2D {
 	//-------------------------------------------------------------------------------------------------------------------
 	// Get / set noise options.
 
-	get options$noise()
-	{
+	get options$noise()	{
 		return _.cloneDeep( this._options.noise );
 	}
 
-	set options$noise( opt )
-	{
-		const needRebuildShaders = ! _.isEqual( this._options.noise.noiseFunction, opt.noiseFunction );
+	set options$noise( opt ) {
+
+		const needRebuildShaders = ! _.isEqual(
+			[ this._options.noise.noiseFunction, this._options.noise.isClamp ], 
+			[ opt.noiseFunction,                 opt.isClamp ]);
 
 		this._options.noise = _.cloneDeep( opt );
 
@@ -351,13 +368,12 @@ class PlasmaFractal2D {
 	//-------------------------------------------------------------------------------------------------------------------
 	// Get / set domain warp options.
 
-	get options$warp()
-	{
+	get options$warp() {
 		return _.cloneDeep( this._options.warp );
 	}
 
-	set options$warp( opt )
-	{
+	set options$warp( opt )	{
+
 		const needRebuildShaders = ! _.isEqual( 
 			[ this._options.warp.isEnabled, this._options.warp.noiseFunction, this._options.warp.transformFunction ], 
 			[ opt.isEnabled               , opt.noiseFunction,                opt.transformFunction                ] 
@@ -373,13 +389,11 @@ class PlasmaFractal2D {
 	//-------------------------------------------------------------------------------------------------------------------
 	// Get / set palette options.
 
-	get options$palette()
-	{
+	get options$palette() {
 		return _.cloneDeep( this._options.palette );
 	}
 
-	set options$palette( opt )
-	{
+	set options$palette( opt ) {
 		this._options.palette = _.cloneDeep( opt );
 
 		// (Re-)generate the palette without changing the current hue.

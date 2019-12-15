@@ -17,7 +17,7 @@
 
 //
 //  Value Noise 3D
-//  Return value range of 0.0->1.0
+//  Return value range of -1.0->1.0 (modification by zett42, original code: 0.0->1.0)
 //
 float Value3D( vec3 P )
 {
@@ -44,7 +44,9 @@ float Value3D( vec3 P )
     vec3 blend = Pf * Pf * Pf * (Pf * (Pf * 6.0 - 15.0) + 10.0);
     vec4 res0 = mix( hash_lowz, hash_highz, blend.z );
     vec4 blend2 = vec4( blend.xy, vec2( 1.0 - blend.xy ) );
-    return dot( res0, blend2.zxzx * blend2.wwyy );
+    float result = dot( res0, blend2.zxzx * blend2.wwyy );
+	
+	return result * 2.0 - 1.0;
 }
 
 #pragma glslify: export(Value3D)
