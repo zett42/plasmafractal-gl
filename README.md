@@ -55,7 +55,7 @@ Animation
 <a href="https://zett42.github.io/plasmafractal-gl/?n=p3&f=.99&o=6&g=.41&l=1.96&a=5.7&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.03_000000_l+.1_ffffff_l+.14_2e2e2e_io4+.68_000000_l+.78_282828_ios23+.76_ffffff_l&acp=0&ntde=3.&ntd=10.&prd=10.&ptde=10.&ptd=5.#">
   <img src="/screenshots/thumbs/MilkGrey.jpg" alt="milk greY - by Nickelartist" title="milk greY - by Nickelartist" width="150">
 </a>
-<a href="https://zett42.github.io/plasmafractal-gl/?f=.23&o=14&g=.65&l=2&a=1.1&n=p3&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.69_ffae55_l+.695_481700_o2+.688_481700_l+.23_00485e_l+.233_9bf5ff_l+.237_00485e_o2+.456_000000_i2+.896_000000_i2&acp=0&ptde=10.&ptd=5.&ipr=0&prs=.1&inm=1&ns=.05&ntu=1.46#">
+<a href="https://zett42.github.io/plasmafractal-gl/?f=.23&o=14&g=.62&l=2&a=1.1&n=s3&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=.75&pbg=000000&cp=.69_ffae55_l+.695_481700_o2+.688_481700_l+.23_00485e_l+.233_9bf5ff_l+.237_00485e_o2+.456_000000_i2+.896_000000_i2&acp=0&ptde=10.&ptd=5.&ipr=0&prs=.1&inm=1&ns=.05&ntu=1.46&de=0&wt=v&wn=p3&wf=1.5&wo=4&wg=.75&wl=2&wa=12&wr=4&iwm=0&ws=.05&wtu=1.85#">
   <img src="/screenshots/thumbs/CosmicEnergy.jpg" alt="Cosmic Energy" title="Cosmic Energy" width="150">
 </a>
 <a href="https://zett42.github.io/plasmafractal-gl/?n=p3&f=.96&o=12&g=.5&l=2&a=1&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=1&pbg=000000&cp=0_948167_io2_f8*o6*g.61*l2*a.5*s.41+.723_333c4d_l&acp=0&inm=1&ns=.04&ntu=1.67&ipr=0&prs=.1&ptde=10.&ptd=5.#">
@@ -64,17 +64,17 @@ Animation
 <a href="https://zett42.github.io/plasmafractal-gl/?n=p3&f=.33&o=5&g=.5&l=2&a=1&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=1&pbg=000000&cp=0_525787_l_f4*o12*g.61*l2*a.71*s.39&acp=1&inm=1&ns=.02&ntu=1.67&ipr=0&prs=.1&ptde=10.&ptd=5.#">
   <img src="/screenshots/thumbs/MonochromaticStripes.jpg" alt="Monochromatic Stripes" title="Monochromatic Stripes" width="150">
 </a>
-<a href="https://zett42.github.io/plasmafractal-gl/?n=p3&f=.96&o=12&g=.5&l=2&a=1&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=1&pbg=000000&cp=0_461b00_io2_f2*o12*g.68*l2*a.5*s.41+.199_1f222c_io2_f4*o12*g.61*l2*a.2*s.5+.786_1f222c_io2_f2*o12*g.68*l2*a.5*s.69&acp=1&inm=1&ns=.03&ntu=1.36&ipr=0&prs=.1&ptde=15.&ptd=5.#">
+<a href="https://zett42.github.io/plasmafractal-gl/?n=p3&f=.96&o=12&g=.5&l=2&a=1&an=0&c=0&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=1&pbg=000000&cp=.494_461b00_io2_f2*o12*g.68*l2*a.5*s.41+.368_1f222c_io2_f4*o12*g.61*l2*a.2*s.5+.62_1f222c_io2_f1*o10*g.68*l2*a.5*s.64&acp=0&inm=1&ns=.03&ntu=1.36&ipr=0&prs=.1&ptde=15.&ptd=5.&de=0&wt=v&wn=p3&wf=1.5&wo=4&wg=.75&wl=2&wa=12&wr=4&iwm=0&ws=.05&wtu=1.85#">
   <img src="/screenshots/thumbs/DarkComplexity.jpg" alt="Dark Complexity" title="Dark Complexity" width="150">
 </a>
 <a href="https://zett42.github.io/plasmafractal-gl/?n=p3&f=.55&o=5.84&g=.45&l=2&a=1&pg=0&icp=1&pbf=ib&pfb=ob&ps=.5&pb=1&pbg=000000&cp=0_000000_l_f1*o12*g.83*l3*a1.49*s.09&acp=0&inm=1&ns=.01&ntu=1.55&ipr=0&prs=.1&ptde=10.&ptd=5.#">
   <img src="/screenshots/thumbs/GraphicalFlux.jpg" alt="Graphical Flux" title="Graphical Flux" width="150">
 </a>
-<a href="https://zett42.github.io/plasmafractal-gl/?n=s3&f=.2&o=11.32&g=.54&l=2&a=1.7&de=1&wn=s3&wf=6.4&wo=10&wg=.52&wl=1.89&wa=50.8&wr=2.2&wt=v&pg=0&icp=0&pbf=i3&pfb=o3&ps=.5&pb=1&pbg=000000&cp=&acp=0&inm=1&ns=.01&ntu=1.85&iwm=1&ws=.03&wtu=1.92&ipr=0&prs=.1&ptde=10.&ptd=5.#">
-  <img src="/screenshots/thumbs/DomainWarping1.jpg" alt="Domain Warping 1" title="Domain Warping 1" width="150">
+<a href="https://zett42.github.io/plasmafractal-gl/?n=s3&f=.93&o=11.87&g=.5&l=2&a=1.14&an=0&c=1&de=1&wn=s3&wf=4.02&wo=6.99&wg=.46&wl=2&wa=9.1&wr=3.4&wt=vi&wan=0&pg=0&icp=1&pbf=i3&pfb=o3&ps=.5&pb=1&pbg=000000&cp=0_ffffff_io2+.489_0a5b76_io2+.237_032d3a_io2+.737_032d3a_io2&acp=0&inm=1&ns=.02&ntu=2.06&iwm=1&ws=.06&wtu=2.04&ipr=0&prs=.1&ptde=10.&ptd=5.#">
+  <img src="/screenshots/thumbs/DomainWarping1.jpg" alt="Petrol Lake (Domain Warping)" title="Petrol Lake (Domain Warping)" width="150">
 </a>
-<a href="https://zett42.github.io/plasmafractal-gl/?n=s3&f=.5&o=11.87&g=.46&l=2&a=1.7&de=1&wn=s3&wf=4.02&wo=10.55&wg=.52&wl=1.77&wa=16.6&wr=16&wt=v&pg=0&icp=1&pbf=i3&pfb=o3&ps=.5&pb=1&pbg=000000&cp=0_000000_io2+.485_e7c232_io2+.152_000000_io2+.851_000000_l&acp=0&inm=1&ns=.01&ntu=1.63&iwm=1&ws=.11&wtu=1.7&ipr=0&prs=.1&ptde=10.&ptd=5.">
-  <img src="/screenshots/thumbs/Sulfur.jpg" alt="Domain Warping 1" title="Sulfur" width="150">
+<a href="https://zett42.github.io/plasmafractal-gl/?n=s3&f=.5&o=11.87&g=.46&l=2&a=1.7&an=0&c=0&de=1&wn=s3&wf=4.02&wo=10.55&wg=.49&wl=1.77&wa=20.2&wr=2.3&wt=v&pg=0&icp=1&pbf=i3&pfb=o3&ps=.5&pb=1&pbg=000000&cp=0_000000_io2+.485_e7c232_io2+.152_000000_io2+.851_000000_l&acp=0&inm=1&ns=.01&ntu=1.63&iwm=1&ws=.11&wtu=1.7&ipr=0&prs=.1&ptde=10.&ptd=5.#">
+  <img src="/screenshots/thumbs/Sulfur.jpg" alt="Sulfur (Domain Warping)" title="Sulfur (Domain Warping)" width="150">
 </a>
 
 ## Credits
