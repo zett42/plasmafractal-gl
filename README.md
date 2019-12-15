@@ -71,7 +71,7 @@ Animation
   <img src="/screenshots/thumbs/GraphicalFlux.jpg" alt="Graphical Flux" title="Graphical Flux" width="150">
 </a>
 <a href="https://zett42.github.io/plasmafractal-gl/?n=s3&f=.93&o=11.87&g=.5&l=2&a=1.14&an=0&c=1&de=1&wn=s3&wf=4.02&wo=6.99&wg=.46&wl=2&wa=9.1&wr=3.4&wt=vi&wan=0&pg=0&icp=1&pbf=i3&pfb=o3&ps=.5&pb=1&pbg=000000&cp=0_ffffff_io2+.489_0a5b76_io2+.237_032d3a_io2+.737_032d3a_io2&acp=0&inm=1&ns=.02&ntu=2.06&iwm=1&ws=.06&wtu=2.04&ipr=0&prs=.1&ptde=10.&ptd=5.#">
-  <img src="/screenshots/thumbs/DomainWarping1.jpg" alt="Petrol Lake (Domain Warping)" title="Petrol Lake (Domain Warping)" width="150">
+  <img src="/screenshots/thumbs/PetrolLake.jpg" alt="Petrol Lake (Domain Warping)" title="Petrol Lake (Domain Warping)" width="150">
 </a>
 <a href="https://zett42.github.io/plasmafractal-gl/?n=s3&f=.5&o=11.87&g=.46&l=2&a=1.7&an=0&c=0&de=1&wn=s3&wf=4.02&wo=10.55&wg=.49&wl=1.77&wa=20.2&wr=2.3&wt=v&pg=0&icp=1&pbf=i3&pfb=o3&ps=.5&pb=1&pbg=000000&cp=0_000000_io2+.485_e7c232_io2+.152_000000_io2+.851_000000_l&acp=0&inm=1&ns=.01&ntu=1.63&iwm=1&ws=.11&wtu=1.7&ipr=0&prs=.1&ptde=10.&ptd=5.#">
   <img src="/screenshots/thumbs/Sulfur.jpg" alt="Sulfur (Domain Warping)" title="Sulfur (Domain Warping)" width="150">
