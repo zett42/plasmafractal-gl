@@ -77,6 +77,22 @@ Animation
   <img src="/screenshots/thumbs/Sulfur.jpg" alt="Sulfur (Domain Warping)" title="Sulfur (Domain Warping)" width="150">
 </a>
 
+## Develop
+
+```bash
+# Install
+npm install
+npm install -g @vue/cli
+    
+# Build & Serve
+vue ui
+    
+# Build Release
+npm run build
+```
+To open the release build locally in a browser, you must use a local web server. The root folder must be the project directory, so that there is a "plasmafractal-gl" sub folder in the URL:
+http://127.0.0.1:8080/plasmafractal-gl/index.html
+
 ## Credits
 This project uses the following open source libraries. Each library comes with its own license terms, which can be found in the source code included in this project.
 
