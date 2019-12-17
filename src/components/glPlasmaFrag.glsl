@@ -95,7 +95,7 @@ vec2 warpPolar( vec2 pos ) {
 									 u_warp_lacunarity, u_warp_gain, u_warp_turbulence );
 
 	float angle = warp.x * u_warp_rotation;
-	return pos + vec2( sin( angle ), cos( angle ) ) * warp.x * u_warp_amplitude;
+	return pos + vec2( sin( angle ), cos( angle ) ) * warp.y * u_warp_amplitude;
 }
 
 //·············································································································
