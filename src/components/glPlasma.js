@@ -132,7 +132,7 @@ class PlasmaFractal2D {
 			WARP_NOISE_FUN     : this._options.warp.noiseFunction,
 			WARP_TRANSFORM_FUN : this._options.warp.isEnabled ? this._options.warp.transformFunction : 'identity',
 			WARP2_NOISE_FUN    : this._options.warp2.noiseFunction,
-			WARP2_TRANSFORM_FUN: this._options.warp2.isEnabled ? this._options.warp2.transformFunction : 'identity',
+			WARP2_TRANSFORM_FUN: this._options.warp2.isEnabled ? `${this._options.warp2.transformFunction}2` : 'identity',
 		});
 
 		//console.log('vertexShaderSrc', vertexShaderSrc)		

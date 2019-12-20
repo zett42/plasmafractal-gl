@@ -79,13 +79,6 @@ const warpFunctions = {
 	warpVortexInverse : { shortKey: "vi", title: "Vortex Inverse" },
 };
 
-const warp2Functions = {
-	warp2Regular       : { shortKey: "r", title: "Regular" },
-	warp2Polar         : { shortKey: "p", title: "Polar" },
-	warp2Vortex        : { shortKey: "v", title: "Vortex" },
-	warp2VortexInverse : { shortKey: "vi", title: "Vortex Inverse" },
-};
-
 //------------------------------------------------------------------------------------------------
 // Describes all available options, e. g. default values, constraints, mapping to URL params, etc.
 // It does NOT store actual option values!
@@ -247,15 +240,15 @@ const optionsDescriptor = new z42opt.Node( {}, {
 		transformFunction: new z42opt.EnumOpt({
 			shortKey: "wt2",
 			title: "Transform function",
-			values: warp2Functions,
-			defaultVal: "warp2Vortex",
+			values: warpFunctions,
+			defaultVal: "warpVortex",
 			depends: options => options.warp2.isEnabled,
 		}),
 		noiseFunction: new z42opt.EnumOpt({
 			shortKey: "wn2",
 			title: "Noise function",
 			values: noiseFunctions3D,
-			defaultVal: "Perlin3D",
+			defaultVal: "SimplexPerlin3D",
 			depends: options => options.warp2.isEnabled,
 		}),
 		frequency: new z42opt.FloatOpt({ 
@@ -266,7 +259,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			maxDecimals: 2,
 			isScale: true,
 			scaleNormalPos: 0.33,
-			defaultVal: 1.5,
+			defaultVal: 3.0,
 			depends: options => options.warp2.isEnabled,
 		}),
 		octaves: new z42opt.FloatOpt({
@@ -284,7 +277,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			min: 0.1,
 			max: 1.0,
 			maxDecimals: 2,
-			defaultVal: 0.75,
+			defaultVal: 0.55,
 			enabled: options => options.warp2.octaves > 1,
 			depends: options => options.warp2.isEnabled,
 		}),
@@ -304,7 +297,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			min: 1,
 			max: 100,
 			maxDecimals: 1,
-			defaultVal: 12,
+			defaultVal: 3,
 			depends: options => options.warp2.isEnabled,
 		}),
 		rotation: new z42opt.FloatOpt({
@@ -313,7 +306,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			min: 1,
 			max: 20,
 			maxDecimals: 1,
-			defaultVal: 4,
+			defaultVal: 2,
 			depends: options => options.warp2.isEnabled && options.warp2.transformFunction != 'warp2Regular',
 		}),
 	}),

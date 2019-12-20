@@ -58,10 +58,10 @@ precision highp sampler2D;
 #pragma glslify: fbmNoise3D_warp2 = require('./gl-noise/FbmNoise3D.glsl', NOISE_FUN=WARP2_NOISE_FUN, FbmNoiseParams=FbmNoiseParams)
 #pragma glslify: fbmNoiseDual3D_warp2 = require('./gl-noise/FbmNoiseDual3D.glsl', NOISE_FUN=WARP2_NOISE_FUN, FbmNoiseParams=FbmNoiseParams)
 
-#pragma glslify: _warp2Regular = require('./gl-noise/warpRegular.glsl', NOISE_FUN=fbmNoiseDual3D_warp2, WarpParams=WarpParams)
-#pragma glslify: _warp2Polar = require('./gl-noise/warpPolar.glsl', NOISE_FUN=fbmNoiseDual3D_warp2, WarpParams=WarpParams)
-#pragma glslify: _warp2Vortex = require('./gl-noise/warpVortex.glsl', NOISE_FUN=fbmNoise3D_warp2, WarpParams=WarpParams)
-#pragma glslify: _warp2VortexInverse = require('./gl-noise/warpVortexInverse.glsl', NOISE_FUN=fbmNoise3D_warp2, WarpParams=WarpParams)
+#pragma glslify: _warpRegular2 = require('./gl-noise/warpRegular.glsl', NOISE_FUN=fbmNoiseDual3D_warp2, WarpParams=WarpParams)
+#pragma glslify: _warpPolar2 = require('./gl-noise/warpPolar.glsl', NOISE_FUN=fbmNoiseDual3D_warp2, WarpParams=WarpParams)
+#pragma glslify: _warpVortex2 = require('./gl-noise/warpVortex.glsl', NOISE_FUN=fbmNoise3D_warp2, WarpParams=WarpParams)
+#pragma glslify: _warpVortexInverse2 = require('./gl-noise/warpVortexInverse.glsl', NOISE_FUN=fbmNoise3D_warp2, WarpParams=WarpParams)
 
 //·············································································································
 // Wrapper functions so we can select from the functions at runtime, without having to know the suffix
@@ -72,10 +72,10 @@ vec2 warpPolar( vec2 pos, WarpParams warp )          { return _warpPolar( pos, w
 vec2 warpVortex( vec2 pos, WarpParams warp )         { return _warpVortex( pos, warp ); }
 vec2 warpVortexInverse( vec2 pos, WarpParams warp )  { return _warpVortexInverse( pos, warp ); }
 
-vec2 warp2Regular( vec2 pos, WarpParams warp )       { return _warp2Regular( pos, warp ); }
-vec2 warp2Polar( vec2 pos, WarpParams warp )         { return _warp2Polar( pos, warp ); }
-vec2 warp2Vortex( vec2 pos, WarpParams warp )        { return _warp2Vortex( pos, warp ); }
-vec2 warp2VortexInverse( vec2 pos, WarpParams warp ) { return _warp2VortexInverse( pos, warp ); }
+vec2 warpRegular2( vec2 pos, WarpParams warp )       { return _warpRegular2( pos, warp ); }
+vec2 warpPolar2( vec2 pos, WarpParams warp )         { return _warpPolar2( pos, warp ); }
+vec2 warpVortex2( vec2 pos, WarpParams warp )        { return _warpVortex2( pos, warp ); }
+vec2 warpVortexInverse2( vec2 pos, WarpParams warp ) { return _warpVortexInverse2( pos, warp ); }
 
 //·············································································································
 
