@@ -27,14 +27,13 @@ SOFTWARE.
 // This variant returns two different noise values for a given coordinate.
 // Requires NOISE_FUN argument in require() call to define noise function to use.
 
-vec2 fbmNoiseDual3D( vec3 pos, int octaves, float octavesFract, float frequency, float lacunarity, float gain,
-                     float turbulence ) {
+vec2 fbmNoiseDual3D( vec3 pos, FbmNoiseParams noise ) {
 
 	vec2 result = vec2( 0 );
 
-	float freq = frequency;
-	float amp  = 1.0;
+	float freq = noise.frequency;
 	float z    = pos.z;
+	float amp  = 1.0;
 
 	// Z-increment to "randomize" each octave for avoiding artefacts that originate from coords 0,0
 	// due to the pseudo-random nature of the noise.
@@ -45,7 +44,7 @@ vec2 fbmNoiseDual3D( vec3 pos, int octaves, float octavesFract, float frequency,
 	const float yInc = 4.8;
 
 	// Create fractal noise by adding multiple octaves of noise.
-	for( int i = 0; i < octaves; ++i ) {                
+	for( int i = 0; i < noise.octaves; ++i ) {                
 
 		vec3 p = vec3( pos.xy * freq, z );
 		float nx = NOISE_FUN( vec3( pos.xy * freq, z ) );
@@ -53,10 +52,10 @@ vec2 fbmNoiseDual3D( vec3 pos, int octaves, float octavesFract, float frequency,
 
 		result += vec2( nx, ny ) * amp;
 
-		freq   *= lacunarity;
-		amp    *= gain;
+		freq   *= noise.lacunarity;
+		amp    *= noise.gain;
 		z      += zInc;
-		z      *= turbulence;
+		z      *= noise.turbulence;
 	}
 
 	// Fractional part of octave value is used for smooth transition.
@@ -64,7 +63,7 @@ vec2 fbmNoiseDual3D( vec3 pos, int octaves, float octavesFract, float frequency,
 	float nx = NOISE_FUN( vec3( pos.xy * freq, z ) );
 	float ny = NOISE_FUN( vec3( pos.xy * freq, z + yInc ) );
 
-	result += vec2( nx, ny ) * amp * octavesFract;
+	result += vec2( nx, ny ) * amp * noise.octavesFract;
 
 	return result;
 }

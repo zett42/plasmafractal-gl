@@ -30,38 +30,6 @@ SOFTWARE.
 precision highp float;
 precision highp sampler2D;
 
-// Regular noise parameters.
-uniform int   u_octaves;           // number of octaves for fractal noise
-uniform float u_octavesFract;      // fractional part of octaves value
-uniform float u_frequency;         // noise frequency
-uniform float u_amplitude;         // noise amplitude
-uniform float u_gain;              // amplitude factor for each octave
-uniform float u_angle;             // rotation per octave
-uniform float u_lacunarity;        // frequency factor for each octave
-uniform float u_noiseAnim;         // Z-position in 3D noise, for animation
-uniform float u_turbulence;        // "boiling" effect of noise animation 
-
-// Domain warping parameters.
-uniform int   u_warp_octaves;           // number of octaves for fractal noise
-uniform float u_warp_octavesFract;      // fractional part of octaves value
-uniform float u_warp_frequency;         // noise frequency
-uniform float u_warp_amplitude;         // directional amplitude
-uniform float u_warp_rotation;          // rotational amplitude
-uniform float u_warp_gain;              // amplitude factor for each octave
-uniform float u_warp_lacunarity;        // frequency factor for each octave
-uniform float u_warp_anim;              // Y-position in 2D noise, for animation
-uniform float u_warp_turbulence;        // "boiling" effect of noise animation 
-
-// Texture that defines the palette.
-uniform sampler2D u_paletteTexture;
-uniform float u_paletteOffset;     // offset for palette rotation animation
-
-// Fragment coordinates passed in from the vertex shader.
-in vec2 fragCoord;
-
-// Output of this fragment shader.
-out vec4 fragColor;
-
 //·············································································································
 // Imports
 
@@ -70,63 +38,44 @@ out vec4 fragColor;
 #pragma glslify: Value3D         = require('./gl-noise/Value3D.glsl')
 #pragma glslify: Cellular3D      = require('./gl-noise/Cellular3D.glsl')
 
-// These imports select from the above noise functions via preprocessor variables NOISE_FUN and WARP_FUN passed from JS 
-// via injectDefines()
-#pragma glslify: fbmNoise3D          = require('./gl-noise/FbmNoise3D.glsl', NOISE_FUN=NOISE_FUN)
-#pragma glslify: fbmNoise3D_warp     = require('./gl-noise/FbmNoise3D.glsl', NOISE_FUN=WARP_NOISE_FUN)
-#pragma glslify: fbmNoiseDual3D_warp = require('./gl-noise/FbmNoiseDual3D.glsl', NOISE_FUN=WARP_NOISE_FUN)
+// Common parameter types
+#pragma glslify: import('./gl-noise/FbmNoiseParams.glsl')
+
+// Through preprocessor variables BASE_NOISE_FUN, WARP_NOISE_FUN and WARP2_NOISE_FUN which are passed from JS 
+// via injectDefines(), we select from the above noise functions to compose the FBM functions.
+// NOTE: formatting should not be changed, as glslify breaks when more than 1 space character appears after comma!
+
+#pragma glslify: fbmNoise3D = require('./gl-noise/FbmNoise3D.glsl', NOISE_FUN=BASE_NOISE_FUN, FbmNoiseParams=FbmNoiseParams)
+
+#pragma glslify: fbmNoise3D_warp = require('./gl-noise/FbmNoise3D.glsl', NOISE_FUN=WARP_NOISE_FUN, FbmNoiseParams=FbmNoiseParams)
+#pragma glslify: fbmNoiseDual3D_warp = require('./gl-noise/FbmNoiseDual3D.glsl', NOISE_FUN=WARP_NOISE_FUN, FbmNoiseParams=FbmNoiseParams)
+
+#pragma glslify: _warpRegular = require('./gl-noise/warpRegular.glsl', NOISE_FUN=fbmNoiseDual3D_warp, WarpParams=WarpParams)
+#pragma glslify: _warpPolar = require('./gl-noise/warpPolar.glsl', NOISE_FUN=fbmNoiseDual3D_warp, WarpParams=WarpParams)
+#pragma glslify: _warpVortex = require('./gl-noise/warpVortex.glsl', NOISE_FUN=fbmNoise3D_warp, WarpParams=WarpParams)
+#pragma glslify: _warpVortexInverse = require('./gl-noise/warpVortexInverse.glsl', NOISE_FUN=fbmNoise3D_warp, WarpParams=WarpParams)
+
+#pragma glslify: fbmNoise3D_warp2 = require('./gl-noise/FbmNoise3D.glsl', NOISE_FUN=WARP2_NOISE_FUN, FbmNoiseParams=FbmNoiseParams)
+#pragma glslify: fbmNoiseDual3D_warp2 = require('./gl-noise/FbmNoiseDual3D.glsl', NOISE_FUN=WARP2_NOISE_FUN, FbmNoiseParams=FbmNoiseParams)
+
+#pragma glslify: _warp2Regular = require('./gl-noise/warpRegular.glsl', NOISE_FUN=fbmNoiseDual3D_warp2, WarpParams=WarpParams)
+#pragma glslify: _warp2Polar = require('./gl-noise/warpPolar.glsl', NOISE_FUN=fbmNoiseDual3D_warp2, WarpParams=WarpParams)
+#pragma glslify: _warp2Vortex = require('./gl-noise/warpVortex.glsl', NOISE_FUN=fbmNoise3D_warp2, WarpParams=WarpParams)
+#pragma glslify: _warp2VortexInverse = require('./gl-noise/warpVortexInverse.glsl', NOISE_FUN=fbmNoise3D_warp2, WarpParams=WarpParams)
 
 //·············································································································
-// Regular domain warping. Just offset coordinates by noise values.
+// Wrapper functions so we can select from the functions at runtime, without having to know the suffix
+// that is added by glslify to the 'require'd functions, which it does to avoid duplicate identifiers.
 
-vec2 warpRegular( vec2 pos ) {
-	vec2 warp = fbmNoiseDual3D_warp( vec3( pos, u_warp_anim ), u_warp_octaves, u_warp_octavesFract, u_warp_frequency * u_frequency, 
-									 u_warp_lacunarity, u_warp_gain, u_warp_turbulence );
-	return pos + warp * u_warp_amplitude;
-}
+vec2 warpRegular( vec2 pos, WarpParams warp )        { return _warpRegular( pos, warp ); }
+vec2 warpPolar( vec2 pos, WarpParams warp )          { return _warpPolar( pos, warp ); }
+vec2 warpVortex( vec2 pos, WarpParams warp )         { return _warpVortex( pos, warp ); }
+vec2 warpVortexInverse( vec2 pos, WarpParams warp )  { return _warpVortexInverse( pos, warp ); }
 
-//·············································································································
-// Most sample code for domain warping simply adds noise values to the fragment position. 
-// This is a variation where we are interpreting the noise values as angle and length to
-// produce more fluid-looking results. 
-
-vec2 warpPolar( vec2 pos ) {
-	vec2 warp = fbmNoiseDual3D_warp( vec3( pos, u_warp_anim ), u_warp_octaves, u_warp_octavesFract, u_warp_frequency * u_frequency, 
-									 u_warp_lacunarity, u_warp_gain, u_warp_turbulence );
-
-	float angle = warp.x * u_warp_rotation;
-	return pos + vec2( sin( angle ), cos( angle ) ) * warp.y * u_warp_amplitude;
-}
-
-//·············································································································
-// Most sample code for domain warping simply adds noise values to the fragment position. 
-// This is a variation where we are using the noise value for a vortex (spiral) transformation.
-// Creates results similar to warpPolar, but requires only a single noise function, reducing GPU load!
-
-vec2 warpVortex( vec2 pos ) {
-	float warp = fbmNoise3D_warp( vec3( pos, u_warp_anim ), u_warp_octaves, u_warp_octavesFract, u_warp_frequency * u_frequency, 
-								  1.0, 0.0, u_warp_lacunarity, u_warp_gain, u_warp_turbulence );
-
-	float angle = warp * u_warp_rotation;
-	float dist  = warp * u_warp_amplitude;
-
-	return pos + vec2( sin( angle ), cos( angle ) ) * dist;
-}
-
-//·············································································································
-// Variation of warpVortex. 
-
-vec2 warpVortexInverse( vec2 pos ) {
-	float warp = fbmNoise3D_warp( vec3( pos, u_warp_anim ), u_warp_octaves, u_warp_octavesFract, u_warp_frequency * u_frequency, 
-								  1.0, 0.0, u_warp_lacunarity, u_warp_gain, u_warp_turbulence );
-
-	warp = 1.0 - abs( clamp( warp, -1.0, 1.0 ) );
-
-	float angle = warp * u_warp_rotation;
-	float dist  = warp * u_warp_amplitude;
-
-	return pos + vec2( sin( angle ), cos( angle ) ) * dist;
-}
+vec2 warp2Regular( vec2 pos, WarpParams warp )       { return _warp2Regular( pos, warp ); }
+vec2 warp2Polar( vec2 pos, WarpParams warp )         { return _warp2Polar( pos, warp ); }
+vec2 warp2Vortex( vec2 pos, WarpParams warp )        { return _warp2Vortex( pos, warp ); }
+vec2 warp2VortexInverse( vec2 pos, WarpParams warp ) { return _warp2VortexInverse( pos, warp ); }
 
 //·············································································································
 
@@ -141,23 +90,45 @@ float mapToPaletteMinusOneToOne( float value ) {
 }
 
 //·············································································································
+// Identity functions to switch off certain effects.
 
-float identity( float value ) {
-	return value;
-}
+float identity( float value ) {	return value; }
 
-vec2 identity( vec2 value ) {
-	return value;
-}
+vec2 identity( vec2 value ) { return value; }
+
+vec2 identity( vec2 value, WarpParams warp ) { return value; }
+
+//·············································································································
+// Shader parameters
+
+// Regular noise parameters.
+uniform NoiseParams u_noise;
+
+// Domain warping parameters.
+uniform WarpParams u_warp;
+uniform WarpParams u_warp2;
+
+// Texture that defines the palette.
+uniform sampler2D u_paletteTexture;
+uniform float     u_paletteOffset;     // offset for palette rotation animation
+
+// Fragment coordinates passed in from the vertex shader.
+in vec2 fragCoord;
+
+// Output of this fragment shader.
+out vec4 fragColor;
 
 //·············································································································
 
 void main() { 
 
-	vec2 pos = WARP_TRANSFORM_FUN( fragCoord.xy );
+	vec2 pos = fragCoord.xy;
 
-	float n = fbmNoise3D( vec3( pos, u_noiseAnim ), u_octaves, u_octavesFract, u_frequency, u_amplitude, u_angle, u_lacunarity, u_gain, u_turbulence );
-	
+	pos = WARP2_TRANSFORM_FUN( pos, u_warp2 );
+	pos = WARP_TRANSFORM_FUN( pos, u_warp );
+
+	float n = fbmNoise3D( vec3( pos, u_noise.anim ), u_noise.basic ) * u_noise.amplitude;
+						
 	// Adjust for differences in noise function range (-1..1 or 0..1).
 	n = MAP_TO_PALETTE_FUN( n );
 

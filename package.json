@@ -33,6 +33,7 @@
     "eslint-plugin-vue": "^5.0.0",
     "favicons-webpack-plugin": "^1.0.2",
     "glslify-loader": "^2.0.0",
+    "glslify-import": "^3.1.0",
     "node-sass": "^4.12.0",
     "popper.js": "^1.15.0",
     "portal-vue": "^2.1.4",
@@ -44,6 +45,9 @@
     "vue-cli-plugin-bootstrap-vue": "^0.5.0",
     "vue-template-compiler": "^2.6.10"
   },
+  "glslify": {
+    "transform": ["glslify-import"]
+  },  
   "eslintConfig": {
     "root": true,
     "env": {
