@@ -113,6 +113,8 @@ class PlasmaFractal2D {
 		// I still like to have some control over this value, so I limit it anyway.
 		this._paletteTextureSize = Math.min( gl.getParameter( gl.MAX_TEXTURE_SIZE ), 32768 );
 		
+		this._feedbackTexture    = gl.createTexture();
+
 		this._rebuildShaders();
 	}
 
@@ -227,6 +229,7 @@ class PlasmaFractal2D {
 	// Resize the canvas, update WebGL viewport and scale.
 
 	resize( width, height, force = false ) {
+
 		if( width == this._canvas.width && height == this._canvas.height && ! force ) {
 			return;
 		}
@@ -235,13 +238,19 @@ class PlasmaFractal2D {
 
 		width  = Math.trunc( width );
 		height = Math.trunc( height );
-
+		
 		this._canvas.width  = width;
 		this._canvas.height = height;
 
-		this._gl.viewport( 0, 0, width, height );
+		const gl = this._gl;
+
+		gl.viewport( 0, 0, width, height );
 
 		this._updateShaderVar_scale();
+
+		gl.activeTexture( gl.TEXTURE0 );
+		gl.bindTexture( gl.TEXTURE_2D, this._feedbackTexture );
+		gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null );
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------
@@ -272,7 +281,7 @@ class PlasmaFractal2D {
 
 		//····· Apply palette options ··························································· 
 
-		this.setShaderArgs_palette( time );
+		this.setShaderArgs_texture( time );
 
 		//····· Render ············································································· 
 		
@@ -283,8 +292,21 @@ class PlasmaFractal2D {
 		// Bind the attribute/buffer set we want.
 		gl.bindVertexArray( this._vao );
 
+		// Bind the texture that the fragment shader will use
+		gl.activeTexture( gl.TEXTURE0 );
+		gl.bindTexture( gl.TEXTURE_2D, this._paletteTexture );
+
 		// Draw the rectangle from the vertex and texture coordinates buffers.
 		gl.drawArrays( gl.TRIANGLES, 0, 6 );
+
+		//····· EXPERIMENT: Feedback effect ························ 
+
+
+
+		// Copy framebuffer to texture, which will be used in the next frame
+		gl.activeTexture( gl.TEXTURE0 );
+		gl.bindTexture( gl.TEXTURE_2D, this._feedbackTexture );
+		gl.copyTexImage2D( gl.TEXTURE_2D, 0, gl.RGBA, 0, 0, this._canvas.width, this._canvas.height, 0 );		
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------
@@ -345,9 +367,22 @@ class PlasmaFractal2D {
 	//-------------------------------------------------------------------------------------------------------------------
 	// Set shader arguments for palette and set palette texture.
 
-	setShaderArgs_palette( time ) {
+	setShaderArgs_texture( time ) {
 
 		const gl = this._gl;
+
+		// Tell the shader which texture units to use.
+		
+		this._shader.uniforms.u_paletteTexture  = 0;
+		this._shader.uniforms.u_feedbackTexture = 1;
+
+		gl.activeTexture( gl.TEXTURE0 );
+		gl.bindTexture( gl.TEXTURE_2D, this._paletteTexture );
+
+		//gl.activeTexture( gl.TEXTURE0 + 1 );
+		//gl.bindTexture( gl.TEXTURE_2D, this._feedbackTexture );
+
+		// Set palette animation.
 
 		if( this._options.paletteAnim.isRotaEnabled && ! this._options.noise.isClamp ) {
 			const sizeFactor = this._paletteTextureSize / 4096;
@@ -357,18 +392,12 @@ class PlasmaFractal2D {
 			this._shader.uniforms.u_paletteOffset = 0.0;
 		}
 
-		// Tell the shader which texture units to use.
-		this._shader.uniforms.u_paletteTexture = 0;
+		// If palette has changed, render it into texture.
 
 		let paletteToUse = this._grayScalePalette;
 		if( ! this._options.palette.isGrayScale ) {	
 			paletteToUse = this._animatePalette();
 		}
-
-		gl.activeTexture( gl.TEXTURE0 );
-		gl.bindTexture( gl.TEXTURE_2D, this._paletteTexture );
-
-		// If palette has changed, render it into texture.
 
 		const paletteIsRepeat = ! this._options.noise.isClamp;
 
