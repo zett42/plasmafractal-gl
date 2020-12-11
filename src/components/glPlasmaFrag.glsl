@@ -112,6 +112,8 @@ uniform WarpParams u_warp2;
 uniform sampler2D u_paletteTexture;
 uniform float     u_paletteOffset;     // offset for palette rotation animation
 
+uniform sampler2D u_feedbackTexture;
+
 // Fragment coordinates passed in from the vertex shader.
 in vec2 fragCoord;
 
@@ -124,7 +126,7 @@ void main() {
 
 	vec2 pos = fragCoord.xy;
 
-	pos = WARP2_TRANSFORM_FUN( pos, u_warp2 );
+	//pos = WARP2_TRANSFORM_FUN( pos, u_warp2 );
 	pos = WARP_TRANSFORM_FUN( pos, u_warp );
 
 	float n = fbmNoise3D( vec3( pos, u_noise.anim ), u_noise.basic ) * u_noise.amplitude;
@@ -136,5 +138,13 @@ void main() {
 	n = NOISE_CLAMP_FUN( n );
 
 	// Actual color is defined by palette
-	fragColor = texture( u_paletteTexture, vec2( n + u_paletteOffset, 0 ) );
+	vec4 color = texture( u_paletteTexture, vec2( n + u_paletteOffset, 0 ) );
+
+	vec2 fbCoord = fragCoord.xy * 0.5 + vec2( 0.5, 0.5 );
+	fbCoord = WARP2_TRANSFORM_FUN( fbCoord, u_warp2 );
+	vec4 fbColor = texture( u_feedbackTexture, fbCoord );
+
+	color += fbColor * 0.97;
+
+	fragColor = color;
 }

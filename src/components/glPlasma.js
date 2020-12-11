@@ -248,9 +248,17 @@ class PlasmaFractal2D {
 
 		this._updateShaderVar_scale();
 
+		// Prepare feedback texture
+
 		gl.activeTexture( gl.TEXTURE0 );
 		gl.bindTexture( gl.TEXTURE_2D, this._feedbackTexture );
+
 		gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null );
+
+		gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT ); // gl.CLAMP_TO_EDGE );
+		gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT ); // gl.CLAMP_TO_EDGE );
+		gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR ); //gl.LINEAR_MIPMAP_LINEAR );
+		gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------
@@ -281,7 +289,7 @@ class PlasmaFractal2D {
 
 		//····· Apply palette options ··························································· 
 
-		this.setShaderArgs_texture( time );
+		this.setShaderArgs_palette( time );
 
 		//····· Render ············································································· 
 		
@@ -292,20 +300,26 @@ class PlasmaFractal2D {
 		// Bind the attribute/buffer set we want.
 		gl.bindVertexArray( this._vao );
 
-		// Bind the texture that the fragment shader will use
-		gl.activeTexture( gl.TEXTURE0 );
+		// Bind the textures that the fragment shader will use.
+
+		let paletteTextureUnit  = 0;
+		let feedbackTextureUnit = 1;
+
+		this._shader.uniforms.u_paletteTexture  = paletteTextureUnit;
+		this._shader.uniforms.u_feedbackTexture = feedbackTextureUnit;
+
+		gl.activeTexture( gl.TEXTURE0 + paletteTextureUnit );
 		gl.bindTexture( gl.TEXTURE_2D, this._paletteTexture );
+
+		gl.activeTexture( gl.TEXTURE0 + feedbackTextureUnit );
+		gl.bindTexture( gl.TEXTURE_2D, this._feedbackTexture );
 
 		// Draw the rectangle from the vertex and texture coordinates buffers.
 		gl.drawArrays( gl.TRIANGLES, 0, 6 );
 
 		//····· EXPERIMENT: Feedback effect ························ 
 
-
-
-		// Copy framebuffer to texture, which will be used in the next frame
-		gl.activeTexture( gl.TEXTURE0 );
-		gl.bindTexture( gl.TEXTURE_2D, this._feedbackTexture );
+		// Copy framebuffer to active (feedback) texture, which will be used in the next frame
 		gl.copyTexImage2D( gl.TEXTURE_2D, 0, gl.RGBA, 0, 0, this._canvas.width, this._canvas.height, 0 );		
 	}
 
@@ -367,20 +381,9 @@ class PlasmaFractal2D {
 	//-------------------------------------------------------------------------------------------------------------------
 	// Set shader arguments for palette and set palette texture.
 
-	setShaderArgs_texture( time ) {
+	setShaderArgs_palette( time ) {
 
 		const gl = this._gl;
-
-		// Tell the shader which texture units to use.
-		
-		this._shader.uniforms.u_paletteTexture  = 0;
-		this._shader.uniforms.u_feedbackTexture = 1;
-
-		gl.activeTexture( gl.TEXTURE0 );
-		gl.bindTexture( gl.TEXTURE_2D, this._paletteTexture );
-
-		//gl.activeTexture( gl.TEXTURE0 + 1 );
-		//gl.bindTexture( gl.TEXTURE_2D, this._feedbackTexture );
 
 		// Set palette animation.
 
@@ -406,6 +409,9 @@ class PlasmaFractal2D {
 
 			this._currentPalette = _.cloneDeep( paletteToUse );
 			this._currentPaletteIsRepeat = paletteIsRepeat;	
+
+			gl.activeTexture( gl.TEXTURE0 );
+			gl.bindTexture( gl.TEXTURE_2D, this._paletteTexture );
 
 			z42glcolor.setPaletteTexture( gl, this._paletteTextureSize, paletteToUse, paletteIsRepeat );
 		}

@@ -17,7 +17,7 @@ out vec2 fragCoord;
 
 void main() {
 	// Scale to adjust for screen aspect ratio and orientation.
-	vec2 pos = a_position * u_scale;
+	vec2 pos = a_position; // * u_scale;
 
 	// Define position of the current vertex by assigning to global variable gl_Position 
 	gl_Position = vec4( pos, 0, 1 );
