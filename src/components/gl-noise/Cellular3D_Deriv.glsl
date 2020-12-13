@@ -28,7 +28,7 @@
 //  Cellular Noise 3D Deriv
 //  Return value range of 0.0->1.0, with format vec4( value, xderiv, yderiv, zderiv )
 //
-vec4 Cellular3D_Deriv( vec3 P )
+vec4 DerivCellular3D( vec3 P )
 {
     //  https://github.com/BrianSharpe/Wombat/blob/master/Cellular3D_Deriv.glsl
 
@@ -82,4 +82,4 @@ vec4 Cellular3D_Deriv( vec3 P )
     return ( t1.x < t2.x ? t1 : t2 ) * vec4( 1.0, vec3( 2.0 ) ) * ( 9.0 / 12.0 ); // return a value scaled to 0.0->1.0
 }
 
-#pragma glslify: export(Cellular3D_Deriv)
+#pragma glslify: export(DerivCellular3D)

@@ -19,7 +19,7 @@
 //  Value Noise 3D Deriv
 //  Return value range of 0.0->1.0, with format vec4( value, xderiv, yderiv, zderiv )
 //
-vec4 Value3D_Deriv( vec3 P )
+vec4 DerivValue3D( vec3 P )
 {
     //  https://github.com/BrianSharpe/Wombat/blob/master/Value3D_Deriv.glsl
 
@@ -50,4 +50,4 @@ vec4 Value3D_Deriv( vec3 P )
     return vec4( res1.x, 0.0, 0.0, 0.0 ) + ( vec4( res1.yyw, res4.y ) - vec4( res1.xxz, res4.x ) ) * vec4( blend.x, blendDeriv );
 }
 
-#pragma glslify: export(Value3D_Deriv)
+#pragma glslify: export(DerivValue3D)

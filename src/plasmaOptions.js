@@ -66,17 +66,18 @@ const paletteEaseFunctions = {
 };
 
 const noiseFunctions3D = {
-	Perlin3D        : { shortKey: "p3", title: "Perlin" },
-	SimplexPerlin3D : { shortKey: "s3", title: "Simplex" },
-	Value3D         : { shortKey: "v3", title: "Value" },
-	Cellular3D      : { shortKey: "c3", title: "Cellular" },
+	Perlin3D        : { shortKey: "p3",  title: "Perlin" },
+	SimplexPerlin3D : { shortKey: "s3",  title: "Simplex" },
+	Value3D         : { shortKey: "v3",  title: "Value" },
+	Cellular3D      : { shortKey: "c3",  title: "Cellular" },
 };
 
 const warpFunctions = {
-	warpRegular       : { shortKey: "r", title: "Regular" },
-	warpPolar         : { shortKey: "p", title: "Polar" },
-	warpVortex        : { shortKey: "v", title: "Vortex" },
+	warpRegular       : { shortKey: "r",  title: "Regular" },
+	warpPolar         : { shortKey: "p",  title: "Polar" },
+	warpVortex        : { shortKey: "v",  title: "Vortex" },
 	warpVortexInverse : { shortKey: "vi", title: "Vortex Inverse" },
+	warpDerivatives   : { shortKey: "d",  title: "Derivatives" },
 };
 
 //------------------------------------------------------------------------------------------------
@@ -228,7 +229,8 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			max: 20,
 			maxDecimals: 1,
 			defaultVal: 4,
-			depends: options => options.warp.isEnabled && options.warp.transformFunction != 'warpRegular',
+			depends: options => options.warp.isEnabled && 
+			         ! ['warpRegular', 'warpDerivatives'].includes( options.warp.transformFunction ),
 		}),
 	}),
 	warp2: new z42opt.Node( {}, {
@@ -307,7 +309,8 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			max: 20,
 			maxDecimals: 1,
 			defaultVal: 2,
-			depends: options => options.warp2.isEnabled && options.warp2.transformFunction != 'warp2Regular',
+			depends: options => options.warp2.isEnabled && 
+			         ! ['warpRegular', 'warpDerivatives'].includes( options.warp2.transformFunction ),
 		}),
 	}),
 	palette: new z42opt.Node( {}, {

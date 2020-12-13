@@ -23,14 +23,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. 
 */
 
-// Fractal brownian motion noise.
+// Fractal brownian motion noise and derivatives.
+// This variant also returns the accumulated noise (x) aswell as derivatives of the noise function (yzw), 
+// for a given coordinate.
 // Requires NOISE_FUN argument in require() call to define noise function to use.
 
-float fbmNoise3D( vec3 pos, FbmNoiseParams noise ) {
+vec4 fmbNoiseDeriv3D( vec3 pos, FbmNoiseParams noise ) {
 
-	float result = 0.0;
-	float amp    = 1.0;
-	float z      = pos.z;
+	vec4 result = vec4( .0, .0, .0, .0 );
+	float amp   = 1.0;
+	float freq  = 1.0;
+	float z     = pos.z;
 
 	// Z-increment to "randomize" each octave for avoiding artefacts that originate from coords 0,0
 	// due to the pseudo-random nature of the noise.
@@ -44,18 +47,27 @@ float fbmNoise3D( vec3 pos, FbmNoiseParams noise ) {
 	// Create fractal noise by adding multiple octaves of noise.
 	for( int i = 0; i < noise.octaves; ++i ) {                
 
-		result += NOISE_FUN( vec3( p, z ) ) * amp;
+        // Calculate noise (x) and derivatives (y, z, w)
+        vec4 n = NOISE_FUN( vec3( p, z ) ) * amp;
 
-		p   *= rot * noise.lacunarity;
-		amp *= noise.gain;
-		z   += zInc;
-		z   *= noise.turbulence;
+		result.x   += n.x;           // accumulate noise
+        result.yzw += n.yzw * freq;  // accumulate derivatives 
+
+		p    *= rot * noise.lacunarity;
+		amp  *= noise.gain;
+        freq *= noise.lacunarity;
+		z    += zInc;
+		z    *= noise.turbulence;
 	}
 
 	// Fractional part of octave value is used for smooth transition.
-	result += NOISE_FUN( vec3( p, z ) ) * amp * noise.octavesFract;
+
+    vec4 n = NOISE_FUN( vec3( p, z ) ) * amp * noise.octavesFract;
+
+    result.x   += n.x;           // accumulate noise
+    result.yzw += n.yzw * freq;  // accumulate derivatives 
 
 	return result;
 }
 
-#pragma glslify: export(fbmNoise3D)
+#pragma glslify: export(fmbNoiseDeriv3D)

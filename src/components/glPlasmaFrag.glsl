@@ -33,35 +33,43 @@ precision highp sampler2D;
 //·············································································································
 // Imports
 
-#pragma glslify: Perlin3D        = require('./gl-noise/Perlin3D.glsl')
-#pragma glslify: SimplexPerlin3D = require('./gl-noise/SimplexPerlin3D.glsl')
-#pragma glslify: Value3D         = require('./gl-noise/Value3D.glsl')
-#pragma glslify: Cellular3D      = require('./gl-noise/Cellular3D.glsl')
+#pragma glslify: Perlin3D              = require('./gl-noise/Perlin3D.glsl')
+#pragma glslify: DerivPerlin3D         = require('./gl-noise/Perlin3D_Deriv.glsl')
+#pragma glslify: SimplexPerlin3D       = require('./gl-noise/SimplexPerlin3D.glsl')
+#pragma glslify: DerivSimplexPerlin3D  = require('./gl-noise/SimplexPerlin3D_Deriv.glsl')
+#pragma glslify: Value3D               = require('./gl-noise/Value3D.glsl')
+#pragma glslify: DerivValue3D          = require('./gl-noise/Value3D_Deriv.glsl')
+#pragma glslify: Cellular3D            = require('./gl-noise/Cellular3D.glsl')
+#pragma glslify: DerivCellular3D       = require('./gl-noise/Cellular3D_Deriv.glsl')
 
 // Common parameter types
 #pragma glslify: import('./gl-noise/FbmNoiseParams.glsl')
 
-// Through preprocessor variables BASE_NOISE_FUN, WARP_NOISE_FUN and WARP2_NOISE_FUN which are passed from JS 
-// via injectDefines(), we select from the above noise functions to compose the FBM functions.
-// NOTE: formatting should not be changed, as glslify breaks when more than 1 space character appears after comma!
+// Through preprocessor variables which are passed from JS via injectDefines(), we select from the above noise functions
+// to compose the FBM functions.
+// NOTE: whitespace within require() should not be changed, as glslify breaks when more than 1 space character appears after comma!
 
 #pragma glslify: fbmNoise3D = require('./gl-noise/FbmNoise3D.glsl', NOISE_FUN=BASE_NOISE_FUN, FbmNoiseParams=FbmNoiseParams)
 
 #pragma glslify: fbmNoise3D_warp = require('./gl-noise/FbmNoise3D.glsl', NOISE_FUN=WARP_NOISE_FUN, FbmNoiseParams=FbmNoiseParams)
 #pragma glslify: fbmNoiseDual3D_warp = require('./gl-noise/FbmNoiseDual3D.glsl', NOISE_FUN=WARP_NOISE_FUN, FbmNoiseParams=FbmNoiseParams)
+#pragma glslify: fbmNoiseDeriv3D_warp = require('./gl-noise/FbmNoiseDeriv3D.glsl', NOISE_FUN=WARP_NOISE_DERIV_FUN, FbmNoiseParams=FbmNoiseParams)
 
 #pragma glslify: _warpRegular = require('./gl-noise/warpRegular.glsl', NOISE_FUN=fbmNoiseDual3D_warp, WarpParams=WarpParams)
 #pragma glslify: _warpPolar = require('./gl-noise/warpPolar.glsl', NOISE_FUN=fbmNoiseDual3D_warp, WarpParams=WarpParams)
 #pragma glslify: _warpVortex = require('./gl-noise/warpVortex.glsl', NOISE_FUN=fbmNoise3D_warp, WarpParams=WarpParams)
 #pragma glslify: _warpVortexInverse = require('./gl-noise/warpVortexInverse.glsl', NOISE_FUN=fbmNoise3D_warp, WarpParams=WarpParams)
+#pragma glslify: _warpDerivatives = require('./gl-noise/warpDerivatives.glsl', NOISE_FUN=fbmNoiseDeriv3D_warp, WarpParams=WarpParams)
 
 #pragma glslify: fbmNoise3D_warp2 = require('./gl-noise/FbmNoise3D.glsl', NOISE_FUN=WARP2_NOISE_FUN, FbmNoiseParams=FbmNoiseParams)
 #pragma glslify: fbmNoiseDual3D_warp2 = require('./gl-noise/FbmNoiseDual3D.glsl', NOISE_FUN=WARP2_NOISE_FUN, FbmNoiseParams=FbmNoiseParams)
+#pragma glslify: fbmNoiseDeriv3D_warp2 = require('./gl-noise/FbmNoiseDeriv3D.glsl', NOISE_FUN=WARP2_NOISE_DERIV_FUN, FbmNoiseParams=FbmNoiseParams)
 
 #pragma glslify: _warpRegular2 = require('./gl-noise/warpRegular.glsl', NOISE_FUN=fbmNoiseDual3D_warp2, WarpParams=WarpParams)
 #pragma glslify: _warpPolar2 = require('./gl-noise/warpPolar.glsl', NOISE_FUN=fbmNoiseDual3D_warp2, WarpParams=WarpParams)
 #pragma glslify: _warpVortex2 = require('./gl-noise/warpVortex.glsl', NOISE_FUN=fbmNoise3D_warp2, WarpParams=WarpParams)
 #pragma glslify: _warpVortexInverse2 = require('./gl-noise/warpVortexInverse.glsl', NOISE_FUN=fbmNoise3D_warp2, WarpParams=WarpParams)
+#pragma glslify: _warpDerivatives2 = require('./gl-noise/warpDerivatives.glsl', NOISE_FUN=fbmNoiseDeriv3D_warp2, WarpParams=WarpParams)
 
 //·············································································································
 // Wrapper functions so we can select from the functions at runtime, without having to know the suffix
@@ -71,11 +79,13 @@ vec2 warpRegular( vec2 pos, WarpParams warp )        { return _warpRegular( pos,
 vec2 warpPolar( vec2 pos, WarpParams warp )          { return _warpPolar( pos, warp ); }
 vec2 warpVortex( vec2 pos, WarpParams warp )         { return _warpVortex( pos, warp ); }
 vec2 warpVortexInverse( vec2 pos, WarpParams warp )  { return _warpVortexInverse( pos, warp ); }
+vec2 warpDerivatives( vec2 pos, WarpParams warp )    { return _warpDerivatives( pos, warp ); }
 
 vec2 warpRegular2( vec2 pos, WarpParams warp )       { return _warpRegular2( pos, warp ); }
 vec2 warpPolar2( vec2 pos, WarpParams warp )         { return _warpPolar2( pos, warp ); }
 vec2 warpVortex2( vec2 pos, WarpParams warp )        { return _warpVortex2( pos, warp ); }
 vec2 warpVortexInverse2( vec2 pos, WarpParams warp ) { return _warpVortexInverse2( pos, warp ); }
+vec2 warpDerivatives2( vec2 pos, WarpParams warp )   { return _warpDerivatives2( pos, warp ); }
 
 //·············································································································
 
