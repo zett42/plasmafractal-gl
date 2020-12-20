@@ -43,10 +43,11 @@ import fragShaderSrc from './glPlasmaFrag.glsl'
 class PlasmaFractal2D {
 	constructor( params ){
 
-		this._noiseSeed = params.noiseSeed;
-		this._warpSeed  = params.warpSeed;
-		this._warpSeed2 = params.warpSeed2;
-		this._options   = _.cloneDeep(params.options);
+		this._noiseSeed    = params.noiseSeed;
+		this._warpSeed     = params.warpSeed;
+		this._warpSeed2    = params.warpSeed2;
+		this._feedbackSeed = params.feedbackSeed;
+		this._options      = _.cloneDeep(params.options);
 
 		this._startTime = performance.now() / 1000;
 
@@ -131,12 +132,18 @@ class PlasmaFractal2D {
 			BASE_NOISE_FUN        : this._options.noise.noiseFunction,
 			NOISE_CLAMP_FUN       : this._options.noise.isClamp ? 'clampZeroOne' : 'identity',
 			MAP_TO_PALETTE_FUN    : mapToPaletteFun,
+
 			WARP_NOISE_FUN        : this._options.warp.noiseFunction,
 			WARP_NOISE_DERIV_FUN  : 'Deriv' + this._options.warp.noiseFunction,
 			WARP_TRANSFORM_FUN    : this._options.warp.isEnabled ? this._options.warp.transformFunction : 'identity',
+
 			WARP2_NOISE_FUN       : this._options.warp2.noiseFunction,
 			WARP2_NOISE_DERIV_FUN : 'Deriv' + this._options.warp2.noiseFunction,
 			WARP2_TRANSFORM_FUN   : this._options.warp2.isEnabled ? `${this._options.warp2.transformFunction}2` : 'identity',
+
+			WARPFB_NOISE_FUN       : this._options.feedback.noiseFunction,
+			WARPFB_NOISE_DERIV_FUN : 'Deriv' + this._options.feedback.noiseFunction,
+			WARPFB_TRANSFORM_FUN   : this._options.feedback.isEnabled ? `${this._options.feedback.transformFunction}FB` : 'identity',
 		});
 
 		//console.log('vertexShaderSrc', vertexShaderSrc)		
@@ -287,6 +294,12 @@ class PlasmaFractal2D {
 		}
 		if( this._options.warp2.isEnabled ) {
 			this.setShaderArgs_warp( 'u_warp2', this._options.warp2, this._options.warpAnim2, this._warpSeed2, time );
+		}
+
+		//····· Set feedback parameters ····································································
+
+		if( this._options.feedback.isEnabled ) {
+			this.setShaderArgs_warp( 'u_warpFB', this._options.feedback, this._options.feedbackAnim, this._feedbackSeed, time );
 		}
 
 		//····· Apply palette options ··························································· 
@@ -448,10 +461,7 @@ class PlasmaFractal2D {
 
 	set options$warp( opt )	{
 
-		const needRebuildShaders = ! _.isEqual( 
-			[ this._options.warp.isEnabled, this._options.warp.noiseFunction, this._options.warp.transformFunction ], 
-			[ opt.isEnabled               , opt.noiseFunction,                opt.transformFunction                ] 
-		);
+		const needRebuildShaders = this._needRebuildShaderForWarpOptions( this._options.warp, opt );
 
 		this._options.warp = _.cloneDeep( opt );
 
@@ -466,16 +476,41 @@ class PlasmaFractal2D {
 
 	set options$warp2(opt) {
 
-		const needRebuildShaders = !_.isEqual(
-			[this._options.warp2.isEnabled, this._options.warp2.noiseFunction, this._options.warp2.transformFunction],
-			[opt.isEnabled, opt.noiseFunction, opt.transformFunction]
-		);
+		const needRebuildShaders = this._needRebuildShaderForWarpOptions( this._options.warp2, opt );
 
 		this._options.warp2 = _.cloneDeep(opt);
 
 		if (needRebuildShaders) {
 			this._rebuildShaders();
 		}
+	}
+
+	//-------------------------------------------------------------------------------------------------------------------
+	// Get / set feedback options.
+
+	get options$feedback() {
+		return _.cloneDeep(this._options.feedback);
+	}
+
+	set options$feedback(opt) {
+
+		const needRebuildShaders = this._needRebuildShaderForWarpOptions( this._options.feedback, opt );
+
+		this._options.feedback = _.cloneDeep(opt);
+
+		if (needRebuildShaders) {
+			this._rebuildShaders();
+		}
+	}
+
+	//-------------------------------------------------------------------------------------------------------------------
+
+	_needRebuildShaderForWarpOptions( warpOld, warpNew ) {
+
+		return ! _.isEqual( 
+			[ warpOld.isEnabled, warpOld.noiseFunction, warpOld.transformFunction ], 
+			[ warpNew.isEnabled, warpNew.noiseFunction, warpNew.transformFunction ] 
+		);		
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------
@@ -538,6 +573,14 @@ class PlasmaFractal2D {
 
 	set options$warpAnim2(opt) {
 		this._options.warpAnim2 = _.cloneDeep(opt);
+	}
+
+	get options$feedbackAnim() {
+		return _.cloneDeep(this._options.feedbackAnim);
+	}
+
+	set options$feedbackAnim(opt) {
+		this._options.feedbackAnim = _.cloneDeep(opt);
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------

@@ -80,14 +80,15 @@ export default {
         m_canvas = document.getElementById( "plasmaCanvas" );
 
         m_plasma = new z42plasma.PlasmaFractal2D({ 
-            canvas    : m_canvas,
-            colorSeed : Math.random(),
-            noiseSeed : Math.random(),
-            warpSeed  : Math.random(),
-            warpSeed2 : Math.random(),
-            options   : m_options,
-            width     : Math.round( window.innerWidth  * window.devicePixelRatio ),
-            height    : Math.round( window.innerHeight * window.devicePixelRatio ),
+            canvas       : m_canvas,
+            colorSeed    : Math.random(),
+            noiseSeed    : Math.random(),
+            warpSeed     : Math.random(),
+            warpSeed2    : Math.random(),
+            feedbackSeed : Math.random(),
+            options      : m_options,
+            width        : Math.round( window.innerWidth  * window.devicePixelRatio ),
+            height       : Math.round( window.innerHeight * window.devicePixelRatio ),
         });
 
         wireUpEventListeners();

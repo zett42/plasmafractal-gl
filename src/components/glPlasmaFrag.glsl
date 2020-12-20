@@ -51,6 +51,9 @@ precision highp sampler2D;
 
 #pragma glslify: fbmNoise3D = require('./gl-noise/FbmNoise3D.glsl', NOISE_FUN=BASE_NOISE_FUN, FbmNoiseParams=FbmNoiseParams)
 
+//·············································································································
+// Noise and transform functions for warp
+
 #pragma glslify: fbmNoise3D_warp = require('./gl-noise/FbmNoise3D.glsl', NOISE_FUN=WARP_NOISE_FUN, FbmNoiseParams=FbmNoiseParams)
 #pragma glslify: fbmNoiseDual3D_warp = require('./gl-noise/FbmNoiseDual3D.glsl', NOISE_FUN=WARP_NOISE_FUN, FbmNoiseParams=FbmNoiseParams)
 #pragma glslify: fbmNoiseDeriv3D_warp = require('./gl-noise/FbmNoiseDeriv3D.glsl', NOISE_FUN=WARP_NOISE_DERIV_FUN, FbmNoiseParams=FbmNoiseParams)
@@ -60,6 +63,17 @@ precision highp sampler2D;
 #pragma glslify: _warpVortex = require('./gl-noise/warpVortex.glsl', NOISE_FUN=fbmNoise3D_warp, WarpParams=WarpParams)
 #pragma glslify: _warpVortexInverse = require('./gl-noise/warpVortexInverse.glsl', NOISE_FUN=fbmNoise3D_warp, WarpParams=WarpParams)
 #pragma glslify: _warpDerivatives = require('./gl-noise/warpDerivatives.glsl', NOISE_FUN=fbmNoiseDeriv3D_warp, WarpParams=WarpParams)
+
+// Wrapper functions so we can select from the functions at runtime, without having to know the suffix
+// that is added by glslify to the 'require'd functions, which it does to avoid duplicate identifiers.
+vec2 warpRegular( vec2 pos, WarpParams warp )        { return _warpRegular( pos, warp ); }
+vec2 warpPolar( vec2 pos, WarpParams warp )          { return _warpPolar( pos, warp ); }
+vec2 warpVortex( vec2 pos, WarpParams warp )         { return _warpVortex( pos, warp ); }
+vec2 warpVortexInverse( vec2 pos, WarpParams warp )  { return _warpVortexInverse( pos, warp ); }
+vec2 warpDerivatives( vec2 pos, WarpParams warp )    { return _warpDerivatives( pos, warp ); }
+
+//·············································································································
+// Noise and transform functions for warp2
 
 #pragma glslify: fbmNoise3D_warp2 = require('./gl-noise/FbmNoise3D.glsl', NOISE_FUN=WARP2_NOISE_FUN, FbmNoiseParams=FbmNoiseParams)
 #pragma glslify: fbmNoiseDual3D_warp2 = require('./gl-noise/FbmNoiseDual3D.glsl', NOISE_FUN=WARP2_NOISE_FUN, FbmNoiseParams=FbmNoiseParams)
@@ -71,21 +85,34 @@ precision highp sampler2D;
 #pragma glslify: _warpVortexInverse2 = require('./gl-noise/warpVortexInverse.glsl', NOISE_FUN=fbmNoise3D_warp2, WarpParams=WarpParams)
 #pragma glslify: _warpDerivatives2 = require('./gl-noise/warpDerivatives.glsl', NOISE_FUN=fbmNoiseDeriv3D_warp2, WarpParams=WarpParams)
 
-//·············································································································
 // Wrapper functions so we can select from the functions at runtime, without having to know the suffix
 // that is added by glslify to the 'require'd functions, which it does to avoid duplicate identifiers.
-
-vec2 warpRegular( vec2 pos, WarpParams warp )        { return _warpRegular( pos, warp ); }
-vec2 warpPolar( vec2 pos, WarpParams warp )          { return _warpPolar( pos, warp ); }
-vec2 warpVortex( vec2 pos, WarpParams warp )         { return _warpVortex( pos, warp ); }
-vec2 warpVortexInverse( vec2 pos, WarpParams warp )  { return _warpVortexInverse( pos, warp ); }
-vec2 warpDerivatives( vec2 pos, WarpParams warp )    { return _warpDerivatives( pos, warp ); }
-
 vec2 warpRegular2( vec2 pos, WarpParams warp )       { return _warpRegular2( pos, warp ); }
 vec2 warpPolar2( vec2 pos, WarpParams warp )         { return _warpPolar2( pos, warp ); }
 vec2 warpVortex2( vec2 pos, WarpParams warp )        { return _warpVortex2( pos, warp ); }
 vec2 warpVortexInverse2( vec2 pos, WarpParams warp ) { return _warpVortexInverse2( pos, warp ); }
 vec2 warpDerivatives2( vec2 pos, WarpParams warp )   { return _warpDerivatives2( pos, warp ); }
+
+//·············································································································
+// Noise and transform functions for feedback
+
+#pragma glslify: fbmNoise3D_FB = require('./gl-noise/FbmNoise3D.glsl', NOISE_FUN=WARP2_NOISE_FUN, FbmNoiseParams=FbmNoiseParams)
+#pragma glslify: fbmNoiseDual3D_FB = require('./gl-noise/FbmNoiseDual3D.glsl', NOISE_FUN=WARP2_NOISE_FUN, FbmNoiseParams=FbmNoiseParams)
+#pragma glslify: fbmNoiseDeriv3D_FB = require('./gl-noise/FbmNoiseDeriv3D.glsl', NOISE_FUN=WARP2_NOISE_DERIV_FUN, FbmNoiseParams=FbmNoiseParams)
+
+#pragma glslify: _warpRegularFB = require('./gl-noise/warpRegular.glsl', NOISE_FUN=fbmNoiseDual3D_FB, WarpParams=WarpParams)
+#pragma glslify: _warpPolarFB = require('./gl-noise/warpPolar.glsl', NOISE_FUN=fbmNoiseDual3D_FB, WarpParams=WarpParams)
+#pragma glslify: _warpVortexFB = require('./gl-noise/warpVortex.glsl', NOISE_FUN=fbmNoise3D_FB, WarpParams=WarpParams)
+#pragma glslify: _warpVortexInverseFB = require('./gl-noise/warpVortexInverse.glsl', NOISE_FUN=fbmNoise3D_FB, WarpParams=WarpParams)
+#pragma glslify: _warpDerivativesFB = require('./gl-noise/warpDerivatives.glsl', NOISE_FUN=fbmNoiseDeriv3D_FB, WarpParams=WarpParams)
+
+// Wrapper functions so we can select from the functions at runtime, without having to know the suffix
+// that is added by glslify to the 'require'd functions, which it does to avoid duplicate identifiers.
+vec2 warpRegularFB( vec2 pos, WarpParams warp )       { return _warpRegularFB( pos, warp ); }
+vec2 warpPolarFB( vec2 pos, WarpParams warp )         { return _warpPolarFB( pos, warp ); }
+vec2 warpVortexFB( vec2 pos, WarpParams warp )        { return _warpVortexFB( pos, warp ); }
+vec2 warpVortexInverseFB( vec2 pos, WarpParams warp ) { return _warpVortexInverseFB( pos, warp ); }
+vec2 warpDerivativesFB( vec2 pos, WarpParams warp )   { return _warpDerivativesFB( pos, warp ); }
 
 //·············································································································
 
@@ -118,6 +145,9 @@ uniform NoiseParams u_noise;
 uniform WarpParams u_warp;
 uniform WarpParams u_warp2;
 
+// Feedback warping parameters.
+uniform WarpParams u_warpFB;
+
 // Texture that defines the palette.
 uniform sampler2D u_paletteTexture;
 uniform float     u_paletteOffset;     // offset for palette rotation animation
@@ -136,7 +166,7 @@ void main() {
 
 	vec2 pos = fragCoord.xy;
 
-	//pos = WARP2_TRANSFORM_FUN( pos, u_warp2 );
+	pos = WARP2_TRANSFORM_FUN( pos, u_warp2 );
 	pos = WARP_TRANSFORM_FUN( pos, u_warp );
 
 	float n = fbmNoise3D( vec3( pos, u_noise.anim ), u_noise.basic ) * u_noise.amplitude;
@@ -151,10 +181,10 @@ void main() {
 	vec4 color = texture( u_paletteTexture, vec2( n + u_paletteOffset, 0 ) );
 
 	vec2 fbCoord = fragCoord.xy * 0.5 + vec2( 0.5, 0.5 );
-	fbCoord = WARP2_TRANSFORM_FUN( fbCoord, u_warp2 );
+	fbCoord = WARPFB_TRANSFORM_FUN( fbCoord, u_warpFB );
 	vec4 fbColor = texture( u_feedbackTexture, fbCoord );
 
-	color += fbColor * 0.97;
+	color += fbColor * 0.97;   // TODO: various blending functions
 
 	fragColor = color;
 }

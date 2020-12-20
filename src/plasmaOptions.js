@@ -73,11 +73,11 @@ const noiseFunctions3D = {
 };
 
 const warpFunctions = {
-	warpRegular       : { shortKey: "r",  title: "Regular" },
-	warpPolar         : { shortKey: "p",  title: "Polar" },
-	warpVortex        : { shortKey: "v",  title: "Vortex" },
-	warpVortexInverse : { shortKey: "vi", title: "Vortex Inverse" },
-	warpDerivatives   : { shortKey: "d",  title: "Derivatives" },
+	warpRegular       : { shortKey: "r",  title: "Regular",        hasRotationParam: false },
+	warpPolar         : { shortKey: "p",  title: "Polar",          hasRotationParam: true  },
+	warpVortex        : { shortKey: "v",  title: "Vortex",         hasRotationParam: true  },
+	warpVortexInverse : { shortKey: "vi", title: "Vortex Inverse", hasRotationParam: true  },
+	warpDerivatives   : { shortKey: "d",  title: "Derivatives",    hasRotationParam: false },
 };
 
 //------------------------------------------------------------------------------------------------
@@ -230,7 +230,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			maxDecimals: 1,
 			defaultVal: 4,
 			depends: options => options.warp.isEnabled && 
-			         ! ['warpRegular', 'warpDerivatives'].includes( options.warp.transformFunction ),
+			         warpFunctions[ options.warp.transformFunction ].hasRotationParam
 		}),
 	}),
 	warp2: new z42opt.Node( {}, {
@@ -310,7 +310,89 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			maxDecimals: 1,
 			defaultVal: 2,
 			depends: options => options.warp2.isEnabled && 
-			         ! ['warpRegular', 'warpDerivatives'].includes( options.warp2.transformFunction ),
+			         warpFunctions[ options.warp2.transformFunction ].hasRotationParam
+		}),
+	}),
+	feedback: new z42opt.Node( {}, {
+		isEnabled: new z42opt.BoolOpt({
+			shortKey: "fbe",
+			title: "Enable feedback effect",
+			defaultVal: false,
+		}),		
+		transformFunction: new z42opt.EnumOpt({
+			shortKey: "fbt",
+			title: "Transform function",
+			values: warpFunctions,
+			defaultVal: "warpRegular",
+			depends: options => options.feedback.isEnabled,
+		}),
+		noiseFunction: new z42opt.EnumOpt({
+			shortKey: "fbn",
+			title: "Noise function",
+			values: noiseFunctions3D,
+			defaultVal: "SimplexPerlin3D",
+			depends: options => options.feedback.isEnabled,
+		}),
+		frequency: new z42opt.FloatOpt({ 
+			shortKey: "fbf",
+			title: "Frequency",
+			min: 0.01,
+			max: 15,
+			maxDecimals: 2,
+			isScale: true,
+			scaleNormalPos: 0.33,
+			defaultVal: 3.0,
+			depends: options => options.feedback.isEnabled,
+		}),
+		octaves: new z42opt.FloatOpt({
+			shortKey: "fbo",
+			title: "Octaves",
+			min: 1,
+			max: 15,
+			maxDecimals: 2,
+			defaultVal: 4,
+			depends: options => options.feedback.isEnabled,
+		}),
+		gain: new z42opt.FloatOpt({
+			shortKey: "fbg",
+			title: "Gain",
+			min: 0.1,
+			max: 1.0,
+			maxDecimals: 2,
+			defaultVal: 0.55,
+			enabled: options => options.feedback.octaves > 1,
+			depends: options => options.feedback.isEnabled,
+		}),
+		lacunarity: new z42opt.FloatOpt({
+			shortKey: "fbl",
+			title: "Lacunarity",
+			min: 1,
+			max: 10,
+			maxDecimals: 2,
+			defaultVal: 2,
+			enabled: options => options.feedback.octaves > 1,
+			depends: options => options.feedback.isEnabled,
+		}),
+		amplitude: new z42opt.FloatOpt({
+			shortKey: "fba",
+			title: "Amplitude",
+			min: 0.01,
+			max: 100,
+			maxDecimals: 2,
+			isScale: true,
+			scaleNormalPos: 0.33,
+			defaultVal: 3,
+			depends: options => options.feedback.isEnabled,
+		}),
+		rotation: new z42opt.FloatOpt({
+			shortKey: "fbr",
+			title: "Rotation",
+			min: 1,
+			max: 20,
+			maxDecimals: 1,
+			defaultVal: 2,
+			depends: options => options.feedback.isEnabled && 
+					 warpFunctions[ options.feedback.transformFunction ].hasRotationParam
 		}),
 	}),
 	palette: new z42opt.Node( {}, {
@@ -460,6 +542,34 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			depends: options => options.warp2.isEnabled && options.warpAnim2.isEnabled
 		}),
 	}),
+	feedbackAnim: new z42opt.Node( {}, {
+		isEnabled: new z42opt.BoolOpt({
+			shortKey: "iwmf",
+			title: "Mutate feedback warp",
+			defaultVal: false,
+			depends: options => options.feedback.isEnabled 
+		}),
+		noiseSpeed: new z42opt.FloatOpt({
+			shortKey: "wsf",
+			title: "Feedback warp mutation speed",
+			min: 0,
+			max: 1,
+			maxDecimals: 2,
+			isSlow: true,
+			defaultVal: 0.05,
+			depends: options => options.feedback.isEnabled && options.feedbackAnim.isEnabled 
+		}),
+		turbulence: new z42opt.FloatOpt({
+			shortKey: "wtuf",
+			title: "Feedback warp turbulence",
+			min: 1.0,
+			max: 2.5,
+			maxDecimals: 2,
+			isSlow: true,
+			defaultVal: 1.85,
+			depends: options => options.feedback.isEnabled && options.feedbackAnim.isEnabled
+		}),
+	}),
 	paletteAnim: new z42opt.Node( {}, {
 		isRotaEnabled: new z42opt.BoolOpt({
 			shortKey: "ipr",
@@ -534,6 +644,10 @@ const optionsView = {
 			title: "Warp²",
 			options: [ "warp2" ]
 		},
+		feedbackTab: {
+			title: "Feedback",
+			options: [ "feedback" ]
+		},
 		paletteTab: {
 			title: "Palette",
 			options: [ "palette" ]
@@ -542,7 +656,7 @@ const optionsView = {
 			title: "Animation",
 
 			// This creates a flat view of the palette and noise anim options:
-			options: [ "noiseAnim", "warpAnim", "warpAnim2", "paletteAnim" ],
+			options: [ "noiseAnim", "warpAnim", "warpAnim2", "feedbackAnim", "paletteAnim" ],
 
 			/* This would create nested tabs instead:
 			groups: {
