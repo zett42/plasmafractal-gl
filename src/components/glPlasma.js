@@ -294,7 +294,7 @@ class PlasmaFractal2D {
 		this.setShaderArgs_palette( time );
 
 
-		//····· Render noise to texture ····· 
+		//····· Draw noise in render texture ····· 
 
 		// activate frame buffer to render to texture
 		gl.bindFramebuffer( gl.FRAMEBUFFER, this._frameBuffer );
@@ -303,9 +303,6 @@ class PlasmaFractal2D {
 		gl.clearColor( 0, 0, 0, 0 );
 		gl.clear( gl.COLOR_BUFFER_BIT) ;
 		
-		// Bind the attribute/buffer set we want.
-		gl.bindVertexArray( this._vao );
-
 		// Bind the textures that the fragment shader will use.
 
 		this._plasmaShader.uniforms.u_paletteTexture  = 0;
@@ -329,7 +326,14 @@ class PlasmaFractal2D {
 		gl.drawArrays( gl.TRIANGLES, 0, 6 );
 
 
-		//····· Render texture to canvas ····· 
+		//····· Copy render texture to feedback texture ····· 
+
+		gl.activeTexture( gl.TEXTURE0 + this._plasmaShader.uniforms.u_feedbackTexture );
+		gl.bindTexture( gl.TEXTURE_2D, this._feedbackTexture );
+		gl.copyTexSubImage2D( gl.TEXTURE_2D, 0, 0, 0, 0, 0, width, height ); 
+
+
+		//····· Draw render texture in canvas ·····
 
 		// Deactivate the frame buffer to render to the canvas
 		gl.bindFramebuffer( gl.FRAMEBUFFER, null );		
@@ -356,12 +360,7 @@ class PlasmaFractal2D {
 		this._postShader.attributes.a_texCoord.pointer();
 
 		// Draw the rectangle from the vertex and texture coordinates buffers.
-		gl.drawArrays( gl.TRIANGLES, 0, 6 );
-
-
-		//····· Copy render texture to feedback texture ····· 
-
-
+		gl.drawArrays( gl.TRIANGLES, 0, 6 );		
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------
