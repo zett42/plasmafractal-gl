@@ -1,6 +1,6 @@
 #version 300 es
 
-#define SHADER_NAME glPlasmaVertex.glsl
+#define SHADER_NAME glPlasmaVertexShader.glsl
 
 precision highp float;
 
@@ -10,7 +10,7 @@ uniform vec2 u_scale;
 // An attribute is an input (in) to a vertex shader.
 // It will receive data from a buffer
 in vec2 a_position;
-in vec2 a_texCoord;
+in vec2 a_noiseCoord;
 
 // Used to pass the texture coordinates to the fragment shader
 out vec2 fragCoord;
@@ -24,5 +24,5 @@ void main() {
 
 	// pass the texCoord to the fragment shader
 	// The GPU will interpolate this value between points.
-	fragCoord = a_texCoord;
+	fragCoord = a_noiseCoord;
 }

@@ -34,8 +34,11 @@ import * as z42easing  from "./easing.js";
 import * as z42glu from './glUtils.js'; 
 import * as z42glcolor from './glColor.js'; 
 
-import vertexShaderSrc from './glPlasmaVertex.glsl'
-import fragShaderSrc from './glPlasmaFrag.glsl'
+import plasmaVertexShaderSrc from './glPlasmaVertexShader.glsl'
+import plasmaFragShaderSrc from './glPlasmaFragShader.glsl'
+
+import postVertexShaderSrc from './glPostVertexShader.glsl'
+import postFragShaderSrc from './glPostFragShader.glsl'
 
 //===================================================================================================================
 // This is the class for generating and animating a plasma. 
@@ -54,6 +57,7 @@ class PlasmaFractal2D {
 		this._initPalettes( params.colorSeed );
 
 		this._initCanvasGl( params.canvas );
+
 		this.resize( params.width, params.height, true );
 	}
 
@@ -100,21 +104,58 @@ class PlasmaFractal2D {
 
 		const gl = this._gl = canvas.getContext( "webgl2" );
 
-		// Disable unused features
+		//--- Disable unused features ---
+
 		gl.disable( gl.BLEND );
 		gl.disable( gl.DEPTH_TEST );
 		gl.depthMask( gl.FALSE );
 		gl.stencilMask( gl.FALSE );
 
-		this._positionBuffer     = gl.createBuffer();
-		this._texCoordBuffer     = gl.createBuffer();
+		//--- Create vertex and texture coordinate buffers ---
+
+		this._positionBuffer = gl.createBuffer();
+		gl.bindBuffer( gl.ARRAY_BUFFER, this._positionBuffer );
+		z42glu.setBufferRectangle( gl, -1.0, -1.0, 2.0, 2.0 );    // fills entire viewport
+
+		this._noiseCoordBuffer = gl.createBuffer();
+		gl.bindBuffer( gl.ARRAY_BUFFER, this._noiseCoordBuffer );
+		z42glu.setBufferRectangle( gl, -1.0, -1.0, 2.0, 2.0 );
+
+		this._renderTexCoordBuffer = gl.createBuffer();
+		gl.bindBuffer( gl.ARRAY_BUFFER, this._renderTexCoordBuffer );
+		z42glu.setBufferRectangle( gl, 0, 0, 1.0, 1.0 );
 		
-		this._paletteTexture     = gl.createTexture();
+		//--- Create and configure textures ---
+
+		this._paletteTexture     = gl.createTexture();	
+		this._renderTexture      = gl.createTexture();
+		this._feedbackTexture    = gl.createTexture();
+
+		gl.activeTexture( gl.TEXTURE0 );
+
+		gl.bindTexture( gl.TEXTURE_2D, this._renderTexture );
+		gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT );  // gl.CLAMP_TO_EDGE );
+		gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT );  // gl.CLAMP_TO_EDGE );
+		gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
+		gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
+
+		gl.bindTexture( gl.TEXTURE_2D, this._feedbackTexture );
+		gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE );
+		gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE );
+		gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
+		gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
+
 		// Palette texture is 1-dimensional so we could use max. possible size for best quality.
 		// I still like to have some control over this value, so I limit it anyway.
 		this._paletteTextureSize = Math.min( gl.getParameter( gl.MAX_TEXTURE_SIZE ), 32768 );
-		
-		this._feedbackTexture    = gl.createTexture();
+
+		//--- Create the framebuffer and assign the render texture ---
+
+		this._frameBuffer = gl.createFramebuffer();
+		gl.bindFramebuffer( gl.FRAMEBUFFER, this._frameBuffer );		
+		gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this._renderTexture, 0 );		
+
+		//--- Create initial version of shaders ---
 
 		this._rebuildShaders();
 	}
@@ -128,7 +169,9 @@ class PlasmaFractal2D {
 			mapToPaletteFun = 'identity';
 		}
 
-		const fragShaderSrcTransformed = injectDefines(fragShaderSrc, {
+		// These defines are used to compose the shader of functions that can be selected by options.
+
+		const plasmaFragShaderSrcTransformed = injectDefines( plasmaFragShaderSrc, {
 			BASE_NOISE_FUN        : this._options.noise.noiseFunction,
 			NOISE_CLAMP_FUN       : this._options.noise.isClamp ? 'clampZeroOne' : 'identity',
 			MAP_TO_PALETTE_FUN    : mapToPaletteFun,
@@ -146,27 +189,34 @@ class PlasmaFractal2D {
 			WARPFB_TRANSFORM_FUN   : this._options.feedback.isEnabled ? `${this._options.feedback.transformFunction}FB` : 'identity',
 		});
 
-		//console.log('vertexShaderSrc', vertexShaderSrc)		
-		console.log('fragShaderSrcTransformed: ', fragShaderSrcTransformed)		
+		//console.log( 'plasmaVertexShaderSrc', plasmaVertexShaderSrc )		
+		//console.log( 'plasmaFragShaderSrcTransformed: ', plasmaFragShaderSrcTransformed )		
 
-		if( this._shader ) {
-			this._shader.update( vertexShaderSrc, fragShaderSrcTransformed )
+		if( this._plasmaShader ) {
+			this._plasmaShader.update( plasmaVertexShaderSrc, plasmaFragShaderSrcTransformed )
 		}
 		else {
-			this._shader = createShader( this._gl, vertexShaderSrc, fragShaderSrcTransformed );
+			this._plasmaShader = createShader( this._gl, plasmaVertexShaderSrc, plasmaFragShaderSrcTransformed );
 		}
 
-		//console.log( "uniforms:", this._shader.uniforms );
+		//console.log( "uniforms:", this._plasmaShader.uniforms );
+
+		if( this._postShader ) {
+			this._postShader.update( postVertexShaderSrc, postFragShaderSrc )
+		}
+		else {
+			this._postShader = createShader( this._gl, postVertexShaderSrc, postFragShaderSrc );
+		}
 
 		this._updateStaticShaderData();
+
+		//console.log( "uniforms:", this._postShader.uniforms );
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------
 	// Update shader data that normally doesn't change between frames. 
 
 	_updateStaticShaderData() {
-		// Activate the pair of vertex and fragment shaders.
-		this._shader.bind();
 
 		this._updateShaderVar_coords();
 		this._updateShaderVar_scale();
@@ -180,54 +230,35 @@ class PlasmaFractal2D {
 		const gl = this._gl;
 
 		// (Re-)create and activate vertex array object (VAO) that records the following vertex buffer objects (VBO).
+		/*
 		if( this._vao ) gl.deleteVertexArray( this._vao );
 		this._vao = gl.createVertexArray();
-
 		gl.bindVertexArray( this._vao );
-
-		//--- Set a vertex buffer to store rectangle coordinates ---
-		gl.bindBuffer( gl.ARRAY_BUFFER, this._positionBuffer );
-		// Assign data to the buffer.
-		z42glu.setBufferRectangle( gl, -1.0, -1.0, 2.0, 2.0 );
-		// Tell the attribute how to get data out of the buffer (ARRAY_BUFFER)
-		this._shader.attributes.a_position.pointer(
-			gl.FLOAT,   // the data is 32bit floats
-			false,      // don't normalize the data
-			0,          // 0 = move forward size * sizeof(type) each iteration to get the next position
-			0           // start at the beginning of the buffer
-		);
-
-		//--- Set a vertex buffer to store texture coordinates ---
-		gl.bindBuffer( gl.ARRAY_BUFFER, this._texCoordBuffer );
-		// Assign data to the buffer.
-		z42glu.setBufferRectangle( gl, -1.0, -1.0, 2.0, 2.0 );
-		// Tell the attribute how to get data out of the buffer (ARRAY_BUFFER)
-		this._shader.attributes.a_texCoord.pointer(
-			gl.FLOAT, // the data is 32bit floats
-			false,    // don't normalize the data
-			0,        // 0 = move forward size * sizeof(type) each iteration to get the next position
-			0         // start at the beginning of the buffer
-		);
+		*/
 
 		// We are finished setting up the VAO. It is not required, but considered good practice to
 		// set the current VAO to null.
-		gl.bindVertexArray( null ); 
+		//gl.bindVertexArray( null ); 
 	}	
 
 	//-------------------------------------------------------------------------------------------------------------------
 	// Update vertex shader variable to adjust for canvas aspect ratio and orientation.
 
 	_updateShaderVar_scale() {
+
+		// Activate the pair of vertex and fragment shaders.
+		this._plasmaShader.bind();
+
 		const width  = this._canvas.width;
 		const height = this._canvas.height;
 	
 		if( width > height ){
 			if( height > 0 )
-				this._shader.uniforms.u_scale = [ 1.0, width / height ];
+				this._plasmaShader.uniforms.u_scale = [ 1.0, width / height ];
 		}
 		else {
 			if( width > 0 )
-				this._shader.uniforms.u_scale = [ height / width, 1.0 ];
+				this._plasmaShader.uniforms.u_scale = [ height / width, 1.0 ];
 		}
 	}
 
@@ -257,17 +288,16 @@ class PlasmaFractal2D {
 
 		this._updateShaderVar_scale();
 
-		// Prepare feedback texture
+
+		// Resize textures
 
 		gl.activeTexture( gl.TEXTURE0 );
-		gl.bindTexture( gl.TEXTURE_2D, this._feedbackTexture );
 
+		gl.bindTexture( gl.TEXTURE_2D, this._renderTexture );
 		gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null );
 
-		gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT ); // gl.CLAMP_TO_EDGE );
-		gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT ); // gl.CLAMP_TO_EDGE );
-		gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR ); //gl.LINEAR_MIPMAP_LINEAR );
-		gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
+		gl.bindTexture( gl.TEXTURE_2D, this._feedbackTexture );
+		gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null );
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------
@@ -281,7 +311,7 @@ class PlasmaFractal2D {
 		const gl = this._gl;
 
 		// Tell WebGL to use our program (pair of shaders).
-		this._shader.bind();
+		this._plasmaShader.bind();
 
 		//····· Set noise parameters ····································································
 
@@ -306,7 +336,11 @@ class PlasmaFractal2D {
 
 		this.setShaderArgs_palette( time );
 
-		//····· Render ············································································· 
+		//····· Render noise to texture ············································································· 
+
+		// activate frame buffer to render to texture
+//		gl.bindFramebuffer( gl.FRAMEBUFFER, this._frameBuffer );		
+		gl.bindFramebuffer( gl.FRAMEBUFFER, null );		
 		
 		// Clear the canvas.
 		gl.clearColor( 0, 0, 0, 0 );
@@ -317,25 +351,55 @@ class PlasmaFractal2D {
 
 		// Bind the textures that the fragment shader will use.
 
-		let paletteTextureUnit  = 0;
-		let feedbackTextureUnit = 1;
+		this._plasmaShader.uniforms.u_paletteTexture  = 0;
+		this._plasmaShader.uniforms.u_feedbackTexture = 1;
 
-		this._shader.uniforms.u_paletteTexture  = paletteTextureUnit;
-		this._shader.uniforms.u_feedbackTexture = feedbackTextureUnit;
-
-		gl.activeTexture( gl.TEXTURE0 + paletteTextureUnit );
+		gl.activeTexture( gl.TEXTURE0 + this._plasmaShader.uniforms.u_paletteTexture );
 		gl.bindTexture( gl.TEXTURE_2D, this._paletteTexture );
 
-		gl.activeTexture( gl.TEXTURE0 + feedbackTextureUnit );
+		gl.activeTexture( gl.TEXTURE0 + this._plasmaShader.uniforms.u_feedbackTexture );
 		gl.bindTexture( gl.TEXTURE_2D, this._feedbackTexture );
+
+		// Bind the position and texture coordinate buffers.
+
+		gl.bindBuffer( gl.ARRAY_BUFFER, this._positionBuffer );
+		this._plasmaShader.attributes.a_position.pointer();		
+
+		gl.bindBuffer( gl.ARRAY_BUFFER, this._noiseCoordBuffer );
+		this._plasmaShader.attributes.a_noiseCoord.pointer();
 
 		// Draw the rectangle from the vertex and texture coordinates buffers.
 		gl.drawArrays( gl.TRIANGLES, 0, 6 );
 
-		//····· EXPERIMENT: Feedback effect ························ 
 
-		// Copy framebuffer to active (feedback) texture, which will be used in the next frame
-		gl.copyTexImage2D( gl.TEXTURE_2D, 0, gl.RGBA, 0, 0, this._canvas.width, this._canvas.height, 0 );		
+		//····· Render texture to canvas ············································································· 
+		/*
+		// Deactivate the frame buffer to render to the canvas
+		gl.bindFramebuffer( gl.FRAMEBUFFER, null );		
+
+		gl.clearColor( 0.25, 0.0, 0.25, 1.0 );
+		gl.clear( gl.COLOR_BUFFER_BIT) ;
+
+		// Tell WebGL to use our program (pair of shaders).
+		this._postShader.bind();
+
+		// Bind the texture that the fragment shader will use.
+
+		this._postShader.uniforms.u_renderTexture = 0;
+		gl.activeTexture( gl.TEXTURE0 + this._postShader.uniforms.u_renderTexture );
+		gl.bindTexture( gl.TEXTURE_2D, this._renderTexture );
+
+		// Bind the position and texture coordinate buffers.
+
+		gl.bindBuffer( gl.ARRAY_BUFFER, this._positionBuffer );
+		this._postShader.attributes.a_position.pointer();
+
+		gl.bindBuffer( gl.ARRAY_BUFFER, this._renderTexCoordBuffer );
+		this._postShader.attributes.a_texCoord.pointer();
+
+		// Draw the rectangle from the vertex and texture coordinates buffers.
+		gl.drawArrays( gl.TRIANGLES, 0, 6 );	
+		*/
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------
@@ -343,7 +407,7 @@ class PlasmaFractal2D {
 
 	setShaderArgs_noise( uniformName, warpOpt, warpAnimOpt, warpSeed, time ) {
 
-		const uf = this._shader.uniforms[ uniformName ];
+		const uf = this._plasmaShader.uniforms[ uniformName ];
 
 		uf.basic.octaves = Math.trunc(this._options.noise.octaves);
 		uf.basic.octavesFract = this._options.noise.octaves % 1;
@@ -371,7 +435,7 @@ class PlasmaFractal2D {
 
 	setShaderArgs_warp( uniformName, warpOpt, warpAnimOpt, warpSeed, time ) {
 
-		const uf = this._shader.uniforms[ uniformName ];
+		const uf = this._plasmaShader.uniforms[ uniformName ];
 
 		uf.basic.octaves = Math.trunc( warpOpt.octaves );
 		uf.basic.octavesFract = warpOpt.octaves % 1;
@@ -404,10 +468,10 @@ class PlasmaFractal2D {
 
 		if( this._options.paletteAnim.isRotaEnabled && ! this._options.noise.isClamp ) {
 			const sizeFactor = this._paletteTextureSize / 4096;
-			this._shader.uniforms.u_paletteOffset = time * this._options.paletteAnim.rotaSpeed * sizeFactor;
+			this._plasmaShader.uniforms.u_paletteOffset = time * this._options.paletteAnim.rotaSpeed * sizeFactor;
 		}
 		else {
-			this._shader.uniforms.u_paletteOffset = 0.0;
+			this._plasmaShader.uniforms.u_paletteOffset = 0.0;
 		}
 
 		// If palette has changed, render it into texture.

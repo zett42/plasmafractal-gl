@@ -1,5 +1,5 @@
 #version 300 es
-#define SHADER_NAME glPlasmaFrag.glsl
+#define SHADER_NAME glPlasmaFragShader.glsl
 
 /*
 PlasmaFractal. Copyright (c) 2019 zett42.
