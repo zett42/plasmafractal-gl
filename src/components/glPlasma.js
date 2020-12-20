@@ -134,8 +134,8 @@ class PlasmaFractal2D {
 		gl.activeTexture( gl.TEXTURE0 );
 
 		gl.bindTexture( gl.TEXTURE_2D, this._renderTexture );
-		gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT );  // gl.CLAMP_TO_EDGE );
-		gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT );  // gl.CLAMP_TO_EDGE );
+		gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE );
+		gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE );
 		gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
 		gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
 
@@ -208,58 +208,7 @@ class PlasmaFractal2D {
 			this._postShader = createShader( this._gl, postVertexShaderSrc, postFragShaderSrc );
 		}
 
-		this._updateStaticShaderData();
-
 		//console.log( "uniforms:", this._postShader.uniforms );
-	}
-
-	//-------------------------------------------------------------------------------------------------------------------
-	// Update shader data that normally doesn't change between frames. 
-
-	_updateStaticShaderData() {
-
-		this._updateShaderVar_coords();
-		this._updateShaderVar_scale();
-	}
-
-	//-------------------------------------------------------------------------------------------------------------------
-	// Update vertex shader variables for geometry and texture coordinates.
-
-	_updateShaderVar_coords() {
-
-		const gl = this._gl;
-
-		// (Re-)create and activate vertex array object (VAO) that records the following vertex buffer objects (VBO).
-		/*
-		if( this._vao ) gl.deleteVertexArray( this._vao );
-		this._vao = gl.createVertexArray();
-		gl.bindVertexArray( this._vao );
-		*/
-
-		// We are finished setting up the VAO. It is not required, but considered good practice to
-		// set the current VAO to null.
-		//gl.bindVertexArray( null ); 
-	}	
-
-	//-------------------------------------------------------------------------------------------------------------------
-	// Update vertex shader variable to adjust for canvas aspect ratio and orientation.
-
-	_updateShaderVar_scale() {
-
-		// Activate the pair of vertex and fragment shaders.
-		this._plasmaShader.bind();
-
-		const width  = this._canvas.width;
-		const height = this._canvas.height;
-	
-		if( width > height ){
-			if( height > 0 )
-				this._plasmaShader.uniforms.u_scale = [ 1.0, width / height ];
-		}
-		else {
-			if( width > 0 )
-				this._plasmaShader.uniforms.u_scale = [ height / width, 1.0 ];
-		}
 	}
 
 	//===================================================================================================================
@@ -286,8 +235,6 @@ class PlasmaFractal2D {
 
 		gl.viewport( 0, 0, width, height );
 
-		this._updateShaderVar_scale();
-
 
 		// Resize textures
 
@@ -312,12 +259,26 @@ class PlasmaFractal2D {
 
 		// Tell WebGL to use our program (pair of shaders).
 		this._plasmaShader.bind();
+		
 
-		//····· Set noise parameters ····································································
+		//····· Set scale factors to adjust for screen aspect ratio ······
+
+		const width  = this._canvas.width;
+		const height = this._canvas.height;
+	
+		if( width > height ){
+			if( height > 0 )
+				this._plasmaShader.uniforms.u_scale = [ 1.0, width / height ];
+		}
+		else {
+			if( width > 0 )
+				this._plasmaShader.uniforms.u_scale = [ height / width, 1.0 ];
+		}		
+
+
+		//····· Apply shader options ·····
 
 		this.setShaderArgs_noise( 'u_noise', this._options.noise, this._options.noiseAnim, this._noiseSeed, time );
-
-		//····· Set domain warp parameters ····································································
 
 		if( this._options.warp.isEnabled ) {
 			this.setShaderArgs_warp( 'u_warp',  this._options.warp,  this._options.warpAnim,  this._warpSeed,  time );
@@ -326,23 +287,19 @@ class PlasmaFractal2D {
 			this.setShaderArgs_warp( 'u_warp2', this._options.warp2, this._options.warpAnim2, this._warpSeed2, time );
 		}
 
-		//····· Set feedback parameters ····································································
-
 		if( this._options.feedback.isEnabled ) {
 			this.setShaderArgs_warp( 'u_warpFB', this._options.feedback, this._options.feedbackAnim, this._feedbackSeed, time );
 		}
 
-		//····· Apply palette options ··························································· 
-
 		this.setShaderArgs_palette( time );
 
-		//····· Render noise to texture ············································································· 
+
+		//····· Render noise to texture ····· 
 
 		// activate frame buffer to render to texture
-//		gl.bindFramebuffer( gl.FRAMEBUFFER, this._frameBuffer );		
-		gl.bindFramebuffer( gl.FRAMEBUFFER, null );		
+		gl.bindFramebuffer( gl.FRAMEBUFFER, this._frameBuffer );
 		
-		// Clear the canvas.
+		// Clear the framebuffer.
 		gl.clearColor( 0, 0, 0, 0 );
 		gl.clear( gl.COLOR_BUFFER_BIT) ;
 		
@@ -372,12 +329,13 @@ class PlasmaFractal2D {
 		gl.drawArrays( gl.TRIANGLES, 0, 6 );
 
 
-		//····· Render texture to canvas ············································································· 
-		/*
+		//····· Render texture to canvas ····· 
+
 		// Deactivate the frame buffer to render to the canvas
 		gl.bindFramebuffer( gl.FRAMEBUFFER, null );		
 
-		gl.clearColor( 0.25, 0.0, 0.25, 1.0 );
+		// Clear the canvas
+		gl.clearColor( 0, 0, 0, 0 );
 		gl.clear( gl.COLOR_BUFFER_BIT) ;
 
 		// Tell WebGL to use our program (pair of shaders).
@@ -398,8 +356,12 @@ class PlasmaFractal2D {
 		this._postShader.attributes.a_texCoord.pointer();
 
 		// Draw the rectangle from the vertex and texture coordinates buffers.
-		gl.drawArrays( gl.TRIANGLES, 0, 6 );	
-		*/
+		gl.drawArrays( gl.TRIANGLES, 0, 6 );
+
+
+		//····· Copy render texture to feedback texture ····· 
+
+
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------
