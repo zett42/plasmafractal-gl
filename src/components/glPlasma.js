@@ -110,6 +110,14 @@ class PlasmaFractal2D {
 		gl.depthMask( gl.FALSE );
 		gl.stencilMask( gl.FALSE );
 
+		//--- Enable extensions ---
+
+		this._extColorBufferFloat = gl.getExtension( 'EXT_color_buffer_float' );		
+		console.log( 'EXT_color_buffer_float:', this._extColorBufferFloat );
+
+		this._extTextureFloatLinear = gl.getExtension( 'OES_texture_float_linear' );		
+		console.log( 'OES_texture_float_linear:', this._extTextureFloatLinear );
+
 		//--- Create vertex and texture coordinate buffers ---
 
 		this._positionBuffer = gl.createBuffer();
@@ -221,17 +229,27 @@ class PlasmaFractal2D {
 		const gl = this._gl;
 
 		gl.viewport( 0, 0, width, height );
-
+		
 
 		// Resize textures
 
 		gl.activeTexture( gl.TEXTURE0 );
 
 		gl.bindTexture( gl.TEXTURE_2D, this._renderTexture );
-		gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null );
+		if( this._extColorBufferFloat && this._extTextureFloatLinear ) {
+			gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA32F, width, height, 0, gl.RGBA, gl.FLOAT, null );
+		}
+		else {
+			gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null );
+		}
 
 		gl.bindTexture( gl.TEXTURE_2D, this._feedbackTexture );
-		gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null );
+		if( this._extColorBufferFloat && this._extTextureFloatLinear ) {
+			gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA32F, width, height, 0, gl.RGBA, gl.FLOAT, null );
+		}
+		else {
+			gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null );
+		}
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------
@@ -348,7 +366,7 @@ class PlasmaFractal2D {
 		this._postShader.attributes.a_texCoord.pointer();
 
 		// Draw the rectangle from the vertex and texture coordinates buffers.
-		gl.drawArrays( gl.TRIANGLES, 0, 6 );		
+		gl.drawArrays( gl.TRIANGLES, 0, 6 );
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------
