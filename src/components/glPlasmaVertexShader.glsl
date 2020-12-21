@@ -8,21 +8,26 @@ precision highp float;
 uniform vec2 u_scale;
 
 // An attribute is an input (in) to a vertex shader.
-// It will receive data from a buffer
+// It will receive data from a buffer.
 in vec2 a_position;
-in vec2 a_noiseCoord;
 
-// Used to pass the texture coordinates to the fragment shader
-out vec2 fragCoord;
+// Used to pass the noise coordinates to the fragment shader.
+out vec2 noiseCoord;
+// Used to pass the feedback texture coordinates to the fragment shader.
+out vec2 feedbackTexCoord;
 
 void main() {
-	// Scale to adjust for screen aspect ratio and orientation.
-	vec2 pos = a_position; // * u_scale;
 
 	// Define position of the current vertex by assigning to global variable gl_Position 
-	gl_Position = vec4( pos, 0, 1 );
+	gl_Position = vec4( a_position, 0, 1 );
 
-	// pass the texCoord to the fragment shader
+	// Pass noise coords to the fragment shader.
 	// The GPU will interpolate this value between points.
-	fragCoord = a_noiseCoord;
+	// Scale to adjust for screen aspect ratio and orientation.
+	noiseCoord = a_position * u_scale;
+
+	// Pass the texture coordinates to the fragment shader.
+	// Position coords range from -1.0 to 1.0 -> transform to texture range of 0.0 to 1.0.
+	// The GPU will interpolate this value between points.
+	feedbackTexCoord = a_position * 0.5 + 0.5;
 }

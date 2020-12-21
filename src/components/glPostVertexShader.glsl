@@ -6,7 +6,6 @@ precision highp float;
 // An attribute is an input (in) to a vertex shader.
 // It will receive data from a buffer.
 in vec2 a_position;
-in vec2 a_texCoord;
 
 // Used to pass the texture coordinates to the fragment shader
 out vec2 fragCoord;
@@ -15,7 +14,8 @@ void main() {
 	// Define position of the current vertex by assigning to global variable gl_Position 
 	gl_Position = vec4( a_position, 0, 1 );
 
-	// pass the texCoord to the fragment shader
+	// Pass the texture coordinates to the fragment shader.
+	// Position coords range from -1.0 to 1.0 -> transform to texture range of 0.0 to 1.0.
 	// The GPU will interpolate this value between points.
-	fragCoord = a_texCoord;
+	fragCoord = vec2( a_position * 0.5 + 0.5 );
 }

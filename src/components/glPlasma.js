@@ -125,14 +125,6 @@ class PlasmaFractal2D {
 		this._positionBuffer = gl.createBuffer();
 		gl.bindBuffer( gl.ARRAY_BUFFER, this._positionBuffer );
 		z42glu.setBufferRectangle( gl, -1.0, -1.0, 2.0, 2.0 );    // fills entire viewport
-
-		this._noiseCoordBuffer = gl.createBuffer();
-		gl.bindBuffer( gl.ARRAY_BUFFER, this._noiseCoordBuffer );
-		z42glu.setBufferRectangle( gl, -1.0, -1.0, 2.0, 2.0 );
-
-		this._renderTexCoordBuffer = gl.createBuffer();
-		gl.bindBuffer( gl.ARRAY_BUFFER, this._renderTexCoordBuffer );
-		z42glu.setBufferRectangle( gl, 0, 0, 1.0, 1.0 );
 		
 		//--- Create and configure textures ---
 
@@ -275,11 +267,11 @@ class PlasmaFractal2D {
 	
 		if( width > height ){
 			if( height > 0 )
-				this._plasmaShader.uniforms.u_scale = [ 1.0, width / height ];
+				this._plasmaShader.uniforms.u_scale = [ 1.0, height / width ];
 		}
 		else {
 			if( width > 0 )
-				this._plasmaShader.uniforms.u_scale = [ height / width, 1.0 ];
+				this._plasmaShader.uniforms.u_scale = [ width / height, 1.0 ];
 		}		
 
 
@@ -322,13 +314,10 @@ class PlasmaFractal2D {
 		gl.activeTexture( gl.TEXTURE0 + this._plasmaShader.uniforms.u_feedbackTexture );
 		gl.bindTexture( gl.TEXTURE_2D, this._feedbackTexture );
 
-		// Bind the position and texture coordinate buffers.
+		// Bind the position buffer.
 
 		gl.bindBuffer( gl.ARRAY_BUFFER, this._positionBuffer );
 		this._plasmaShader.attributes.a_position.pointer();		
-
-		gl.bindBuffer( gl.ARRAY_BUFFER, this._noiseCoordBuffer );
-		this._plasmaShader.attributes.a_noiseCoord.pointer();
 
 		// Draw the rectangle from the vertex and texture coordinates buffers.
 		gl.drawArrays( gl.TRIANGLES, 0, 6 );
@@ -344,7 +333,7 @@ class PlasmaFractal2D {
 		}
 
 		//····· Draw render texture in canvas ·····
-
+		
 		// Deactivate the frame buffer to render to the canvas
 		gl.bindFramebuffer( gl.FRAMEBUFFER, null );		
 
@@ -361,13 +350,10 @@ class PlasmaFractal2D {
 		gl.activeTexture( gl.TEXTURE0 + this._postShader.uniforms.u_renderTexture );
 		gl.bindTexture( gl.TEXTURE_2D, this._renderTexture );
 
-		// Bind the position and texture coordinate buffers.
+		// Bind the position buffer.
 
 		gl.bindBuffer( gl.ARRAY_BUFFER, this._positionBuffer );
 		this._postShader.attributes.a_position.pointer();
-
-		gl.bindBuffer( gl.ARRAY_BUFFER, this._renderTexCoordBuffer );
-		this._postShader.attributes.a_texCoord.pointer();
 
 		// Draw the rectangle from the vertex and texture coordinates buffers.
 		gl.drawArrays( gl.TRIANGLES, 0, 6 );

@@ -155,7 +155,8 @@ uniform float     u_paletteOffset;     // offset for palette rotation animation
 uniform sampler2D u_feedbackTexture;
 
 // Fragment coordinates passed in from the vertex shader.
-in vec2 fragCoord;
+in vec2 noiseCoord;
+in vec2 feedbackTexCoord;
 
 // Output of this fragment shader.
 out vec4 fragColor;
@@ -164,7 +165,7 @@ out vec4 fragColor;
 
 void main() { 
 
-	vec2 pos = fragCoord.xy;
+	vec2 pos = noiseCoord;
 
 	pos = WARP2_TRANSFORM_FUN( pos, u_warp2 );
 	pos = WARP_TRANSFORM_FUN( pos, u_warp );
@@ -180,11 +181,11 @@ void main() {
 	// Actual color is defined by palette
 	vec4 color = texture( u_paletteTexture, vec2( n + u_paletteOffset, 0 ) );
 
-	vec2 fbCoord = fragCoord.xy * 0.5 + vec2( 0.5, 0.5 );
-	fbCoord = WARPFB_TRANSFORM_FUN( fbCoord, u_warpFB );
+	// TODO: need to transform based on centered coords and only afterwards scale to tex coord system?
+	vec2 fbCoord = WARPFB_TRANSFORM_FUN( feedbackTexCoord, u_warpFB );
 	vec4 fbColor = texture( u_feedbackTexture, fbCoord );
 
 	color += fbColor * 0.99;   // TODO: various blending functions
-
+	
 	fragColor = color;
 }
