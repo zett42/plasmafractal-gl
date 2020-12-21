@@ -26,7 +26,6 @@ SOFTWARE.
 import MersenneTwister from 'mersennetwister';
 import * as tinycolor from 'tinycolor2';
 import * as _ from 'lodash';
-import createShader from 'gl-shader';
 import injectDefines from 'glsl-inject-defines';
 
 import * as z42color from './color.js'; 
@@ -192,23 +191,11 @@ class PlasmaFractal2D {
 		//console.log( 'plasmaVertexShaderSrc', plasmaVertexShaderSrc )		
 		//console.log( 'plasmaFragShaderSrcTransformed: ', plasmaFragShaderSrcTransformed )		
 
-		if( this._plasmaShader ) {
-			this._plasmaShader.update( plasmaVertexShaderSrc, plasmaFragShaderSrcTransformed )
-		}
-		else {
-			this._plasmaShader = createShader( this._gl, plasmaVertexShaderSrc, plasmaFragShaderSrcTransformed );
-		}
+		this._plasmaShader = z42glu.createOrUpdateShader( this._gl, this._plasmaShader, plasmaVertexShaderSrc, plasmaFragShaderSrcTransformed );
+		//console.log( "plasmaShader uniforms:", this._plasmaShader.uniforms );
 
-		//console.log( "uniforms:", this._plasmaShader.uniforms );
-
-		if( this._postShader ) {
-			this._postShader.update( postVertexShaderSrc, postFragShaderSrc )
-		}
-		else {
-			this._postShader = createShader( this._gl, postVertexShaderSrc, postFragShaderSrc );
-		}
-
-		//console.log( "uniforms:", this._postShader.uniforms );
+		this._postShader = z42glu.createOrUpdateShader( this._gl, this._postShader, postVertexShaderSrc, postFragShaderSrc );
+		//console.log( "postShader uniforms:", this._postShader.uniforms );
 	}
 
 	//===================================================================================================================
@@ -283,6 +270,7 @@ class PlasmaFractal2D {
 		if( this._options.warp.isEnabled ) {
 			this.setShaderArgs_warp( 'u_warp',  this._options.warp,  this._options.warpAnim,  this._warpSeed,  time );
 		}
+		
 		if( this._options.warp2.isEnabled ) {
 			this.setShaderArgs_warp( 'u_warp2', this._options.warp2, this._options.warpAnim2, this._warpSeed2, time );
 		}

@@ -22,6 +22,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. 
 */
+
+import createShader from 'gl-shader';
+
 //----------------------------------------------------------------------------------------------
 
 export function setBufferRectangle( gl, x, y, width, height, usage = gl.STATIC_DRAW ) {
@@ -40,4 +43,18 @@ export function setBufferRectangle( gl, x, y, width, height, usage = gl.STATIC_D
         ]), 
         usage 
     );
+}
+
+//----------------------------------------------------------------------------------------------
+
+export function createOrUpdateShader( gl, shader, vertexShaderSrc, fragShaderSrc ) {
+
+    if( shader ) {
+        shader.update( vertexShaderSrc, fragShaderSrc );
+    }
+    else {
+        shader = createShader( gl, vertexShaderSrc, fragShaderSrc );
+    }
+
+    return shader;
 }
