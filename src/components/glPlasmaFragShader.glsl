@@ -184,7 +184,7 @@ void main() {
 	fbCoord = WARPFB_TRANSFORM_FUN( fbCoord, u_warpFB );
 	vec4 fbColor = texture( u_feedbackTexture, fbCoord );
 
-	color += fbColor * 0.97;   // TODO: various blending functions
+	color += fbColor * 0.99;   // TODO: various blending functions
 
 	fragColor = color;
 }

@@ -118,6 +118,8 @@ class PlasmaFractal2D {
 		this._extTextureFloatLinear = gl.getExtension( 'OES_texture_float_linear' );		
 		console.log( 'OES_texture_float_linear:', this._extTextureFloatLinear );
 
+		this._isFloatTexture = this._extColorBufferFloat && this._extTextureFloatLinear;
+
 		//--- Create vertex and texture coordinate buffers ---
 
 		this._positionBuffer = gl.createBuffer();
@@ -236,7 +238,7 @@ class PlasmaFractal2D {
 		gl.activeTexture( gl.TEXTURE0 );
 
 		gl.bindTexture( gl.TEXTURE_2D, this._renderTexture );
-		if( this._extColorBufferFloat && this._extTextureFloatLinear ) {
+		if( this._isFloatTexture ) {
 			gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA32F, width, height, 0, gl.RGBA, gl.FLOAT, null );
 		}
 		else {
@@ -244,7 +246,7 @@ class PlasmaFractal2D {
 		}
 
 		gl.bindTexture( gl.TEXTURE_2D, this._feedbackTexture );
-		if( this._extColorBufferFloat && this._extTextureFloatLinear ) {
+		if( this._isFloatTexture ) {
 			gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA32F, width, height, 0, gl.RGBA, gl.FLOAT, null );
 		}
 		else {
@@ -332,12 +334,14 @@ class PlasmaFractal2D {
 		gl.drawArrays( gl.TRIANGLES, 0, 6 );
 
 
-		//····· Copy render texture to feedback texture ····· 
+		if( this._options.feedback.isEnabled ) {
 
-		gl.activeTexture( gl.TEXTURE0 + this._plasmaShader.uniforms.u_feedbackTexture );
-		gl.bindTexture( gl.TEXTURE_2D, this._feedbackTexture );
-		gl.copyTexSubImage2D( gl.TEXTURE_2D, 0, 0, 0, 0, 0, width, height ); 
+			//····· Copy render texture to feedback texture ····· 
 
+			gl.activeTexture( gl.TEXTURE0 + this._plasmaShader.uniforms.u_feedbackTexture );
+			gl.bindTexture( gl.TEXTURE_2D, this._feedbackTexture );
+			gl.copyTexSubImage2D( gl.TEXTURE_2D, 0, 0, 0, 0, 0, width, height ); 
+		}
 
 		//····· Draw render texture in canvas ·····
 
@@ -460,6 +464,7 @@ class PlasmaFractal2D {
 			gl.bindTexture( gl.TEXTURE_2D, this._paletteTexture );
 
 			z42glcolor.setPaletteTexture( gl, this._paletteTextureSize, paletteToUse, paletteIsRepeat );
+			//z42glcolor.setPaletteTexture( gl, this._paletteTextureSize, paletteToUse, paletteIsRepeat, this._isFloatTexture );
 		}
 	}
 
