@@ -293,8 +293,13 @@ class PlasmaFractal2D {
 			this.setShaderArgs_warp( 'u_warp2', this._options.warp2, this._options.warpAnim2, this._warpSeed2, time );
 		}
 
-		if( this._options.feedback.warp.isEnabled ) {
-			this.setShaderArgs_warp( 'u_warpFB', this._options.feedback.warp, this._options.feedbackAnim, this._feedbackSeed, time );
+		if( this._options.feedback.isEnabled ) {
+			this._plasmaShader.uniforms.u_fbInputBrightness  = this._options.feedback.blending.inputBrightness;
+			this._plasmaShader.uniforms.u_feedbackBrightness = this._options.feedback.blending.feedbackBrightness;
+
+			if( this._options.feedback.warp.isEnabled ) {
+				this.setShaderArgs_warp( 'u_warpFB', this._options.feedback.warp, this._options.feedbackAnim, this._feedbackSeed, time );
+			}
 		}
 
 		this.setShaderArgs_palette( time );

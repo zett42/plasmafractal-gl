@@ -145,14 +145,16 @@ uniform NoiseParams u_noise;
 uniform WarpParams u_warp;
 uniform WarpParams u_warp2;
 
-// Feedback warping parameters.
+// Feedback parameters.
+uniform sampler2D  u_feedbackTexture;
+uniform float      u_fbInputBrightness;
+uniform float      u_feedbackBrightness;
 uniform WarpParams u_warpFB;
 
 // Texture that defines the palette.
 uniform sampler2D u_paletteTexture;
-uniform float     u_paletteOffset;     // offset for palette rotation animation
+uniform float     u_paletteOffset;      // offset for palette rotation animation
 
-uniform sampler2D u_feedbackTexture;
 
 // Fragment coordinates passed in from the vertex shader.
 in vec2 noiseCoord;
@@ -185,7 +187,8 @@ void main() {
 	vec2 fbCoord = WARPFB_TRANSFORM_FUN( feedbackTexCoord, u_warpFB );
 	vec4 fbColor = texture( u_feedbackTexture, fbCoord );
 
-	color += fbColor * 0.99;   // TODO: various blending functions
+	// TODO: various blending functions
+	color = color * u_fbInputBrightness + fbColor * u_feedbackBrightness;   
 	
 	fragColor = color;
 }

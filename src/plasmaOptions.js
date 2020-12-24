@@ -319,6 +319,26 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			title: "Enable feedback effect",
 			defaultVal: false,
 		}),
+		blending: new z42opt.Node( {}, {
+			inputBrightness: new z42opt.FloatOpt({
+				shortKey: "fbib",
+				title: "Input brightness",
+				min: 0,
+				max: 1,
+				maxDecimals: 3,
+				defaultVal: 0.02,
+				depends: options => options.feedback.isEnabled,
+			}),
+			feedbackBrightness: new z42opt.FloatOpt({
+				shortKey: "fbb",
+				title: "Feedback brightness",
+				min: 0,
+				max: 1,
+				maxDecimals: 3,
+				defaultVal: 0.95,
+				depends: options => options.feedback.isEnabled,
+			}),	
+		}),
 		warp: new z42opt.Node( {}, {
 			isEnabled: new z42opt.BoolOpt({
 				shortKey: "fbwe",
@@ -445,7 +465,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			max: 1,
 			maxDecimals: 2,
 			defaultVal: 1.0,
-			depends: options => ! options.palette.isCustom && ! options.palette.isGrayScale,
+			depends: options => ! options.palette.isGrayScale,
 		}),
 		bgColor: new z42opt.ColorOpt({
 			shortKey: "pbg",
