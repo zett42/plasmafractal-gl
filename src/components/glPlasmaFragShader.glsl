@@ -130,9 +130,8 @@ float mapToPaletteMinusOneToOne( float value ) {
 // Identity functions to switch off certain effects.
 
 float identity( float value ) {	return value; }
-
 vec2 identity( vec2 value ) { return value; }
-
+vec4 identity( vec4 value ) { return value; }
 vec2 identity( vec2 value, WarpParams warp ) { return value; }
 
 //·············································································································
@@ -165,6 +164,17 @@ out vec4 fragColor;
 
 //·············································································································
 
+vec4 applyFeedback( vec4 color ) {
+
+	vec2 fbCoord = WARPFB_TRANSFORM_FUN( feedbackTexCoord, u_warpFB );
+	vec4 fbColor = texture( u_feedbackTexture, fbCoord );
+
+	// TODO: various blending functions
+	return color * u_fbInputBrightness + fbColor * u_feedbackBrightness;
+}
+
+//·············································································································
+
 void main() { 
 
 	vec2 pos = noiseCoord;
@@ -183,12 +193,7 @@ void main() {
 	// Actual color is defined by palette
 	vec4 color = texture( u_paletteTexture, vec2( n + u_paletteOffset, 0 ) );
 
-	// TODO: need to transform based on centered coords and only afterwards scale to tex coord system?
-	vec2 fbCoord = WARPFB_TRANSFORM_FUN( feedbackTexCoord, u_warpFB );
-	vec4 fbColor = texture( u_feedbackTexture, fbCoord );
+	color = FEEDBACK_FUN( color );
 
-	// TODO: various blending functions
-	color = color * u_fbInputBrightness + fbColor * u_feedbackBrightness;   
-	
 	fragColor = color;
 }

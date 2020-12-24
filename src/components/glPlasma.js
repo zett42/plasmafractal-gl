@@ -170,30 +170,29 @@ class PlasmaFractal2D {
 			mapToPaletteFun = 'identity';
 		}
 
-		// These defines are used to compose the shader of functions that can be selected by options.
+		// Create defines that are used to compose the shader of functions which can be selected by options.
+
+		let useFunctionIf = ( condition, functionName ) => condition ? functionName : 'identity';
 
 		const plasmaFragShaderSrcTransformed = injectDefines( plasmaFragShaderSrc, {
-			BASE_NOISE_FUN        : this._options.noise.noiseFunction,
-			NOISE_CLAMP_FUN       : this._options.noise.isClamp ? 'clampZeroOne' : 'identity',
-			MAP_TO_PALETTE_FUN    : mapToPaletteFun,
+			BASE_NOISE_FUN         : this._options.noise.noiseFunction,
+			NOISE_CLAMP_FUN        : useFunctionIf( this._options.noise.isClamp, 'clampZeroOne' ),
+			MAP_TO_PALETTE_FUN     : mapToPaletteFun,
 
-			WARP_NOISE_FUN        : this._options.warp.noiseFunction,
-			WARP_NOISE_DERIV_FUN  : 'Deriv' + this._options.warp.noiseFunction,
-			WARP_TRANSFORM_FUN    : this._options.warp.isEnabled 
-									? this._options.warp.transformFunction 
-									: 'identity',
+			WARP_NOISE_FUN         : this._options.warp.noiseFunction,
+			WARP_NOISE_DERIV_FUN   : 'Deriv' + this._options.warp.noiseFunction,
+			WARP_TRANSFORM_FUN     : useFunctionIf( this._options.warp.isEnabled, this._options.warp.transformFunction ),
 
-			WARP2_NOISE_FUN       : this._options.warp2.noiseFunction,
-			WARP2_NOISE_DERIV_FUN : 'Deriv' + this._options.warp2.noiseFunction,
-			WARP2_TRANSFORM_FUN   : this._options.warp2.isEnabled 
-									? `${this._options.warp2.transformFunction}2` 
-									: 'identity',
+			WARP2_NOISE_FUN        : this._options.warp2.noiseFunction,
+			WARP2_NOISE_DERIV_FUN  : 'Deriv' + this._options.warp2.noiseFunction,
+			WARP2_TRANSFORM_FUN    : useFunctionIf( this._options.warp2.isEnabled, `${this._options.warp2.transformFunction}2` ),
+
+			FEEDBACK_FUN           : useFunctionIf( this._options.feedback.isEnabled, 'applyFeedback' ),
 
 			WARPFB_NOISE_FUN       : this._options.feedback.warp.noiseFunction,
 			WARPFB_NOISE_DERIV_FUN : 'Deriv' + this._options.feedback.warp.noiseFunction,
-			WARPFB_TRANSFORM_FUN   : this._options.feedback.isEnabled && this._options.feedback.warp.isEnabled 
-									 ? `${this._options.feedback.warp.transformFunction}FB` 
-									 : 'identity',
+			WARPFB_TRANSFORM_FUN   : useFunctionIf( this._options.feedback.isEnabled && this._options.feedback.warp.isEnabled,
+													`${this._options.feedback.warp.transformFunction}FB` ),
 		});
 
 		//console.log( 'plasmaVertexShaderSrc', plasmaVertexShaderSrc )		
