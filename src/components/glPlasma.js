@@ -165,19 +165,14 @@ class PlasmaFractal2D {
 
 	_rebuildShaders() {
 	
-		let mapToPaletteFun = 'mapToPaletteMinusOneToOne';
-		if( this._options.noise.noiseFunction == 'Cellular3D' ) {
-			mapToPaletteFun = 'identity';
-		}
-
 		// Create defines that are used to compose the shader of functions which can be selected by options.
 
-		let useFunctionIf = ( condition, functionName ) => condition ? functionName : 'identity';
+		const useFunctionIf = ( condition, functionName ) => condition ? functionName : 'identity';
 
 		const plasmaFragShaderSrcTransformed = injectDefines( plasmaFragShaderSrc, {
 			BASE_NOISE_FUN         : this._options.noise.noiseFunction,
 			NOISE_CLAMP_FUN        : useFunctionIf( this._options.noise.isClamp, 'clampZeroOne' ),
-			MAP_TO_PALETTE_FUN     : mapToPaletteFun,
+			MAP_TO_PALETTE_FUN     : useFunctionIf( this._options.noise.noiseFunction != 'Cellular3D', 'mapToPaletteMinusOneToOne' ),
 
 			WARP_NOISE_FUN         : this._options.warp.noiseFunction,
 			WARP_NOISE_DERIV_FUN   : 'Deriv' + this._options.warp.noiseFunction,
