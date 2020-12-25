@@ -521,7 +521,9 @@ class PlasmaFractal2D {
 
 	set options$feedback(opt) {
 
-		const needRebuildShaders = this._needRebuildShaderForWarpOptions( this._options.feedback.warp, opt );
+		const needRebuildShaders =
+			this._options.feedback.isEnabled != opt.isEnabled || 
+			this._needRebuildShaderForWarpOptions( this._options.feedback.warp, opt.warp );	                           
 
 		this._options.feedback = _.cloneDeep(opt);
 
