@@ -319,6 +319,12 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			title: "Enable feedback effect",
 			defaultVal: false,
 		}),
+		lockFPS: new z42opt.BoolOpt({
+			shortKey: "fblf",
+			title: "Lock FPS to 60 to ensure same speed on different devices",
+			defaultVal: true,
+			depends: options => options.feedback.isEnabled,
+		}),
 		blending: new z42opt.Node( {}, {
 			inputBrightness: new z42opt.FloatOpt({
 				shortKey: "fbib",
@@ -575,7 +581,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			shortKey: "iwmf",
 			title: "Mutate feedback warp",
 			defaultVal: false,
-			depends: options => options.feedback.isEnabled 
+			depends: options => options.feedback.isEnabled && options.feedback.warp.isEnabled
 		}),
 		noiseSpeed: new z42opt.FloatOpt({
 			shortKey: "wsf",
@@ -585,7 +591,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			maxDecimals: 2,
 			isSlow: true,
 			defaultVal: 0.05,
-			depends: options => options.feedback.isEnabled && options.feedbackAnim.isEnabled 
+			depends: options => options.feedback.isEnabled && options.feedback.warp.isEnabled && options.feedbackAnim.isEnabled 
 		}),
 		turbulence: new z42opt.FloatOpt({
 			shortKey: "wtuf",
@@ -595,7 +601,7 @@ const optionsDescriptor = new z42opt.Node( {}, {
 			maxDecimals: 2,
 			isSlow: true,
 			defaultVal: 1.85,
-			depends: options => options.feedback.isEnabled && options.feedbackAnim.isEnabled
+			depends: options => options.feedback.isEnabled && options.feedback.warp.isEnabled && options.feedbackAnim.isEnabled
 		}),
 	}),
 	paletteAnim: new z42opt.Node( {}, {

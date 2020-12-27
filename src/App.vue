@@ -130,12 +130,47 @@ function wireUpEventListeners() {
 
 //···················································································································
 
-function animate() {
-    m_plasma.drawAnimationFrame();
+const m_fixedFps = 59.95;
+const m_fixedTimeStep = 1.0 / m_fixedFps;
+let m_currentTime = 0;
+let m_frameDurationAccu = 0;
+let m_animationTime = 0;
 
-    showFps();
+function animate( time ) {
 
-	requestAnimationFrame( animate );
+    requestAnimationFrame( animate );
+
+    const newTime = time / 1000.0;
+
+    let frameDuration = newTime - m_currentTime;
+    if( frameDuration > 0.25 ) {
+        frameDuration = 0.25;
+    }
+
+    m_currentTime = newTime;
+
+    if( m_options.feedback.isEnabled && m_options.feedback.lockFPS ) { 
+
+        // Algorithm from https://gafferongames.com/post/fix_your_timestep/
+        // It can be thought of that each call to animate() produces time, which the "while" loop consumes in fixed steps.
+
+        m_frameDurationAccu += frameDuration;
+
+        while( m_frameDurationAccu >= m_fixedTimeStep ) {
+
+            m_plasma.drawAnimationFrame( m_animationTime );
+            showFps();
+
+            m_frameDurationAccu -= m_fixedTimeStep;
+            m_animationTime += m_fixedTimeStep;
+        }
+    }
+    else {
+        m_animationTime = m_currentTime;
+
+        m_plasma.drawAnimationFrame( m_animationTime );
+        showFps();
+    }
 }
 
 //···················································································································

@@ -51,7 +51,7 @@ class PlasmaFractal2D {
 		this._feedbackSeed = params.feedbackSeed;
 		this._options      = _.cloneDeep(params.options);
 
-		this._startTime = performance.now() / 1000;
+		this._currentTime = 0;
 
 		this._initPalettes( params.colorSeed );
 
@@ -91,7 +91,7 @@ class PlasmaFractal2D {
 		this._startPalette = this._generatePalette( this._colorRnd.random() * 360 ); 
 		
 		this._isPaletteTransition = false;     // Palette currently transitioning to next palette?
-		this._paletteStartTime = this._startTime;  // Start time of current phase (constant or transition).
+		this._paletteStartTime = 0;            // Start time of current phase (constant or transition).
 
 		this._currentPaletteIsRepeat = null;
 	}
@@ -248,11 +248,11 @@ class PlasmaFractal2D {
 
 	//-------------------------------------------------------------------------------------------------------------------
 	// Draw animation frame in given 32-bit RGBA image buffer.
+	// Parameter time is seconds since start of animation.
 
-	drawAnimationFrame() {
+	drawAnimationFrame( time ) {
 
-		// Current time in seconds since start of plasma.
-		const time = performance.now() / 1000.0 - this._startTime;
+		this._currentTime = time;
 
 		const gl = this._gl;
 
@@ -557,7 +557,7 @@ class PlasmaFractal2D {
 		
 		// We reset the transition animation for simplicity.
 		this._isPaletteTransition = false;
-		this._paletteStartTime = performance.now() / 1000;		
+		this._paletteStartTime = this._currentTime;		
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------
@@ -573,7 +573,7 @@ class PlasmaFractal2D {
 		{
 			// reset plaette transition animation to avoid some issues
 			this._isPaletteTransition = false;  
-			this._paletteStartTime = performance.now() / 1000;
+			this._paletteStartTime = this._currentTime;
 		}
 		
 		this._options.paletteAnim = _.cloneDeep( opt );
@@ -617,7 +617,7 @@ class PlasmaFractal2D {
 
 	_animatePalette() {
 
-		const curTime         = performance.now() / 1000;
+		const curTime         = this._currentTime;
 		const paletteDuration = curTime - this._paletteStartTime;		
 	
 		if( this._isPaletteTransition ) {
